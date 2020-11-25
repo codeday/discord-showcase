@@ -1,2 +1,4 @@
 discord.py
 raygun4py
+alembic
+psycopg2
