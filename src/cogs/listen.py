@@ -1,6 +1,7 @@
 from discord.ext import commands
 
 
+
 class ListenCog(commands.Cog, name="Listen"):
     """Listen to showcase api for team updates"""
 
