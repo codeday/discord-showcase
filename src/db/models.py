@@ -26,14 +26,16 @@ class Pod(Base):
     name = Column(String, nullable=False)
     tc_id = Column(String, nullable=False)
     mentor = Column(String, nullable=False)
-    teams = relationship("Team", back_populates="team", cascade="all, delete")
+    teams = relationship("Team", back_populates="pods", cascade="all, delete")
 
 
 class Team(Base):
     __tablename__ = "teams"
 
     id = Column(Integer, primary_key=True)
-    pod =
+    showcase_id = Column(String, nullable=False)
+    pod_id = Column(Integer, ForeignKey("pods.id"))
+    pod = relationship("Pod", back_populates="teams", cascade="all, delete")
 
 
 def session_creator() -> Session:
