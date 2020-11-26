@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from db.models import session_creator, Pod, Team
 
 
-class TeamService:
+class PodService:
     @staticmethod
     def get_pod_by_name(name, session=None) -> Optional[Pod]:
         """Returns the pod with the given name, or none if it doesn't exist"""
@@ -46,8 +46,8 @@ class TeamService:
         return pods
 
     @staticmethod
-    def add_pod(name, tc_id, mentor) -> bool:
-        """Add a new pod"""
+    def create_pod(name, tc_id, mentor) -> bool:
+        """Create a new pod"""
         try:
             session = session_creator()
             session.add(
