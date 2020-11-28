@@ -1,5 +1,13 @@
+from idlelib.undo import CommandSequence
+
+import discord
 from discord.ext import commands
+from os import getenv
+
+from services.gqlservice import GQLService
 from utils import checks
+
+active_pods = {}
 
 # The list below shows all possible names that a pod can have. There are currently 118 different names.
 suitableNames = {"Hydrogen", "Helium", "Lithium", "Beryllium", "Boron", "Carbon", "Nitrogen",
@@ -21,25 +29,43 @@ suitableNames = {"Hydrogen", "Helium", "Lithium", "Beryllium", "Boron", "Carbon"
          "Roentgenium", "Copernicium", "Nihonium", "Flerovium", "Moscovium", "Livermorium","Tennessine",
          "Oganesson"}
 
-
 class Pods(commands.Cog, name="Pods"):
     """Contains information pertaining to Pods"""
 
     def __init__(self, bot):
         self.bot = bot
+        self.staff_role = int(getenv("ROLE_STAFF"), 689960285926195220)
+        self.category = int(getenv("CATEGORY"), 690001823347769430)
+
 
     @commands.command(name='create pod')
     @checks.requires_staff_role()
     async def create_pod(self, ctx: commands.Context, pod_name, size, mentor):
         """Creates a POD for a team"""
+
+        """Create a text channel"""
+        guild: discord.guild = ctx.guild
+        members = GQLService.get_discord_users_by_team_name("test")
+        overwrites = {
+            guild.default_role: discord.PermissionOverwrite(read_messages=False), # Default User Access to a Pod
+            guild.get_role(self.staff_role): discord.PermissionOverwrite(read_messages=True, send_messages=True), # Staff Access to a Pod
+
+            guild.me: discord.PermissionOverwrite(read_messages=True, read_message_history=True) # Person who ran command access to a Pod
+        }
+        await guild.create_text_channel(pod_name, overwrites=overwrites, category=None, reason=None)
+
+
+        #PodService.create_pod()
+
         pass
 
     @commands.command(name='create pods')
     @checks.requires_staff_role()
     async def create_pods(self, ctx: commands.Context, size):
         """Creates all PODS for all TEAMS"""
-        numberOfTeams = 10
-        #for x in range(0, numberOfTeams):
+        # api call to get number of teams
+        numberOfPods = 10
+
         pass
 
     @commands.command(name='assign pod')
@@ -65,6 +91,12 @@ class Pods(commands.Cog, name="Pods"):
     def list_pods(self, ctx: commands.Context, team_name, pod_name):
         """Displays PODS in CHANNEL"""
         pass
+
+    # Helper Functions For pods
+    def find_a_suitable_pod_name(self):
+        name = ""
+
+        return name
 
 def setup(bot):
     bot.add_cog(Pods(bot))
