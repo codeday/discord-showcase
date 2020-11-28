@@ -33,7 +33,7 @@ class Team(Base):
     __tablename__ = "teams"
 
     id = Column(Integer, primary_key=True)
-    showcase_id = Column(String, nullable=False)
+    showcase_id = Column(String, nullable=False, unique=True)
     pod_id = Column(Integer, ForeignKey("pods.id"))
     pod = relationship("Pod", back_populates="teams", cascade="all, delete")
 

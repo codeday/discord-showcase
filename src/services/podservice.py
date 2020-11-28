@@ -34,7 +34,7 @@ class PodService:
 
     @staticmethod
     def get_all_pods(session=None) -> list:
-        """Returns a list of team objects"""
+        """Returns a list of pod objects"""
         sess_flag = False
         if session is None:
             session = session_creator()
@@ -54,7 +54,7 @@ class PodService:
                 Pod(
                     name=name,
                     tc_id=tc_id,
-                    mentor=mentor
+                    mentor=mentor,
                 )
             )
             session.commit()
@@ -62,3 +62,48 @@ class PodService:
             return True
         except IntegrityError:
             return False
+
+    @staticmethod
+    def create_team(showcase_id) -> bool:
+        """Create a new team"""
+        try:
+            session = session_creator()
+            session.add(
+                Team(
+                    showcase_id=showcase_id
+                )
+            )
+            session.commit()
+            session.close()
+            return True
+        except IntegrityError:
+            return False
+
+    @staticmethod
+    def get_team_by_showcase_id(showcase_id, session=None) -> Team:
+        """returns a Team with the given showcase id, freshly created if it doesn't exist"""
+        sess_flag = False
+        if session is None:
+            session = session_creator()
+            sess_flag = True
+        team = session.query(Team).filter(Team.showcase_id == showcase_id).first()
+        if not team:
+            PodService.create_team(showcase_id)
+            team = session.query(Team).filter(Team.showcase_id == showcase_id).first()
+        if sess_flag:
+            session.commit()
+            session.close()
+        return team
+
+    @staticmethod
+    def add_team_to_pod(pod, team_showcase_id, session=None):
+        sess_flag = False
+        if session is None:
+            session = session_creator()
+            sess_flag = True
+        session.add(pod)
+        team = PodService.get_team_by_showcase_id(team_showcase_id, session)
+        team.pod = pod
+        if sess_flag:
+            session.commit()
+            session.close()
