@@ -26,7 +26,7 @@ class Pod(Base):
     name = Column(String, nullable=False)
     tc_id = Column(String, nullable=False)
     mentor = Column(String, nullable=False)
-    teams = relationship("Team", back_populates="pods", cascade="all, delete")
+    teams = relationship("Team", back_populates="pod", cascade="all, delete")
 
 
 class Team(Base):
