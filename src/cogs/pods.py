@@ -127,7 +127,7 @@ class Pods(commands.Cog, name="Pods"):
 
     @commands.command(name='list_pods')
     @checks.requires_staff_role()
-    async def list_pods(self, ctx: commands.Context, team_name, pod_name):
+    async def list_pods(self, ctx: commands.Context):
         """Displays PODS in CHANNEL"""
         all_pods = PodService.get_all_pods()
         current_channel: discord.DMChannel = ctx.channel
