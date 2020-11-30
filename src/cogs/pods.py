@@ -68,7 +68,8 @@ class Pods(commands.Cog, name="Pods"):
             guild.me: discord.PermissionOverwrite(read_messages=True, read_message_history=True),
         }
 
-        tc = await guild.create_text_channel("team " + pod_name, overwrites=overwrites, category=guild.get_channel(self.category),
+        tc = await guild.create_text_channel("team " + pod_name, overwrites=overwrites,
+                                             category=guild.get_channel(self.category),
                                              reason=None)
 
         PodService.create_pod(pod_name, tc.id, id_from_mention(mentor))
@@ -116,16 +117,23 @@ class Pods(commands.Cog, name="Pods"):
 
     @commands.command(name='list_teams')
     @checks.requires_staff_role()
-    async def list_teams(self, ctx: commands.Context, team_name, pod_name):
+    async def list_teams(self, ctx: commands.Context, pod_name):
         """Displays TEAMS of a POD in CHANNEL"""
-        pass
+        pod = PodService.get_pod_by_id(pod_name)
+        current_channel: discord.DMChannel = ctx.channel
+        await current_channel.send("The current teams inside of Pod " + pod_name + " are:")
+        for team in pod.teams:
+            await current_channel.send("Team " + team.name)
 
     @commands.command(name='list_pods')
     @checks.requires_staff_role()
     async def list_pods(self, ctx: commands.Context, team_name, pod_name):
         """Displays PODS in CHANNEL"""
-        
-        pass
+        all_pods = PodService.get_all_pods()
+        current_channel: discord.DMChannel = ctx.channel
+        await current_channel.send("The current created pods are:")
+        for pod in all_pods:
+            await current_channel.send("Pod " + pod.name)
 
     def find_a_suitable_mentor(self):
         # Get List of Mentors from Discord Role and see if they're already in the taken mentors list
