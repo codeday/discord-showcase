@@ -86,9 +86,13 @@ class Pods(commands.Cog, name="Pods"):
 
     @commands.command(name='assign_pod')
     @checks.requires_staff_role()
-    async def assign_pod(self, ctx: commands.Context, team_name, pod_name):
+    async def assign_pod(self, ctx: commands.Context, team_id, pod_name):
         """Assigns a TEAM to a particular POD"""
-
+        current_pod = PodService.get_pod_by_name(pod_name)
+        showcase_team = GQLService.get_showcase_team_by_id(team_id)
+        if len(current_pod.teams) <= self.teamsPerPod:
+            # Team can be put into pod without brute force
+            PodService.add_team_to_pod(current_pod, team_id)
         pass
 
     @commands.command(name='assign_pods')
@@ -113,13 +117,14 @@ class Pods(commands.Cog, name="Pods"):
     @commands.command(name='list_teams')
     @checks.requires_staff_role()
     async def list_teams(self, ctx: commands.Context, team_name, pod_name):
-        """Displays TEAMS in CHANNEL"""
+        """Displays TEAMS of a POD in CHANNEL"""
         pass
 
     @commands.command(name='list_pods')
     @checks.requires_staff_role()
     async def list_pods(self, ctx: commands.Context, team_name, pod_name):
         """Displays PODS in CHANNEL"""
+        
         pass
 
     def find_a_suitable_mentor(self):
