@@ -50,12 +50,12 @@ class Pods(commands.Cog, name="Pods"):
         self.staff_role = int(getenv("ROLE_STAFF", 689960285926195220))
         self.mentor_role = int(getenv("ROLE_MENTOR", 782363834836975646))
         self.category = int(getenv("CATEGORY", 690001823347769430))
-        self.teamsPerPod = 3
         self.numOfMentors = 50
+        self.teams_per_pod = 3
 
-    @commands.command(name='create_pod')  # create_pod hello 3 @asdawd
+    @commands.command(name='create_pod')
     # @checks.requires_staff_role()
-    async def create_pod(self, ctx: commands.Context, pod_name, size, mentor):
+    async def create_pod(self, ctx: commands.Context, pod_name, mentor):
         """Creates a POD for a team"""
 
         """Create a text channel"""
@@ -68,7 +68,7 @@ class Pods(commands.Cog, name="Pods"):
             guild.me: discord.PermissionOverwrite(read_messages=True, read_message_history=True),
         }
 
-        tc = await guild.create_text_channel("team " + pod_name, overwrites=overwrites,
+        tc = await guild.create_text_channel("pod " + pod_name, overwrites=overwrites,
                                              category=guild.get_channel(self.category),
                                              reason=None)
 
@@ -78,12 +78,12 @@ class Pods(commands.Cog, name="Pods"):
 
     @commands.command(name='create_pods')
     @checks.requires_staff_role()
-    async def create_pods(self, ctx: commands.Context, size):
+    async def create_pods(self, ctx: commands.Context, number_of_mentors):
         """Creates all PODS for all TEAMS"""
-        # api call to get number of teams
-        allTeams = GQLService.get_all_teams()
+        self.numOfMentors = number_of_mentors
         for x in range(0, self.numOfMentors):
-            await self.create_pod(ctx, find_a_suitable_pod_name(), self.teamsPerPod, self.find_a_suitable_mentor())
+            await self.create_pod(ctx, find_a_suitable_pod_name(), self.find_a_suitable_mentor())
+        await self.create_pod(ctx, "overflow", self.find_a_suitable_mentor())
 
     @commands.command(name='assign_pod')
     @checks.requires_staff_role()
@@ -91,10 +91,12 @@ class Pods(commands.Cog, name="Pods"):
         """Assigns a TEAM to a particular POD"""
         current_pod = PodService.get_pod_by_name(pod_name)
         showcase_team = GQLService.get_showcase_team_by_id(team_id)
-        if len(current_pod.teams) <= self.teamsPerPod:
+        if len(current_pod.teams) <= self.teams_per_pod:
             # Team can be put into pod without brute force
             PodService.add_team_to_pod(current_pod, team_id)
-        pass
+
+        else
+            # Ask for confimration to assign team to pod
 
     @commands.command(name='assign_pods')
     @checks.requires_staff_role()
@@ -106,7 +108,7 @@ class Pods(commands.Cog, name="Pods"):
 
         # Fill current pods with remaining teams
         for pod in all_pods:
-            if len(pod.teams) <= self.teamsPerPod:
+            if len(pod.teams) <= self.teams_per_pod:
                 # add team to pod
                 await self.assign_pod(ctx, all_teams_without_pods[pointer], pod)
                 pointer += 1
