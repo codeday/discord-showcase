@@ -6,7 +6,7 @@ from gql.transport.websockets import WebsocketsTransport
 class GQLService:
 
     @staticmethod
-    def get_all_showcase_teams():
+    async def get_all_showcase_teams():
         # Select your transport with a defined url endpoint
         transport = AIOHTTPTransport(url="https://graph.codeday.org/")
 
@@ -27,9 +27,11 @@ class GQLService:
         """
         )
         # Execute the query on the transport
-        result = client.execute(query)
-        return result
+        result = await client.execute_async(query)
+        print(result)
+        return result['showcase']['projects']
 
+    # NOT DONE
     @staticmethod
     def get_all_showcase_teams_without_pods():
         # Select your transport with a defined url endpoint
@@ -55,29 +57,7 @@ class GQLService:
         result = client.execute(query)
         return result
 
-    @staticmethod
-    def get_discord_users_by_team_id(team_id):
-        # Select your transport with a defined url endpoint
-        transport = AIOHTTPTransport(url="https://graph.codeday.org/")
-
-        # Create a GraphQL client using the defined transport
-        client = Client(transport=transport, fetch_schema_from_transport=True)
-
-        # Provide a GraphQL query
-        query = gql(
-            """
-            query getContinents {
-              continents {
-                code
-                name
-              }
-            }
-        """
-        )
-        # Execute the query on the transport
-        result = client.execute(query)
-        return result
-
+    # NOT DONE
     @staticmethod
     def get_showcase_team_by_id(team_id):
         # Select your transport with a defined url endpoint
@@ -89,10 +69,18 @@ class GQLService:
         # Provide a GraphQL query
         query = gql(
             """
-            query getContinents {
-              continents {
-                code
-                name
+            query {
+              showcase {
+                project(id: "ckhwbqp2h006411mpd99ircmk") {
+                  name
+                  id
+                  members {
+                    username
+                    account {
+                      discordId
+                    }
+                  }
+                }
               }
             }
         """
@@ -101,8 +89,9 @@ class GQLService:
         result = client.execute(query)
         return result
 
+
     @staticmethod
-    def get_showcase_team_by_user(username):
+    async def get_showcase_team_by_discord_user(username):
         # Select your transport with a defined url endpoint
         transport = AIOHTTPTransport(url="https://graph.codeday.org/")
 
@@ -126,7 +115,7 @@ class GQLService:
         params = {"code": username}
 
         # Execute the query on the transport
-        result = client.execute(query, variable_values=params)
+        result = await client.execute_async(query, variable_values=params)
         print(result)
         return result
 

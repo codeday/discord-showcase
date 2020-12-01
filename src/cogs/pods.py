@@ -4,6 +4,7 @@ import discord
 from discord.ext import commands
 from os import getenv
 
+from db.models import session_creator
 from services.podservice import PodService
 from utils.person import id_from_mention
 from services.gqlservice import GQLService
@@ -86,9 +87,6 @@ class Pods(commands.Cog, name="Pods"):
                 discordID = member.account.discordId
 
 
-
-
-
     @commands.command(name='assign_pods')
     @checks.requires_staff_role()
     async def assign_pods(self, ctx: commands.Context, team_name, pod_name):
@@ -128,6 +126,25 @@ class Pods(commands.Cog, name="Pods"):
         for pod in all_pods:
             await current_channel.send("Pod " + pod.name)
 
+    @commands.command(name='get_teams_from_gql')
+    #@checks.requires_staff_role()
+    async def get_teams_from_gql(self, ctx: commands.Context):
+        """Displays PODS in CHANNEL"""
+        all_teams = await GQLService.get_all_showcase_teams()
+        current_channel: discord.DMChannel = ctx.channel
+        await current_channel.send("The current created teams in showcase are:")
+        for team in all_teams:
+            await current_channel.send("Team " + team['name'])
+
+    @commands.command(name='get_teams_by_user')
+    #@checks.requires_staff_role()
+    async def get_teams_from_gql(self, ctx: commands.Context, user):
+        """Displays PODS in CHANNEL"""
+        team = await GQLService.get_showcase_team_by_user(user)
+        print(team)
+        current_channel: discord.DMChannel = ctx.channel
+        #await current_channel.send("The team that " + user + " is in is " + )
+
     def find_a_suitable_pod_name(self):
         for pod_name in available_names:
             if PodService.get_pod_by_name(pod_name) is None:
@@ -144,6 +161,23 @@ class Pods(commands.Cog, name="Pods"):
                 # Mentor is Suitable, return that mentor object
                 return user
         return None  # No Mentor was available
+
+    @commands.Cog.listener()
+    async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
+        guild: discord.Guild = payload.member.guild
+        session = session_creator()
+        # I think the ID is the text ID channel, but not sure
+        pod = PodService.get_pod_by_name(payload.channel_id)
+        if any([int(team.tc_id) == payload.channel_id for team in pod.teams]) and payload.member.id != self.bot.user.id:
+            print("made it past any")
+            #team_that_reacted =
+            teamThatReacted = self.team_service.get_team_by_channel_id(str(payload.channel_id), session)
+            if str(payload.message_id) == teamThatReacted.check_in_message_ids:
+                print("made it here")
+                await self.sendTeamReactionToShowcase(teamThatReacted, str(payload.emoji))
+
+        session.commit()
+        session.close()
 
 
 def setup(bot):

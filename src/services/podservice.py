@@ -19,6 +19,18 @@ class PodService:
             session.close()
         return pod
 
+    def get_pod_by_channel_id(tc_id, session=None) -> Optional[Pod]:
+        """Returns the pod with the given text channel id, or none if it doesn't exist"""
+        sess_flag = False
+        if session is None:
+            session = session_creator()
+            sess_flag = True
+        pod = session.query(Pod).filter(Pod.tc_id == tc_id).first()
+        if sess_flag:
+            session.commit()
+            session.close()
+        return pod
+
     @staticmethod
     def get_pod_by_id(id, session=None) -> Optional[Pod]:
         """Returns the pod with the given id, or none if it doesn't exist"""
