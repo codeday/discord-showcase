@@ -138,12 +138,12 @@ class Pods(commands.Cog, name="Pods"):
 
     @commands.command(name='get_teams_by_user')
     #@checks.requires_staff_role()
-    async def get_teams_from_gql(self, ctx: commands.Context, user):
+    async def get_teams_by_user_gql(self, ctx: commands.Context, user: discord.User):
         """Displays PODS in CHANNEL"""
-        team = await GQLService.get_showcase_team_by_user(user)
+        team = await GQLService.get_showcase_team_by_showcase_user(GQLService.get_showcase_username_from_discord_id(user.id))
         print(team)
         current_channel: discord.DMChannel = ctx.channel
-        #await current_channel.send("The team that " + user + " is in is " + )
+        #await current_channel.send("The team that " + user + " is in is " + team)
 
     def find_a_suitable_pod_name(self):
         for pod_name in available_names:
@@ -167,14 +167,13 @@ class Pods(commands.Cog, name="Pods"):
         guild: discord.Guild = payload.member.guild
         session = session_creator()
         # I think the ID is the text ID channel, but not sure
-        pod = PodService.get_pod_by_name(payload.channel_id)
+        pod = PodService.get_pod_by_channel_id(payload.channel_id)
         if any([int(team.tc_id) == payload.channel_id for team in pod.teams]) and payload.member.id != self.bot.user.id:
             print("made it past any")
-            #team_that_reacted =
-            teamThatReacted = self.team_service.get_team_by_channel_id(str(payload.channel_id), session)
-            if str(payload.message_id) == teamThatReacted.check_in_message_ids:
+            team_that_reacted = await GQLService.get_showcase_team_by_showcase_user(await GQLService.get_showcase_username_from_discord_id(payload.member.id))
+            if str(payload.message_id) == team_that_reacted.check_in_message_ids:
                 print("made it here")
-                await self.sendTeamReactionToShowcase(teamThatReacted, str(payload.emoji))
+                await self.sendTeamReactionToShowcase(team_that_reacted, str(payload.emoji))
 
         session.commit()
         session.close()

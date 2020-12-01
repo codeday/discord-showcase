@@ -91,7 +91,7 @@ class GQLService:
 
 
     @staticmethod
-    async def get_showcase_team_by_discord_user(username):
+    async def get_showcase_team_by_showcase_user(username):
         # Select your transport with a defined url endpoint
         transport = AIOHTTPTransport(url="https://graph.codeday.org/")
 
@@ -101,9 +101,9 @@ class GQLService:
         # Provide a GraphQL query
         query = gql(
             """
-            query getShowcaseTeamByUser($code: ID!) {
+            query getShowcaseTeamByUser($username: String!) {
               showcase {
-                projects(code: $code) {
+                projects(username: $username) {
                   id
                   name
                 }
@@ -112,14 +112,43 @@ class GQLService:
         """
         )
 
-        params = {"code": username}
+        params = {"username": username}
 
         # Execute the query on the transport
         result = await client.execute_async(query, variable_values=params)
         print(result)
         return result
 
-    def member_removed(self):
+    @staticmethod
+    async def get_showcase_username_from_discord_id(discord_id):
+        # Select your transport with a defined url endpoint
+        transport = AIOHTTPTransport(url="https://graph.codeday.org/")
+
+        # Create a GraphQL client using the defined transport
+        client = Client(transport=transport, fetch_schema_from_transport=True)
+
+        # Provide a GraphQL query
+        query = gql(
+            """
+            query getDiscordIdFromShowcaseUsername($discordId: String!) {
+              account {
+                getUser(where: {discordId: $discordId}) {
+                  username
+                }
+              }
+            }
+        """
+        )
+
+        params = {"username": discord_id}
+
+        # Execute the query on the transport
+        result = await client.execute_async(query, variable_values=params)
+        print(result)
+        return result
+
+    @staticmethod
+    async def member_removed():
         transport = WebsocketsTransport(url='ws://graph.codeday.org/')
 
         client = Client(
@@ -139,5 +168,5 @@ class GQLService:
             }
         ''')
 
-        for result in client.subscribe(query):
+        async for result in client.subscribe_async(query):
             print(result)

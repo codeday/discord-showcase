@@ -3,6 +3,7 @@ import os
 import sys
 import traceback
 
+from services.gqlservice import GQLService
 from discord.ext import commands
 from raygun4py import raygunprovider
 
@@ -34,5 +35,6 @@ for cog in initial_cogs:
 @bot.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
+    await GQLService.member_removed()
 
 bot.run(BOT_TOKEN, bot=True, reconnect=True)
