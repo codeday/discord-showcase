@@ -29,19 +29,6 @@ available_names = ["Hydrogen", "Helium", "Lithium", "Beryllium", "Boron", "Carbo
                    "Roentgenium", "Copernicium", "Nihonium", "Flerovium", "Moscovium", "Livermorium", "Tennessine",
                    "Oganesson"]
 
-used_names = []
-
-available_mentors = []
-used_mentors = []
-
-
-def find_a_suitable_pod_name():
-    name = available_names[0]
-    used_names.add(name)
-    available_names.remove(name)
-    return name
-
-
 class Pods(commands.Cog, name="Pods"):
     """Contains information pertaining to Pods"""
 
@@ -49,13 +36,13 @@ class Pods(commands.Cog, name="Pods"):
         self.bot: discord.ext.commands.Bot = bot
         self.staff_role = int(getenv("ROLE_STAFF", 689960285926195220))
         self.mentor_role = int(getenv("ROLE_MENTOR", 782363834836975646))
-        self.category = int(getenv("CATEGORY", 690001823347769430))
+        self.category = int(getenv("CATEGORY", 783229579732320257))
         self.numOfMentors = 50
         self.teams_per_pod = 3
 
     @commands.command(name='create_pod')
     # @checks.requires_staff_role()
-    async def create_pod(self, ctx: commands.Context, pod_name, mentor):
+    async def create_pod(self, ctx: commands.Context, pod_name, mentor: discord.User):
         """Creates a POD for a team"""
 
         """Create a text channel"""
@@ -63,8 +50,7 @@ class Pods(commands.Cog, name="Pods"):
         overwrites = {
             guild.default_role: discord.PermissionOverwrite(read_messages=False),  # Default User Access to a Pod
             guild.get_role(self.staff_role): discord.PermissionOverwrite(**dict(discord.Permissions.text())),
-            # Staff Access to a Pod
-            # guild.get_member(id_from_mention(mentor)): discord.PermissionOverwrite(**dict(discord.Permissions.text())),  # Mentor Access to Pod
+            await guild.fetch_member(mentor.id): discord.PermissionOverwrite(**dict(discord.Permissions.text())),  # Mentor Access to Pod
             guild.me: discord.PermissionOverwrite(read_messages=True, read_message_history=True),
         }
 
@@ -82,7 +68,7 @@ class Pods(commands.Cog, name="Pods"):
         """Creates all PODS for all TEAMS"""
         self.numOfMentors = number_of_mentors
         for x in range(0, self.numOfMentors):
-            await self.create_pod(ctx, find_a_suitable_pod_name(), self.find_a_suitable_mentor())
+            await self.create_pod(ctx, self.find_a_suitable_pod_name(), self.find_a_suitable_mentor())
         await self.create_pod(ctx, "overflow", self.find_a_suitable_mentor())
 
     @commands.command(name='assign_pod')
@@ -95,8 +81,13 @@ class Pods(commands.Cog, name="Pods"):
             # Team can be put into pod without brute force
             PodService.add_team_to_pod(current_pod, team_id)
 
-        else
-            # Ask for confimration to assign team to pod
+            # Add all members to text channel
+            for member in showcase_team.members:
+                discordID = member.account.discordId
+
+
+
+
 
     @commands.command(name='assign_pods')
     @checks.requires_staff_role()
@@ -136,6 +127,13 @@ class Pods(commands.Cog, name="Pods"):
         await current_channel.send("The current created pods are:")
         for pod in all_pods:
             await current_channel.send("Pod " + pod.name)
+
+    def find_a_suitable_pod_name(self):
+        for pod_name in available_names:
+            if PodService.get_pod_by_name(pod_name) is None:
+                # Pod Name is suitable, return that pod name
+                return pod_name
+        return None # No Valid Name was available
 
     def find_a_suitable_mentor(self):
         # Get List of Mentors from Discord Role and see if they're already in the taken mentors list
