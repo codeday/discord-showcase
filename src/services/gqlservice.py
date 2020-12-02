@@ -149,7 +149,7 @@ class GQLService:
 
     @staticmethod
     async def member_removed():
-        transport = WebsocketsTransport(url='ws://graph.codeday.org/')
+        transport = WebsocketsTransport(url='ws://graph.codeday.org/subscriptions')
 
         client = Client(
             transport=transport,
