@@ -120,7 +120,7 @@ class GQLService:
         return result
 
     @staticmethod
-    async def get_showcase_username_from_discord_id(discord_id):
+    async def get_showcase_user_from_discord_id(discord_id):
         # Select your transport with a defined url endpoint
         transport = AIOHTTPTransport(url="https://graph.codeday.org/")
 
@@ -134,6 +134,7 @@ class GQLService:
               account {
                 getUser(where: {discordId: $discordId}) {
                   username
+                  id
                 }
               }
             }
@@ -146,6 +147,28 @@ class GQLService:
         result = await client.execute_async(query, variable_values=params)
         print(result)
         return result
+
+    @staticmethod
+    async def send_team_reacted(project_id, member, name, value):
+        transport = WebsocketsTransport(url='ws://graph.codeday.org/subscriptions')
+
+        client = Client(
+            transport=transport,
+            fetch_schema_from_transport=True,
+        )
+
+        query = gql('''
+            mutation teamReacted($project_id: String, $member: String, $name: String, $value: ID){
+              showcase {
+                recordMetric(project: $project_id, member: $member, name: $name, value: $value)
+              }
+            }
+        ''')
+
+        params = {"project_id": project_id, "member": member, "name": name, "value": value}
+
+        async for result in client.subscribe_async(query, variable_values=params):
+            print(result)
 
     """Everything beyond this point is related to GQL Subscriptions and Bot Listener Stuff"""
 
