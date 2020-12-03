@@ -169,15 +169,21 @@ class Pods(commands.Cog, name="Pods"):
         session = session_creator()
         # I think the ID is the text ID channel, but not sure
         pod = PodService.get_pod_by_channel_id(payload.channel_id)
-        if any([int(team.tc_id) == payload.channel_id for team in pod.teams]) and payload.member.id != self.bot.user.id:
-            print("made it past any")
-            team_that_reacted = await GQLService.get_showcase_team_by_showcase_user(await GQLService.get_showcase_username_from_discord_id(payload.member.id))
-            if str(payload.message_id) == team_that_reacted.check_in_message_ids:
-                print("made it here")
-                await self.sendTeamReactionToShowcase(team_that_reacted, str(payload.emoji))
+        if pod is not None:
+            showcase_user = str(await GQLService.get_showcase_user_from_discord_id(str(payload.member.id)))
+            team_that_reacted = await GQLService.get_showcase_team_by_showcase_user(showcase_user)
+            user_who_posted_message = self.bot.get
+            if payload.member.id == self.bot.user.id:
+                await GQLService.send_team_reacted(team_that_reacted.id, showcase_user.username, "reaction", self.emoji_is_valid(payload.emoji))
+
 
         session.commit()
         session.close()
+
+    @staticmethod
+    def emoji_is_valid(self, emoji):
+        if emoji == "😀" or emoji == "😐" or emoji == "☹": return emoji
+        return None
 
 
 def setup(bot):
