@@ -76,6 +76,15 @@ class PodService:
             return False
 
     @staticmethod
+    def remove_all_pods():
+        """Deletes team with given id"""
+        session = session_creator()
+        for pod in PodService.get_all_pods():
+            session.delete(pod)
+            session.commit()
+            session.close()
+
+    @staticmethod
     def create_team(showcase_id) -> bool:
         """Create a new team"""
         try:

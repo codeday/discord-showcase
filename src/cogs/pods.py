@@ -66,7 +66,7 @@ class Pods(commands.Cog, name="Pods"):
         pass
 
     @commands.command(name='create_pods')
-    @checks.requires_staff_role()
+    #@checks.requires_staff_role()
     async def create_pods(self, ctx: commands.Context, number_of_mentors):
         """Creates all PODS for all TEAMS"""
         self.numOfMentors = number_of_mentors
@@ -75,7 +75,7 @@ class Pods(commands.Cog, name="Pods"):
         await self.create_pod(ctx, "overflow", self.find_a_suitable_mentor())
 
     @commands.command(name='assign_pod')
-    @checks.requires_staff_role()
+    #@checks.requires_staff_role()
     async def assign_pod(self, ctx: commands.Context, team_id, pod_name):
         """Assigns a TEAM to a particular POD"""
         current_pod = PodService.get_pod_by_name(pod_name)
@@ -89,8 +89,9 @@ class Pods(commands.Cog, name="Pods"):
                 discordID = member.account.discordId
 
 
+
     @commands.command(name='assign_pods')
-    @checks.requires_staff_role()
+    #@checks.requires_staff_role()
     async def assign_pods(self, ctx: commands.Context, team_name, pod_name):
         """Assigns remaining TEAMS to PODS"""
         all_teams_without_pods = GQLService.get_all_teams_without_pods()
@@ -109,7 +110,7 @@ class Pods(commands.Cog, name="Pods"):
             await self.assign_pod(ctx, all_teams_without_pods[pointer], "overflow")
 
     @commands.command(name='list_teams')
-    @checks.requires_staff_role()
+    #@checks.requires_staff_role()
     async def list_teams(self, ctx: commands.Context, pod_name):
         """Displays TEAMS of a POD in CHANNEL"""
         pod = PodService.get_pod_by_id(pod_name)
@@ -119,14 +120,23 @@ class Pods(commands.Cog, name="Pods"):
             await current_channel.send("Team " + team.name)
 
     @commands.command(name='list_pods')
-    @checks.requires_staff_role()
+    #@checks.requires_staff_role()
     async def list_pods(self, ctx: commands.Context):
         """Displays PODS in CHANNEL"""
-        all_pods = PodService.get_all_pods()
+        session = session_creator()
+        all_pods = PodService.get_all_pods(session)
         current_channel: discord.DMChannel = ctx.channel
         await current_channel.send("The current created pods are:")
         for pod in all_pods:
             await current_channel.send("Pod " + pod.name)
+        session.commit()
+        session.close()
+
+    @commands.command(name='remove_all_pods')
+    #@checks.requires_staff_role()
+    async def remove_all_pods(self, ctx: commands.Context):
+        """Removes all Pods from Alembic"""
+        PodService.remove_all_pods()
 
     @commands.command(name='get_teams_from_gql')
     #@checks.requires_staff_role()
