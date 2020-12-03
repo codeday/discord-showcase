@@ -30,7 +30,7 @@ class CheckinCommands(commands.Cog, name="Checkin"):
         self.category = int(getenv("CATEGORY", 783229579732320257))
 
     @commands.command(name='checkin')
-    @checks.requires_staff_role()
+    #@checks.requires_staff_role()
     async def checkin(self, ctx, pod_name):
         """Checks in on a specific pod"""
         guild: discord.Guild = self.bot.guild
@@ -44,8 +44,8 @@ class CheckinCommands(commands.Cog, name="Checkin"):
         await message.add_reaction("☹")
 
     @commands.command(name='checkin_all')
-    @checks.requires_staff_role()
-    def checkin_all(self, ctx: commands.Context):
+    #@checks.requires_staff_role()
+    async def checkin_all(self, ctx: commands.Context):
         """checks in on all teams"""
         guild: discord.Guild = self.bot.guild
         for pod in PodService.get_all_pods():
