@@ -1,7 +1,12 @@
+from os import getenv
 from random import choice
 
+import discord
 from discord.ext import commands
+
+from services.podservice import PodService
 from utils import checks
+
 
 def generate_message(team_name):
     title_options = [
@@ -22,18 +27,28 @@ class CheckinCommands(commands.Cog, name="Checkin"):
 
     def __init__(self, bot):
         self.bot = bot
+        self.category = int(getenv("CATEGORY", 783229579732320257))
 
     @commands.command(name='checkin')
     @checks.requires_staff_role()
     async def checkin(self, ctx, pod_name):
         """Checks in on a specific pod"""
+
         pass
 
     @commands.command(name='checkin_all')
     @checks.requires_staff_role()
-    def checkin_all(self, ctx):
+    def checkin_all(self, ctx: commands.Context):
         """checks in on all teams"""
-        pass
+        guild: discord.Guild = self.bot.guild
+        for pod in PodService.get_all_pods():
+            channel: discord.DMChannel = guild.get_channel(pod.tc_id)
+            message = await channel.send("Hello! This is your friendly Showcase bot! Please react "
+                                         "to this message with one of the emojis below with "
+                                         "how you are feeling about your project so far!")
+            await message.add_reaction("😀")
+            await message.add_reaction("😐")
+            await message.add_reaction("☹")
 
 
 def setup(bot):

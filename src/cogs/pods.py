@@ -30,6 +30,7 @@ available_names = ["Hydrogen", "Helium", "Lithium", "Beryllium", "Boron", "Carbo
                    "Roentgenium", "Copernicium", "Nihonium", "Flerovium", "Moscovium", "Livermorium", "Tennessine",
                    "Oganesson"]
 
+
 class Pods(commands.Cog, name="Pods"):
     """Contains information pertaining to Pods"""
 
@@ -40,6 +41,7 @@ class Pods(commands.Cog, name="Pods"):
         self.category = int(getenv("CATEGORY", 783229579732320257))
         self.numOfMentors = 50
         self.teams_per_pod = 3
+        self.check_in_messages = {}
 
     @commands.command(name='create_pod')
     # @checks.requires_staff_role()
@@ -175,8 +177,6 @@ class Pods(commands.Cog, name="Pods"):
             user_who_posted_message = self.bot.get
             if payload.member.id == self.bot.user.id:
                 await GQLService.send_team_reacted(team_that_reacted.id, showcase_user.username, "reaction", self.emoji_is_valid(payload.emoji))
-
-
         session.commit()
         session.close()
 
