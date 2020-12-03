@@ -33,8 +33,15 @@ class CheckinCommands(commands.Cog, name="Checkin"):
     @checks.requires_staff_role()
     async def checkin(self, ctx, pod_name):
         """Checks in on a specific pod"""
-
-        pass
+        guild: discord.Guild = self.bot.guild
+        pod = PodService.get_pod_by_name(pod_name)
+        channel: discord.DMChannel = guild.get_channel(int(pod.tc_id))
+        message = await channel.send("Hello! This is your friendly Showcase bot! Please react "
+                                     "to this message with one of the emojis below with "
+                                     "how you are feeling about your project so far!")
+        await message.add_reaction("😀")
+        await message.add_reaction("😐")
+        await message.add_reaction("☹")
 
     @commands.command(name='checkin_all')
     @checks.requires_staff_role()
@@ -42,7 +49,7 @@ class CheckinCommands(commands.Cog, name="Checkin"):
         """checks in on all teams"""
         guild: discord.Guild = self.bot.guild
         for pod in PodService.get_all_pods():
-            channel: discord.DMChannel = guild.get_channel(pod.tc_id)
+            channel: discord.DMChannel = guild.get_channel(int(pod.tc_id))
             message = await channel.send("Hello! This is your friendly Showcase bot! Please react "
                                          "to this message with one of the emojis below with "
                                          "how you are feeling about your project so far!")
