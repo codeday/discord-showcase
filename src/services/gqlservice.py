@@ -147,8 +147,10 @@ class GQLService:
         print(result)
         return result
 
+    """Everything beyond this point is related to GQL Subscriptions and Bot Listener Stuff"""
+
     @staticmethod
-    async def member_removed():
+    async def member_removed_listener():
         transport = WebsocketsTransport(url='ws://graph.codeday.org/subscriptions')
 
         client = Client(
@@ -172,7 +174,7 @@ class GQLService:
             print(result)
 
     @staticmethod
-    async def member_added():
+    async def member_added_listener():
         transport = WebsocketsTransport(url='ws://graph.codeday.org/subscriptions')
 
         client = Client(
@@ -183,6 +185,54 @@ class GQLService:
         query = gql('''
             subscription {
               memberAdded(where:{eventGroup:"virtual-2020-dec"}) {
+                username
+                account {
+                  name
+                  discordId
+                }
+              }
+            }
+        ''')
+
+        async for result in client.subscribe_async(query):
+            print(result)
+
+    @staticmethod
+    async def team_created_listener():
+        transport = WebsocketsTransport(url='ws://graph.codeday.org/subscriptions')
+
+        client = Client(
+            transport=transport,
+            fetch_schema_from_transport=True,
+        )
+
+        query = gql('''
+            subscription {
+              projectCreated(where:{eventGroup:"virtual-2020-dec"}) {
+                username
+                account {
+                  name
+                  discordId
+                }
+              }
+            }
+        ''')
+
+        async for result in client.subscribe_async(query):
+            print(result)
+
+    @staticmethod
+    async def team_submitted_listener():
+        transport = WebsocketsTransport(url='ws://graph.codeday.org/subscriptions')
+
+        client = Client(
+            transport=transport,
+            fetch_schema_from_transport=True,
+        )
+
+        query = gql('''
+            subscription {
+              projectEdited(where:{eventGroup:"virtual-2020-dec"}) {
                 username
                 account {
                   name
