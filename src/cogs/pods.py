@@ -140,10 +140,11 @@ class Pods(commands.Cog, name="Pods"):
     #@checks.requires_staff_role()
     async def get_teams_by_user_gql(self, ctx: commands.Context, user: discord.User):
         """Displays PODS in CHANNEL"""
-        team = await GQLService.get_showcase_team_by_showcase_user(GQLService.get_showcase_username_from_discord_id(user.id))
+        usergql = str(await GQLService.get_showcase_username_from_discord_id(str(user.id)))
+        team = await GQLService.get_showcase_team_by_showcase_user(usergql)
         print(team)
         current_channel: discord.DMChannel = ctx.channel
-        #await current_channel.send("The team that " + user + " is in is " + team)
+        await current_channel.send("The team that " + user + " is in is " + team)
 
     def find_a_suitable_pod_name(self):
         for pod_name in available_names:

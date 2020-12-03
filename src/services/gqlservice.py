@@ -103,7 +103,7 @@ class GQLService:
             """
             query getShowcaseTeamByUser($username: String!) {
               showcase {
-                projects(username: $username) {
+                projects(where: {user: $username}) {
                   id
                   name
                 }
@@ -130,7 +130,7 @@ class GQLService:
         # Provide a GraphQL query
         query = gql(
             """
-            query getDiscordIdFromShowcaseUsername($discordId: String!) {
+            query getDiscordIdFromShowcaseUsername($discordId: String) {
               account {
                 getUser(where: {discordId: $discordId}) {
                   username
@@ -140,7 +140,7 @@ class GQLService:
         """
         )
 
-        params = {"username": discord_id}
+        params = {"discordId": discord_id}
 
         # Execute the query on the transport
         result = await client.execute_async(query, variable_values=params)
@@ -159,6 +159,30 @@ class GQLService:
         query = gql('''
             subscription {
               memberRemoved(where:{eventGroup:"virtual-2020-dec"}) {
+                username
+                account {
+                  name
+                  discordId
+                }
+              }
+            }
+        ''')
+
+        async for result in client.subscribe_async(query):
+            print(result)
+
+    @staticmethod
+    async def member_added():
+        transport = WebsocketsTransport(url='ws://graph.codeday.org/subscriptions')
+
+        client = Client(
+            transport=transport,
+            fetch_schema_from_transport=True,
+        )
+
+        query = gql('''
+            subscription {
+              memberAdded(where:{eventGroup:"virtual-2020-dec"}) {
                 username
                 account {
                   name
