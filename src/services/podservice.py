@@ -131,6 +131,7 @@ class PodService:
             session.commit()
             session.close()
 
+    @staticmethod
     def get_pod_by_mentor_id(mentor_id, session=None) -> Optional[Pod]:
         """Returns the pod with the given mentor, or none if it doesn't exist"""
         sess_flag = False
@@ -142,3 +143,20 @@ class PodService:
             session.commit()
             session.close()
         return pod
+
+    @staticmethod
+    def get_smallest_pod(session = None, team_size = 3):
+        """returns the smallest pod under given team size"""
+        sess_flag = False
+        if session is None:
+            session = session_creator()
+            sess_flag = True
+        pods = session.query(Pod).all()
+        pods.sort(key=lambda x: len(x.teams))
+        if sess_flag:
+            session.commit()
+            session.close()
+            if len(pods[0].teams) <= team_size:
+                return pods[0]
+            else:
+                return None
