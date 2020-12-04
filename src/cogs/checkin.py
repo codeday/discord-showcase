@@ -54,7 +54,7 @@ class CheckinCommands(commands.Cog, name="Checkin"):
     async def checkin_all(self, ctx: commands.Context):
         """checks in on all teams"""
         session = session_creator()
-        guild: discord.Guild = self.bot.guild
+        guild: discord.Guild = ctx.guild
         for pod in PodService.get_all_pods(session):
             channel: discord.DMChannel = guild.get_channel(int(pod.tc_id))
             message = await channel.send("Hello! This is your friendly Showcase bot! Please react "
