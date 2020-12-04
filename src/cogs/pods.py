@@ -39,13 +39,13 @@ class Pods(commands.Cog, name="Pods"):
         self.staff_role = int(getenv("ROLE_STAFF", 689960285926195220))
         self.mentor_role = int(getenv("ROLE_MENTOR", 782363834836975646))
         self.category = int(getenv("CATEGORY", 783229579732320257))
-        self.numOfMentors = 50
+        self.numOfMentors = 3
         self.teams_per_pod = 3
         self.check_in_messages = {}
 
     @commands.command(name='create_pod')
     # @checks.requires_staff_role()
-    async def create_pod(self, ctx: commands.Context, pod_name, mentor: discord.User):
+    async def create_pod(self, ctx: commands.Context, pod_name, mentor: discord.Member):
         """Creates a POD for a team"""
 
         """Create a text channel"""
@@ -53,15 +53,16 @@ class Pods(commands.Cog, name="Pods"):
         overwrites = {
             guild.default_role: discord.PermissionOverwrite(read_messages=False),  # Default User Access to a Pod
             guild.get_role(self.staff_role): discord.PermissionOverwrite(**dict(discord.Permissions.text())),
-            await guild.fetch_member(mentor.id): discord.PermissionOverwrite(**dict(discord.Permissions.text())),  # Mentor Access to Pod
             guild.me: discord.PermissionOverwrite(read_messages=True, read_message_history=True),
         }
 
         tc = await guild.create_text_channel("pod " + pod_name, overwrites=overwrites,
                                              category=guild.get_channel(self.category),
                                              reason=None)
+        print(mentor)
+        await tc.set_permissions(mentor, overwrite=discord.PermissionOverwrite(**dict(discord.Permissions.text())))
 
-        PodService.create_pod(pod_name, tc.id, id_from_mention(mentor))
+        PodService.create_pod(pod_name, tc.id, mentor.id)
 
         pass
 
@@ -70,9 +71,9 @@ class Pods(commands.Cog, name="Pods"):
     async def create_pods(self, ctx: commands.Context, number_of_mentors):
         """Creates all PODS for all TEAMS"""
         self.numOfMentors = number_of_mentors
-        for x in range(0, self.numOfMentors):
-            await self.create_pod(ctx, self.find_a_suitable_pod_name(), self.find_a_suitable_mentor())
-        await self.create_pod(ctx, "overflow", self.find_a_suitable_mentor())
+        for x in range(0, int(self.numOfMentors)):
+            await self.create_pod(ctx, self.find_a_suitable_pod_name(), self.find_a_suitable_mentor(ctx))
+        await self.create_pod(ctx, "overflow", self.find_a_suitable_mentor(ctx))
 
     @commands.command(name='assign_pod')
     #@checks.requires_staff_role()
@@ -136,7 +137,14 @@ class Pods(commands.Cog, name="Pods"):
     #@checks.requires_staff_role()
     async def remove_all_pods(self, ctx: commands.Context):
         """Removes all Pods from Alembic"""
+        guild: discord.Guild = ctx.guild
+        session = session_creator()
+        allPods = PodService.get_all_pods(session)
+        for pod in allPods:
+            guild.rem
         PodService.remove_all_pods()
+        session.commit()
+        session.close()
 
     @commands.command(name='get_teams_from_gql')
     #@checks.requires_staff_role()
@@ -165,14 +173,15 @@ class Pods(commands.Cog, name="Pods"):
                 return pod_name
         return None # No Valid Name was available
 
-    def find_a_suitable_mentor(self):
+    def find_a_suitable_mentor(self, ctx):
         # Get List of Mentors from Discord Role and see if they're already in the taken mentors list
-        guild: discord.Guild = self.bot.get_guild(689917520370598055)
+        guild: discord.Guild = ctx.guild
         role: discord.Role = guild.get_role(self.mentor_role)
-        for user in role.members:
-            if PodService.get_pod_by_mentor_id(user.id) is None:
+        print(role.members)
+        for member in role.members:
+            if PodService.get_pod_by_mentor_id(str(member.id)) is None:
                 # Mentor is Suitable, return that mentor object
-                return user
+                return member
         return None  # No Mentor was available
 
     @commands.Cog.listener()

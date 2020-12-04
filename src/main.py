@@ -3,6 +3,8 @@ import os
 import sys
 import traceback
 
+import discord
+
 from services.gqlservice import GQLService
 from discord.ext import commands
 from raygun4py import raygunprovider
@@ -16,7 +18,8 @@ def handle_exception(exc_type, exc_value, exc_traceback):
 sys.excepthook = handle_exception
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')
-bot = commands.Bot(command_prefix='s~')
+intents = discord.Intents(messages=True, guilds=True, members=True)
+bot = commands.Bot(command_prefix='s~', intents=intents)
 
 initial_cogs = [
     'cogs.listen',
