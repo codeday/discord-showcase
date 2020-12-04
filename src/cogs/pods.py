@@ -82,37 +82,42 @@ class Pods(commands.Cog, name="Pods"):
     # @checks.requires_staff_role()
     async def assign_pod(self, ctx: commands.Context, team_id, pod_name):
         """Assigns a TEAM to a particular POD"""
+        session = session_creator()
         guild: discord.Guild = ctx.guild
-        current_pod = PodService.get_pod_by_name(pod_name)
-        showcase_team = GQLService.get_showcase_team_by_id(team_id)
+        current_pod = PodService.get_pod_by_name(pod_name, session)
+        showcase_team = await GQLService.get_showcase_team_by_id(team_id)
 
         PodService.add_team_to_pod(current_pod, team_id)
 
         # Add all members to text channel
-        for member in showcase_team.members:
+        for member in showcase_team["members"]:
             discordID = member.account.discordId
+            guild.get_channel(int(current_pod.tc_id))
 
-
-
+        session.commit()
+        session.close()
 
     @commands.command(name='assign_pods')
     # @checks.requires_staff_role()
-    async def assign_pods(self, ctx: commands.Context, team_name, pod_name):
+    async def assign_pods(self, ctx: commands.Context):
         """Assigns remaining TEAMS to PODS"""
-        all_teams_without_pods = GQLService.get_all_teams_without_pods()
-        all_pods = PodService.get_all_pods()
+        session = session_creator()
+        all_teams_without_pods = await GQLService.get_all_showcase_teams_without_pods()
+        all_pods = PodService.get_all_pods(session)
         pointer = 0
 
         # Fill current pods with remaining teams
         for pod in all_pods:
             if len(pod.teams) <= self.teams_per_pod:
                 # add team to pod
-                await self.assign_pod(ctx, all_teams_without_pods[pointer], pod)
+                await self.assign_pod(ctx, all_teams_without_pods[pointer]["id"], pod.name)
                 pointer += 1
 
         # Put all other teams that could not fit into a pod, into an overflow pod
         for x in range(pointer, len(all_teams_without_pods)):
-            await self.assign_pod(ctx, all_teams_without_pods[pointer], "overflow")
+            await self.assign_pod(ctx, all_teams_without_pods[pointer]["id"], "overflow")
+        session.commit()
+        session.close()
 
     @commands.command(name='list_teams')
     # @checks.requires_staff_role()
