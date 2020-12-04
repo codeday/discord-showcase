@@ -106,7 +106,7 @@ class Pods(commands.Cog, name="Pods"):
             await tc.send("Team " + showcase_team["name"] + " has joined the pod!")
             # Add all members to text channel
             print(showcase_team["members"])
-            guild: discord.Guild = await bot.fetch_guild(689917520370598055)
+            guild: discord.Guild = await bot.fetch_guild(689213562740277361)
             for showcase_member in showcase_team["members"]:
                 discordID = showcase_member["account"]["discordId"]
                 print(discordID)
@@ -124,7 +124,7 @@ class Pods(commands.Cog, name="Pods"):
         session = session_creator()
         print(member_with_project)
         discord_id = member_with_project["account"]["discordId"]
-        guild: discord.Guild = await bot.fetch_guild(689917520370598055)
+        guild: discord.Guild = await bot.fetch_guild(689213562740277361)
         showcase_team = await GQLService.get_showcase_team_by_showcase_user(member_with_project["username"])
 
         for team in showcase_team:
