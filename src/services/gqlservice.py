@@ -122,6 +122,19 @@ class GQLService:
         return result["account"]["getUser"]
 
     @staticmethod
+    async def record_pod_on_team_metadata(project_id, value):
+        query = """
+            mutation recordPodOnTeam($project_id: String, $value: String) {
+                showcase {
+                    setMetadata(project: $project_id, key: "pod", value: $value, visibility: PUBLIC)
+                }
+            }
+            """
+
+        params = {"project_id": project_id, "value": value}
+        await GQLService.q(query, variable_values=params)
+
+    @staticmethod
     async def send_team_reacted(project_id, member, name, value):
         query = """
             mutation teamReacted($project_id: String, $member: String, $name: String, $value: ID){
