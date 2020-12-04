@@ -180,12 +180,14 @@ class Pods(commands.Cog, name="Pods"):
         guild: discord.Guild = payload.member.guild
         session = session_creator()
         # I think the ID is the text ID channel, but not sure
-        pod = PodService.get_pod_by_channel_id(payload.channel_id)
+        pod = PodService.get_pod_by_channel_id(str(payload.channel_id), session)
         if pod is not None:
             showcase_user = str(await GQLService.get_showcase_user_from_discord_id(str(payload.member.id)))
             team_that_reacted = await GQLService.get_showcase_team_by_showcase_user(showcase_user)
-            user_who_posted_message = self.bot.get
-            if payload.member.id == self.bot.user.id:
+            channel: discord.DMChannel = guild.get_channel(int(payload.channel_id))
+            message = await channel.fetch_message(payload.message_id)
+            user_who_posted_message = message.author
+            if user_who_posted_message == self.bot.user.id:
                 await GQLService.send_team_reacted(team_that_reacted.id, showcase_user.username, "reaction", self.emoji_is_valid(payload.emoji))
         session.commit()
         session.close()
