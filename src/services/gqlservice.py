@@ -168,17 +168,16 @@ class GQLService:
         await GQLService.query_http(query, variable_values=params, with_fragments=False)
 
     @staticmethod
-    async def send_team_reacted(project_id, member, name, value):
+    async def send_team_reacted(project_id, member, value):
         query = """
-            mutation teamReacted($project_id: String, $member: String, $name: String, $value: ID){
+            mutation teamReacted($project_id: String, $member: String, $value: ID){
               showcase {
-                recordMetric(project: $project_id, member: $member, name: $name, value: $value)
+                recordMetric(project: $project_id, member: $member, name: "reaction", value: $value)
               }
             }
         """
 
-        params = {"project_id": project_id,
-                  "member": member, "name": name, "value": value}
+        params = {"project_id": project_id, "member": member, "value": value}
         await GQLService.query_http(query, variable_values=params, with_fragments=False)
 
     """Everything beyond this point is related to GQL Subscriptions and Bot Listener Stuff"""

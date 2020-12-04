@@ -94,8 +94,7 @@ class Pods(commands.Cog, name="Pods"):
         await self.assign_pods_helper(self.bot)
 
     @staticmethod
-    async def assign_pod_helper(bot: discord.ext.commands.Bot, team_id, pod_name):
-        session = session_creator()
+    async def assign_pod_helper(bot: discord.ext.commands.Bot, team_id, pod_name, session):
         current_pod = PodService.get_pod_by_name(pod_name, session)
         showcase_team = await GQLService.get_showcase_team_by_id(team_id)
 
@@ -105,30 +104,37 @@ class Pods(commands.Cog, name="Pods"):
 
             tc = await bot.fetch_channel(int(current_pod.tc_id))
             await tc.send("Team " + showcase_team["name"] + " has joined the pod!")
+            # Add all members to text channel
+            print(showcase_team["members"])
+            guild: discord.Guild = await bot.fetch_guild(689917520370598055)
+            for showcase_member in showcase_team["members"]:
+                discordID = showcase_member["account"]["discordId"]
+                print(discordID)
+                try:
+                    member = await guild.fetch_member(discordID)
+                    await tc.set_permissions(member, overwrite=discord.PermissionOverwrite(**dict(discord.Permissions.text())))
+                except discord.errors.NotFound:
+                    print("A user was not found within the server")
+                except:
+                    print("Some other sort of error has occurred.")
 
-        # Add all members to text channel
-        # for member in showcase_team["members"]:
-        #    discordID = member.account.discordId
-        #    guild.get_channel(int(current_pod.tc_id))
-
-        session.commit()
-        session.close()
+    @staticmethod
+    async def add_user_to_pod_tc(member_with_project):
+        print(member_with_project)
+        PodService.
 
     @staticmethod
     async def assign_pods_helper(bot: discord.ext.commands.Bot):
         session = session_creator()
         all_teams_without_pods = await GQLService.get_all_showcase_teams_without_pods()
-        all_pods = PodService.get_all_pods(session)
-        pointer = 0
 
         for team in all_teams_without_pods:
-            all_pods.sort(key=lambda x: len(x.teams))
-            for pod in all_pods:
-                print(pod.teams)
-                if len(pod.teams) <= 3:
-                    print(team["id"])
-                    await Pods.assign_pod_helper(bot, team["id"], pod.name)
-                    break
+            smallest_pod = PodService.get_smallest_pod(session)
+            print(smallest_pod)
+            if smallest_pod:
+                await Pods.assign_pod_helper(bot, team["id"], smallest_pod.name, session)
+            else:
+                await Pods.assign_pod_helper(bot, team["id"], "overflow", session)
 
         session.commit()
         session.close()
@@ -226,8 +232,7 @@ class Pods(commands.Cog, name="Pods"):
                 message = await channel.fetch_message(payload.message_id)
                 user_who_posted_message = message.author
                 if user_who_posted_message == self.bot.user.id:
-                    await GQLService.send_team_reacted(str(team_that_reacted.id), str(showcase_user.username),
-                                                       "reaction", int(self.emoji_to_value(payload.emoji)))
+                    await GQLService.send_team_reacted(str(team_that_reacted.id), str(showcase_user.username), int(self.emoji_to_value(payload.emoji)))
             session.commit()
             session.close()
 
