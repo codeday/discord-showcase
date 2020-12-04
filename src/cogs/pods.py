@@ -89,12 +89,13 @@ class Pods(commands.Cog, name="Pods"):
         current_pod = PodService.get_pod_by_name(pod_name, session)
         showcase_team = await GQLService.get_showcase_team_by_id(team_id)
 
-        PodService.add_team_to_pod(current_pod, team_id)
+        PodService.add_team_to_pod(current_pod, team_id, session)
+        await GQLService.record_pod_on_team_metadata(showcase_team["id"], current_pod.id)
 
         # Add all members to text channel
-        for member in showcase_team["members"]:
-            discordID = member.account.discordId
-            guild.get_channel(int(current_pod.tc_id))
+        #for member in showcase_team["members"]:
+        #    discordID = member.account.discordId
+        #    guild.get_channel(int(current_pod.tc_id))
 
         session.commit()
         session.close()
@@ -112,6 +113,7 @@ class Pods(commands.Cog, name="Pods"):
         for pod in all_pods:
             if len(pod.teams) <= self.teams_per_pod:
                 # add team to pod
+                print(all_teams_without_pods[pointer]["id"])
                 await self.assign_pod(ctx, all_teams_without_pods[pointer]["id"], pod.name)
                 pointer += 1
 
