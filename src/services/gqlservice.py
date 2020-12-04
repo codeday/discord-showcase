@@ -170,7 +170,7 @@ class GQLService:
     @staticmethod
     async def send_team_reacted(project_id, member, value):
         query = """
-            mutation teamReacted($project_id: String, $member: String, $value: ID){
+            mutation teamReacted($project_id: String, $member: String, $value: Float!){
               showcase {
                 recordMetric(project: $project_id, member: $member, name: "reaction", value: $value)
               }

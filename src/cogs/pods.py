@@ -119,9 +119,36 @@ class Pods(commands.Cog, name="Pods"):
                     print("Some other sort of error has occurred.")
 
     @staticmethod
-    async def add_user_to_pod_tc(member_with_project):
+    async def add_user_to_pod_tc(bot: discord.ext.commands.Bot, member_with_project):
+        # Get User Member Object AND Get text channel object
+        session = session_creator()
         print(member_with_project)
-        PodService.
+        discord_id = member_with_project["account"]["discordId"]
+        guild: discord.Guild = await bot.fetch_guild(689917520370598055)
+        showcase_team = await GQLService.get_showcase_team_by_showcase_user(member_with_project["username"])
+
+        for team in showcase_team:
+            pod = PodService.get_pod_by_id(team["pod"], session)
+            try:
+                member: discord.Member = await guild.fetch_member(discord_id)
+
+                tc = await bot.fetch_channel(pod.tc_id)
+
+                await tc.set_permissions(member, read_messages=True, read_message_history=True,
+                                         send_messages=True, embed_links=True, attach_files=True,
+                                         external_emojis=True, add_reactions=True)
+            except discord.errors.NotFound:
+                print("A user was not found within the server")
+            except:
+                print("Some other sort of error has occurred.")
+        session.commit()
+        session.close()
+
+
+    @staticmethod
+    async def remove_user_from_pod_tc(bot: discord.ext.commands.Bot, member_with_project):
+        print(member_with_project)
+
 
     @staticmethod
     async def assign_pods_helper(bot: discord.ext.commands.Bot):
