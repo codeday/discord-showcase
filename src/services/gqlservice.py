@@ -6,14 +6,11 @@ from gql.transport.websockets import WebsocketsTransport
 class GQLService:
 
     @staticmethod
-    def make_query(query):
+    def make_query(query, with_fragments=True):
+        if not with_fragments:
+            return gql(query)
+
         fragments = """
-                fragment MemberInformation on ShowcaseMember {
-                    username
-                    account {
-                        discordId
-                    }
-                }
                 fragment ProjectInformation on ShowcaseProject {
                     id
                     name
@@ -21,24 +18,27 @@ class GQLService:
                     description
                     pod: metadataValue(key: "pod")
                     members {
-                        ...MemberInformation
+                        username
+                        account {
+                            discordId
+                        }
                     }
                 }
             """
         return gql(query + "\n" + fragments)
 
     @staticmethod
-    async def query_http(query, variable_values=None):
+    async def query_http(query, variable_values=None, with_fragments=True):
         transport = AIOHTTPTransport(url="https://graph.codeday.org/")
         client = Client(transport=transport, fetch_schema_from_transport=True)
-        return await client.execute_async(GQLService.make_query(query), variable_values=variable_values)
+        return await client.execute_async(GQLService.make_query(query, with_fragments=with_fragments), variable_values=variable_values)
 
     @staticmethod
-    async def subscribe_ws(query, variable_values=None):
+    async def subscribe_ws(query, variable_values=None, with_fragments=True):
         transport = WebsocketsTransport(
             url='ws://graph.codeday.org/subscriptions')
         session = Client(transport=transport, fetch_schema_from_transport=True)
-        async for result in session.subscribe_async(GQLService.make_query(query), variable_values=variable_values):
+        async for result in session.subscribe_async(GQLService.make_query(query, with_fragments=with_fragments), variable_values=variable_values):
             yield result
 
     @staticmethod
@@ -111,7 +111,10 @@ class GQLService:
             query getDiscordIdFromShowcaseUsername($discordId: String) {
               account {
                 getUser(where: {discordId: $discordId}) {
-                    ...MemberInformation
+                    username
+                    account {
+                        discordId
+                    }
                 }
               }
             }
@@ -134,7 +137,7 @@ class GQLService:
             """
 
         params = {"project_id": project_id, "value": value}
-        await GQLService.query_http(query, variable_values=params)
+        await GQLService.query_http(query, variable_values=params, with_fragments=False)
 
     @staticmethod
     async def send_team_reacted(project_id, member, name, value):
@@ -148,7 +151,7 @@ class GQLService:
 
         params = {"project_id": project_id,
                   "member": member, "name": name, "value": value}
-        await GQLService.query_http(query, variable_values=params)
+        await GQLService.query_http(query, variable_values=params, with_fragments=False)
 
     """Everything beyond this point is related to GQL Subscriptions and Bot Listener Stuff"""
 
@@ -157,7 +160,10 @@ class GQLService:
         query = """
             subscription {
               memberRemoved {
-                  ...MemberInformation
+                  username
+                  account {
+                      discordId
+                  }
                   project {
                       ...ProjectInformation
                   }
@@ -173,7 +179,10 @@ class GQLService:
         query = """
             subscription {
               memberAdded {
-                  ...MemberInformation
+                  username
+                  account {
+                      discordId
+                  }
                   project {
                       ...ProjectInformation
                   }
