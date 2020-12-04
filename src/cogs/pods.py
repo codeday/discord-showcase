@@ -62,12 +62,15 @@ class Pods(commands.Cog, name="Pods"):
         print(mentor)
         await tc.set_permissions(mentor, overwrite=discord.PermissionOverwrite(**dict(discord.Permissions.text())))
 
+        await tc.send("Hello @" + mentor.name + " you have been selected to be the mentor for this pod! Teams will be "
+                                                "added shortly.")
+
         PodService.create_pod(pod_name, tc.id, mentor.id)
 
         pass
 
     @commands.command(name='create_pods')
-    #@checks.requires_staff_role()
+    # @checks.requires_staff_role()
     async def create_pods(self, ctx: commands.Context, number_of_mentors):
         """Creates all PODS for all TEAMS"""
         self.numOfMentors = number_of_mentors
@@ -76,23 +79,24 @@ class Pods(commands.Cog, name="Pods"):
         await self.create_pod(ctx, "overflow", self.find_a_suitable_mentor(ctx))
 
     @commands.command(name='assign_pod')
-    #@checks.requires_staff_role()
+    # @checks.requires_staff_role()
     async def assign_pod(self, ctx: commands.Context, team_id, pod_name):
         """Assigns a TEAM to a particular POD"""
+        guild: discord.Guild = ctx.guild
         current_pod = PodService.get_pod_by_name(pod_name)
         showcase_team = GQLService.get_showcase_team_by_id(team_id)
-        if len(current_pod.teams) <= self.teams_per_pod:
-            # Team can be put into pod without brute force
-            PodService.add_team_to_pod(current_pod, team_id)
 
-            # Add all members to text channel
-            for member in showcase_team.members:
-                discordID = member.account.discordId
+        PodService.add_team_to_pod(current_pod, team_id)
+
+        # Add all members to text channel
+        for member in showcase_team.members:
+            discordID = member.account.discordId
+
 
 
 
     @commands.command(name='assign_pods')
-    #@checks.requires_staff_role()
+    # @checks.requires_staff_role()
     async def assign_pods(self, ctx: commands.Context, team_name, pod_name):
         """Assigns remaining TEAMS to PODS"""
         all_teams_without_pods = GQLService.get_all_teams_without_pods()
@@ -111,7 +115,7 @@ class Pods(commands.Cog, name="Pods"):
             await self.assign_pod(ctx, all_teams_without_pods[pointer], "overflow")
 
     @commands.command(name='list_teams')
-    #@checks.requires_staff_role()
+    # @checks.requires_staff_role()
     async def list_teams(self, ctx: commands.Context, pod_name):
         """Displays TEAMS of a POD in CHANNEL"""
         pod = PodService.get_pod_by_id(pod_name)
@@ -121,7 +125,7 @@ class Pods(commands.Cog, name="Pods"):
             await current_channel.send("Team " + team.name)
 
     @commands.command(name='list_pods')
-    #@checks.requires_staff_role()
+    # @checks.requires_staff_role()
     async def list_pods(self, ctx: commands.Context):
         """Displays PODS in CHANNEL"""
         session = session_creator()
@@ -134,20 +138,19 @@ class Pods(commands.Cog, name="Pods"):
         session.close()
 
     @commands.command(name='remove_all_pods')
-    #@checks.requires_staff_role()
+    # @checks.requires_staff_role()
     async def remove_all_pods(self, ctx: commands.Context):
         """Removes all Pods from Alembic"""
         guild: discord.Guild = ctx.guild
         session = session_creator()
         allPods = PodService.get_all_pods(session)
-        for pod in allPods:
-            guild.rem
         PodService.remove_all_pods()
+        await ctx.send("All Pods have been removed.")
         session.commit()
         session.close()
 
     @commands.command(name='get_teams_from_gql')
-    #@checks.requires_staff_role()
+    # @checks.requires_staff_role()
     async def get_teams_from_gql(self, ctx: commands.Context):
         """Displays PODS in CHANNEL"""
         all_teams = await GQLService.get_all_showcase_teams()
@@ -157,7 +160,7 @@ class Pods(commands.Cog, name="Pods"):
             await current_channel.send("Team " + team['name'])
 
     @commands.command(name='get_teams_by_user')
-    #@checks.requires_staff_role()
+    # @checks.requires_staff_role()
     async def get_teams_by_user_gql(self, ctx: commands.Context, user: discord.User):
         """Displays PODS in CHANNEL"""
         usergql = str(await GQLService.get_showcase_username_from_discord_id(str(user.id)))
@@ -171,7 +174,7 @@ class Pods(commands.Cog, name="Pods"):
             if PodService.get_pod_by_name(pod_name) is None:
                 # Pod Name is suitable, return that pod name
                 return pod_name
-        return None # No Valid Name was available
+        return None  # No Valid Name was available
 
     def find_a_suitable_mentor(self, ctx):
         # Get List of Mentors from Discord Role and see if they're already in the taken mentors list
@@ -198,7 +201,8 @@ class Pods(commands.Cog, name="Pods"):
                 message = await channel.fetch_message(payload.message_id)
                 user_who_posted_message = message.author
                 if user_who_posted_message == self.bot.user.id:
-                    await GQLService.send_team_reacted(str(team_that_reacted.id), str(showcase_user.username), "reaction", int(self.emoji_to_value(payload.emoji)))
+                    await GQLService.send_team_reacted(str(team_that_reacted.id), str(showcase_user.username),
+                                                       "reaction", int(self.emoji_to_value(payload.emoji)))
             session.commit()
             session.close()
 
@@ -215,6 +219,7 @@ class Pods(commands.Cog, name="Pods"):
             "☹": -1
         }
         return emoji_values.get(emoji)
+
 
 def setup(bot):
     bot.add_cog(Pods(bot))
