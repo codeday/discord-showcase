@@ -154,7 +154,7 @@ class GQLService:
     async def member_removed_listener():
         query = """
             subscription {
-              memberRemoved(where:{eventGroup:"virtual-2020-dec"}) {
+              memberRemoved {
                   ...MemberInformation
                   project {
                       ...ProjectInformation
@@ -170,7 +170,7 @@ class GQLService:
     async def member_added_listener():
         query = """
             subscription {
-              memberAdded(where:{eventGroup:"virtual-2020-dec"}) {
+              memberAdded {
                   ...MemberInformation
                   project {
                       ...ProjectInformation
@@ -186,7 +186,7 @@ class GQLService:
     async def team_created_listener():
         query = """
             subscription {
-              projectCreated(where:{eventGroup:"virtual-2020-dec"}) {
+              projectCreated {
                   ...ProjectInformation
               }
             }
@@ -199,7 +199,7 @@ class GQLService:
     async def team_edited_listener():
         query = """
             subscription {
-              projectEdited(where:{eventGroup:"virtual-2020-dec"}) {
+              projectEdited {
                   ...ProjectInformation
               }
             }

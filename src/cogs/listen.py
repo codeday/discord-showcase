@@ -9,28 +9,32 @@ class ListenCog(commands.Cog, name="Listen"):
 
     def __init__(self, bot):
         self.bot = bot
+        self.on_project_created.start(self)
+        self.on_project_member_added.start(self)
+        self.on_project_member_removed.start(self)
+        self.on_project_edited.start(self)
 
     def cog_unload(self):
-        self.on_team_created.stop()
-        self.on_team_join.stop()
-        self.on_team_leave.stop()
-        self.on_team_edited.stop()
+        self.on_project_created.stop()
+        self.on_project_member_added.stop()
+        self.on_project_member_removed.stop()
+        self.on_project_edited.stop()
 
     @subscribe(GQLService.team_created_listener)
-    async def on_team_created(self, project):
-        print("Project created", project)
+    async def on_project_created(self, project):
+        pass
 
     @subscribe(GQLService.member_added_listener)
-    async def on_team_join(self, member):
-        print("Team member added", )
+    async def on_project_member_added(self, member_with_project):
+        pass
 
     @subscribe(GQLService.member_removed_listener)
-    async def on_team_leave(self, member):
-        print("Team member removed", member)
+    async def on_project_member_removed(self, member_with_project):
+        pass
 
     @subscribe(GQLService.team_edited_listener)
-    async def on_submit_project(self, project):
-        print("Team edited", project)
+    async def on_project_edited(self, project):
+        pass
 
 
 def setup(bot):

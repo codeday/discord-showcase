@@ -1,4 +1,5 @@
 import asyncio
+import logging
 
 
 class Subscription:
@@ -8,20 +9,22 @@ class Subscription:
         self._loop = loop if loop else asyncio.get_event_loop()
         self._task = None
 
-    def start(self):
+    def start(self, _injected):
         if self._task is not None and not self._task.done():
             raise RuntimeError(
                 'Task is already launched and is not completed.')
 
-        self._task = self._loop.create_task(self._run())
+        self._task = asyncio.run_coroutine_threadsafe(
+            self._run(_injected), self._loop)
 
     def stop(self):
         self._task.cancel()
 
-    async def _run(self):
+    async def _run(self, _injected):
         while True:
             async for event in self._generator():
-                await self._fn(event)
+                await self._fn(_injected, event)
+            logging.warning('Generator died, restarting')
 
 
 def subscribe(generator, loop=None):
