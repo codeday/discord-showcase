@@ -9,7 +9,7 @@ from os import getenv
 class GQLService:
 
     @staticmethod
-    def _make_token():
+    def make_token():
         secret = getenv("GQL_SHOWCASE_SECRET")
         message = {
             "a": True,
@@ -152,6 +152,19 @@ class GQLService:
             """
 
         params = {"project_id": project_id, "value": value}
+        await GQLService.query_http(query, variable_values=params, with_fragments=False)
+
+    @staticmethod
+    async def unset_team_metadata(project_id):
+        query = """
+            mutation unsetTeamMetaData($project_id: String!) {
+                showcase {
+                    unsetMetadata(project: $project_id, key: "pod")
+                }
+            }
+            """
+
+        params = {"project_id": project_id}
         await GQLService.query_http(query, variable_values=params, with_fragments=False)
 
     @staticmethod

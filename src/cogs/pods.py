@@ -64,8 +64,9 @@ class Pods(commands.Cog, name="Pods"):
         print(mentor)
         await tc.set_permissions(mentor, overwrite=discord.PermissionOverwrite(**dict(discord.Permissions.text())))
 
-        await tc.send("Hello <@" + str(mentor.id) + "> you have been selected to be the mentor for this pod! Teams will be "
-                      "added shortly.")
+        await tc.send(
+            "Hello <@" + str(mentor.id) + "> you have been selected to be the mentor for this pod! Teams will be "
+                                          "added shortly.")
 
         PodService.create_pod(pod_name, tc.id, mentor.id)
 
@@ -84,42 +85,51 @@ class Pods(commands.Cog, name="Pods"):
     # @checks.requires_staff_role()
     async def assign_pod(self, ctx: commands.Context, team_id, pod_name):
         """Assigns a TEAM to a particular POD"""
+        await self.assign_pod_helper(self.bot, team_id, pod_name)
+
+    @commands.command(name='assign_pods')
+    # @checks.requires_staff_role()
+    async def assign_pods(self, ctx: commands.Context):
+        """Assigns remaining TEAMS to PODS"""
+        await self.assign_pods_helper(self.bot)
+
+    @staticmethod
+    async def assign_pod_helper(bot: discord.ext.commands.Bot, team_id, pod_name):
         session = session_creator()
-        guild: discord.Guild = ctx.guild
         current_pod = PodService.get_pod_by_name(pod_name, session)
         showcase_team = await GQLService.get_showcase_team_by_id(team_id)
 
-        PodService.add_team_to_pod(current_pod, team_id, session)
-        await GQLService.record_pod_on_team_metadata(showcase_team["id"], str(current_pod.id))
+        if current_pod is not None:
+            PodService.add_team_to_pod(current_pod, team_id, session)
+            await GQLService.record_pod_on_team_metadata(showcase_team["id"], str(current_pod.id))
+
+            tc = await bot.fetch_channel(int(current_pod.tc_id))
+            await tc.send("Team " + showcase_team["name"] + " has joined the pod!")
 
         # Add all members to text channel
-        #for member in showcase_team["members"]:
+        # for member in showcase_team["members"]:
         #    discordID = member.account.discordId
         #    guild.get_channel(int(current_pod.tc_id))
 
         session.commit()
         session.close()
 
-    @commands.command(name='assign_pods')
-    # @checks.requires_staff_role()
-    async def assign_pods(self, ctx: commands.Context):
-        """Assigns remaining TEAMS to PODS"""
+    @staticmethod
+    async def assign_pods_helper(bot: discord.ext.commands.Bot):
         session = session_creator()
         all_teams_without_pods = await GQLService.get_all_showcase_teams_without_pods()
         all_pods = PodService.get_all_pods(session)
         pointer = 0
 
-        # Fill current pods with remaining teams
-        for pod in all_pods:
-            if len(pod.teams) <= self.teams_per_pod:
-                # add team to pod
-                print(all_teams_without_pods[pointer]["id"])
-                await self.assign_pod(ctx, all_teams_without_pods[pointer]["id"], pod.name)
-                pointer += 1
+        for team in all_teams_without_pods:
+            all_pods.sort(key=lambda x: len(x.teams))
+            for pod in all_pods:
+                print(pod.teams)
+                if len(pod.teams) <= 3:
+                    print(team["id"])
+                    await Pods.assign_pod_helper(bot, team["id"], pod.name)
+                    break
 
-        # Put all other teams that could not fit into a pod, into an overflow pod
-        for x in range(pointer, len(all_teams_without_pods)):
-            await self.assign_pod(ctx, all_teams_without_pods[pointer]["id"], "overflow")
         session.commit()
         session.close()
 
@@ -127,11 +137,14 @@ class Pods(commands.Cog, name="Pods"):
     # @checks.requires_staff_role()
     async def list_teams(self, ctx: commands.Context, pod_name):
         """Displays TEAMS of a POD in CHANNEL"""
-        pod = PodService.get_pod_by_id(pod_name)
+        session = session_creator()
+        pod = PodService.get_pod_by_name(pod_name, session)
         current_channel: discord.DMChannel = ctx.channel
         await current_channel.send("The current teams inside of Pod " + pod_name + " are:")
         for team in pod.teams:
-            await current_channel.send("Team " + team.name)
+            await current_channel.send("Team " + team.showcase_id)
+        session.commit()
+        session.close()
 
     @commands.command(name='list_pods')
     # @checks.requires_staff_role()
@@ -150,10 +163,11 @@ class Pods(commands.Cog, name="Pods"):
     # @checks.requires_staff_role()
     async def remove_all_pods(self, ctx: commands.Context):
         """Removes all Pods from Alembic"""
-        guild: discord.Guild = ctx.guild
         session = session_creator()
-        allPods = PodService.get_all_pods(session)
         PodService.remove_all_pods()
+        allTeams = await GQLService.get_all_showcase_teams()
+        for team in allTeams:
+            await GQLService.unset_team_metadata(team["id"])
         await ctx.send("All Pods have been removed.")
         session.commit()
         session.close()

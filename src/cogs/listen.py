@@ -1,5 +1,6 @@
 from discord.ext import commands, tasks
 
+from cogs.pods import Pods
 from services.gqlservice import GQLService
 from utils.subscriptions import subscribe
 
@@ -22,7 +23,7 @@ class ListenCog(commands.Cog, name="Listen"):
 
     @subscribe(GQLService.team_created_listener)
     async def on_project_created(self, project):
-        pass
+        await Pods.assign_pods_helper(self.bot)
 
     @subscribe(GQLService.member_added_listener)
     async def on_project_member_added(self, member_with_project):

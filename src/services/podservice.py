@@ -3,6 +3,7 @@ from typing import Optional
 from sqlalchemy.exc import IntegrityError
 
 from db.models import session_creator, Pod, Team
+from services.gqlservice import GQLService
 
 
 class PodService:
@@ -81,6 +82,7 @@ class PodService:
         session = session_creator()
         for pod in PodService.get_all_pods():
             session.delete(pod)
+
             session.commit()
             session.close()
 
