@@ -156,7 +156,7 @@ class PodService:
         if sess_flag:
             session.commit()
             session.close()
-            if len(pods[0].teams) <= team_size:
-                return pods[0]
-            else:
-                return None
+        if len(pods[0].teams) <= team_size:
+            return pods[0]
+        else:
+            return None
