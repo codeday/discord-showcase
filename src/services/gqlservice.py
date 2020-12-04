@@ -79,7 +79,7 @@ class GQLService:
             }
         """
 
-        params = {"id": id}
+        params = {"id": team_id}
 
         # Execute the query on the transport
         result = await GQLService.query_http(query, variable_values=params)
@@ -124,7 +124,7 @@ class GQLService:
     @staticmethod
     async def record_pod_on_team_metadata(project_id, value):
         query = """
-            mutation recordPodOnTeam($project_id: String, $value: String) {
+            mutation recordPodOnTeam($project_id: String!, $value: String!) {
                 showcase {
                     setMetadata(project: $project_id, key: "pod", value: $value, visibility: PUBLIC)
                 }
@@ -132,7 +132,7 @@ class GQLService:
             """
 
         params = {"project_id": project_id, "value": value}
-        await GQLService.q(query, variable_values=params)
+        await GQLService.query_http(query, variable_values=params)
 
     @staticmethod
     async def send_team_reacted(project_id, member, name, value):
@@ -146,7 +146,7 @@ class GQLService:
 
         params = {"project_id": project_id,
                   "member": member, "name": name, "value": value}
-        await GQLService.q(query, variable_values=params)
+        await GQLService.query_http(query, variable_values=params)
 
     """Everything beyond this point is related to GQL Subscriptions and Bot Listener Stuff"""
 
