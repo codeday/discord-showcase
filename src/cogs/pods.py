@@ -64,7 +64,7 @@ class Pods(commands.Cog, name="Pods"):
         print(mentor)
         await tc.set_permissions(mentor, overwrite=discord.PermissionOverwrite(**dict(discord.Permissions.text())))
 
-        await tc.send("Hello <@" + mentor.id + "> you have been selected to be the mentor for this pod! Teams will be "
+        await tc.send("Hello <@" + str(mentor.id) + "> you have been selected to be the mentor for this pod! Teams will be "
                       "added shortly.")
 
         PodService.create_pod(pod_name, tc.id, mentor.id)
@@ -90,7 +90,7 @@ class Pods(commands.Cog, name="Pods"):
         showcase_team = await GQLService.get_showcase_team_by_id(team_id)
 
         PodService.add_team_to_pod(current_pod, team_id, session)
-        await GQLService.record_pod_on_team_metadata(showcase_team["id"], current_pod.id)
+        await GQLService.record_pod_on_team_metadata(showcase_team["id"], str(current_pod.id))
 
         # Add all members to text channel
         #for member in showcase_team["members"]:
