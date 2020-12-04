@@ -51,19 +51,21 @@ class Pods(commands.Cog, name="Pods"):
         """Create a text channel"""
         guild: discord.Guild = ctx.guild
         overwrites = {
-            guild.default_role: discord.PermissionOverwrite(read_messages=False),  # Default User Access to a Pod
+            # Default User Access to a Pod
+            guild.default_role: discord.PermissionOverwrite(read_messages=False),
             guild.get_role(self.staff_role): discord.PermissionOverwrite(**dict(discord.Permissions.text())),
             guild.me: discord.PermissionOverwrite(read_messages=True, read_message_history=True),
         }
 
         tc = await guild.create_text_channel("pod " + pod_name, overwrites=overwrites,
-                                             category=guild.get_channel(self.category),
+                                             category=guild.get_channel(
+                                                 self.category),
                                              reason=None)
         print(mentor)
         await tc.set_permissions(mentor, overwrite=discord.PermissionOverwrite(**dict(discord.Permissions.text())))
 
-        await tc.send("Hello @" + mentor.name + " you have been selected to be the mentor for this pod! Teams will be "
-                                                "added shortly.")
+        await tc.send("Hello <@" + mentor.id + "> you have been selected to be the mentor for this pod! Teams will be "
+                      "added shortly.")
 
         PodService.create_pod(pod_name, tc.id, mentor.id)
 
@@ -198,11 +200,13 @@ class Pods(commands.Cog, name="Pods"):
             guild: discord.Guild = payload.member.guild
             session = session_creator()
 
-            pod = PodService.get_pod_by_channel_id(str(payload.channel_id), session)
+            pod = PodService.get_pod_by_channel_id(
+                str(payload.channel_id), session)
             if pod is not None:
                 showcase_user = str(await GQLService.get_showcase_user_from_discord_id(str(payload.member.id)))
                 team_that_reacted = await GQLService.get_showcase_team_by_showcase_user(showcase_user)
-                channel: discord.DMChannel = guild.get_channel(int(payload.channel_id))
+                channel: discord.DMChannel = guild.get_channel(
+                    int(payload.channel_id))
                 message = await channel.fetch_message(payload.message_id)
                 user_who_posted_message = message.author
                 if user_who_posted_message == self.bot.user.id:
@@ -213,7 +217,8 @@ class Pods(commands.Cog, name="Pods"):
 
     @staticmethod
     def emoji_is_valid(emoji):
-        if emoji == "😀" or emoji == "😐" or emoji == "☹": return True
+        if emoji == "😀" or emoji == "😐" or emoji == "☹":
+            return True
         return False
 
     @staticmethod

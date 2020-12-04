@@ -17,6 +17,8 @@ class GQLService:
                 fragment ProjectInformation on ShowcaseProject {
                     id
                     name
+                    type
+                    description
                     pod: metadataValue(key: "pod")
                     members {
                         ...MemberInformation

@@ -22,8 +22,14 @@ class Subscription:
 
     async def _run(self, _injected):
         while True:
-            async for event in self._generator():
-                await self._fn(_injected, event)
+            try:
+                async for event in self._generator():
+                    try:
+                        await self._fn(_injected, event)
+                    except Exception as e:
+                        logging.error(e)
+            except Exception as e:
+                logging.error(e)
             logging.warning('Generator died, restarting')
 
 
