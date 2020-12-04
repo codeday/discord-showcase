@@ -1,9 +1,22 @@
 from gql import gql, Client
 from gql.transport.aiohttp import AIOHTTPTransport
 from gql.transport.websockets import WebsocketsTransport
+import time
+from jwt import encode
+from os import getenv
 
 
 class GQLService:
+
+    @staticmethod
+    def _make_token():
+        secret = getenv("GQL_SHOWCASE_SECRET")
+        message = {
+            "a": True,
+            "exp": int(time.time()) + (60*60*24*5),
+            "aud": "showcase",
+        }
+        return encode(message, secret, algorithm='HS256').decode("utf-8")
 
     @staticmethod
     def make_query(query, with_fragments=True):
@@ -29,7 +42,9 @@ class GQLService:
 
     @staticmethod
     async def query_http(query, variable_values=None, with_fragments=True):
-        transport = AIOHTTPTransport(url="https://graph.codeday.org/")
+        transport = AIOHTTPTransport(
+            url="https://graph.codeday.org/",
+            headers={"X-Showcase-Authorization": f"Bearer {GQLService.make_token()}"})
         client = Client(transport=transport, fetch_schema_from_transport=True)
         return await client.execute_async(GQLService.make_query(query, with_fragments=with_fragments), variable_values=variable_values)
 
