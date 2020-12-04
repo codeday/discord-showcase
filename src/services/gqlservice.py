@@ -6,264 +6,191 @@ from gql.transport.websockets import WebsocketsTransport
 class GQLService:
 
     @staticmethod
-    async def get_all_showcase_teams():
-        # Select your transport with a defined url endpoint
-        transport = AIOHTTPTransport(url="https://graph.codeday.org/")
-
-        # Create a GraphQL client using the defined transport
-        client = Client(transport=transport, fetch_schema_from_transport=True)
-
-        # Provide a GraphQL query
-        query = gql(
-            """
-            query {
-              showcase {
-                projects {
-                  id
-                  name
-                }
-              }
-            }
-        """
-        )
-        # Execute the query on the transport
-        result = await client.execute_async(query)
-        print(result)
-        return result['showcase']['projects']
-
-    # NOT DONE
-    @staticmethod
-    def get_all_showcase_teams_without_pods():
-        # Select your transport with a defined url endpoint
-        transport = AIOHTTPTransport(url="https://graph.codeday.org/")
-
-        # Create a GraphQL client using the defined transport
-        client = Client(transport=transport, fetch_schema_from_transport=True)
-
-        # Provide a GraphQL query
-        query = gql(
-            """
-            query {
-              showcase {
-                projects {
-                  id
-                  name
-                }
-              }
-            }
-        """
-        )
-        # Execute the query on the transport
-        result = client.execute(query)
-        return result
-
-    # NOT DONE
-    @staticmethod
-    def get_showcase_team_by_id(team_id):
-        # Select your transport with a defined url endpoint
-        transport = AIOHTTPTransport(url="https://graph.codeday.org/")
-
-        # Create a GraphQL client using the defined transport
-        client = Client(transport=transport, fetch_schema_from_transport=True)
-
-        # Provide a GraphQL query
-        query = gql(
-            """
-            query {
-              showcase {
-                project(id: "ckhwbqp2h006411mpd99ircmk") {
-                  name
-                  id
-                  members {
+    def make_query(query):
+        fragments = """
+                fragment MemberInformation on ShowcaseMember {
                     username
                     account {
-                      discordId
+                        discordId
                     }
-                  }
+                }
+                fragment ProjectInformation on ShowcaseProject {
+                    id
+                    name
+                    pod: metadataValue(key: "pod")
+                    members {
+                        ...MemberInformation
+                    }
+                }
+            """
+        return gql(query + "\n" + fragments)
+
+    @staticmethod
+    async def query_http(query, variable_values=None):
+        transport = AIOHTTPTransport(url="https://graph.codeday.org/")
+        client = Client(transport=transport, fetch_schema_from_transport=True)
+        return await client.execute_async(GQLService.make_query(query), variable_values=variable_values)
+
+    @staticmethod
+    async def subscribe_ws(query, variable_values=None):
+        transport = WebsocketsTransport(
+            url='ws://graph.codeday.org/subscriptions')
+        session = Client(transport=transport, fetch_schema_from_transport=True)
+        async for result in session.subscribe_async(GQLService.make_query(query), variable_values=variable_values):
+            yield result
+
+    @staticmethod
+    async def get_all_showcase_teams():
+        query = """
+            query {
+              showcase {
+                projects {
+                    ...ProjectInformation
                 }
               }
             }
         """
-        )
-        # Execute the query on the transport
-        result = client.execute(query)
-        return result
+        result = await GQLService.query_http(query)
+        return result['showcase']['projects']
 
+    @staticmethod
+    async def get_all_showcase_teams_without_pods():
+        query = """
+            query {
+              showcase {
+                projects {
+                    ...ProjectInformation
+                }
+              }
+            }
+        """
+        result = await GQLService.query_http(query)
+        return [p for p in result["showcase"]["projects"] if (not ("pod" in p) or p["pod"] == None)]
+
+    @staticmethod
+    async def get_showcase_team_by_id(team_id):
+        query = """
+            query getShowcaseTeamById($id: String!) {
+              showcase {
+                project(id: $id) {
+                    ...ProjectInformation
+                }
+              }
+            }
+        """
+
+        params = {"id": id}
+
+        # Execute the query on the transport
+        result = await GQLService.query_http(query, variable_values=params)
+        return result["showcase"]["project"]
 
     @staticmethod
     async def get_showcase_team_by_showcase_user(username):
-        # Select your transport with a defined url endpoint
-        transport = AIOHTTPTransport(url="https://graph.codeday.org/")
-
-        # Create a GraphQL client using the defined transport
-        client = Client(transport=transport, fetch_schema_from_transport=True)
-
-        # Provide a GraphQL query
-        query = gql(
-            """
+        query = """
             query getShowcaseTeamByUser($username: String!) {
               showcase {
                 projects(where: {user: $username}) {
-                  id
-                  name
+                    ...ProjectInformation
                 }
               }
             }
         """
-        )
 
         params = {"username": username}
 
         # Execute the query on the transport
-        result = await client.execute_async(query, variable_values=params)
-        print(result)
-        return result
+        result = await GQLService.query_http(query, variable_values=params)
+        return result["showcase"]["projects"]
 
     @staticmethod
     async def get_showcase_user_from_discord_id(discord_id):
-        # Select your transport with a defined url endpoint
-        transport = AIOHTTPTransport(url="https://graph.codeday.org/")
-
-        # Create a GraphQL client using the defined transport
-        client = Client(transport=transport, fetch_schema_from_transport=True)
-
-        # Provide a GraphQL query
-        query = gql(
-            """
+        query = """
             query getDiscordIdFromShowcaseUsername($discordId: String) {
               account {
                 getUser(where: {discordId: $discordId}) {
-                  username
-                  id
+                    ...MemberInformation
                 }
               }
             }
         """
-        )
 
         params = {"discordId": discord_id}
 
         # Execute the query on the transport
-        result = await client.execute_async(query, variable_values=params)
-        print(result)
-        return result
+        result = await GQLService.query_http(query, variable_values=params)
+        return result["account"]["getUser"]
 
     @staticmethod
     async def send_team_reacted(project_id, member, name, value):
-        transport = WebsocketsTransport(url='ws://graph.codeday.org/subscriptions')
-
-        client = Client(
-            transport=transport,
-            fetch_schema_from_transport=True,
-        )
-
-        query = gql('''
+        query = """
             mutation teamReacted($project_id: String, $member: String, $name: String, $value: ID){
               showcase {
                 recordMetric(project: $project_id, member: $member, name: $name, value: $value)
               }
             }
-        ''')
+        """
 
-        params = {"project_id": project_id, "member": member, "name": name, "value": value}
-
-        async for result in client.subscribe_async(query, variable_values=params):
-            print(result)
+        params = {"project_id": project_id,
+                  "member": member, "name": name, "value": value}
+        await GQLService.q(query, variable_values=params)
 
     """Everything beyond this point is related to GQL Subscriptions and Bot Listener Stuff"""
 
     @staticmethod
     async def member_removed_listener():
-        transport = WebsocketsTransport(url='ws://graph.codeday.org/subscriptions')
-
-        client = Client(
-            transport=transport,
-            fetch_schema_from_transport=True,
-        )
-
-        query = gql('''
+        query = """
             subscription {
               memberRemoved(where:{eventGroup:"virtual-2020-dec"}) {
-                username
-                account {
-                  name
-                  discordId
-                }
+                  ...MemberInformation
+                  project {
+                      ...ProjectInformation
+                  }
               }
             }
-        ''')
+        """
 
-        async for result in client.subscribe_async(query):
-            print(result)
+        async for result in GQLService.subscribe_ws(query):
+            yield result["memberRemoved"]
 
     @staticmethod
     async def member_added_listener():
-        transport = WebsocketsTransport(url='ws://graph.codeday.org/subscriptions')
-
-        client = Client(
-            transport=transport,
-            fetch_schema_from_transport=True,
-        )
-
-        query = gql('''
+        query = """
             subscription {
               memberAdded(where:{eventGroup:"virtual-2020-dec"}) {
-                username
-                account {
-                  name
-                  discordId
-                }
+                  ...MemberInformation
+                  project {
+                      ...ProjectInformation
+                  }
               }
             }
-        ''')
+        """
 
-        async for result in client.subscribe_async(query):
-            print(result)
+        async for result in GQLService.subscribe_ws(query):
+            yield result["memberAdded"]
 
     @staticmethod
     async def team_created_listener():
-        transport = WebsocketsTransport(url='ws://graph.codeday.org/subscriptions')
-
-        client = Client(
-            transport=transport,
-            fetch_schema_from_transport=True,
-        )
-
-        query = gql('''
+        query = """
             subscription {
               projectCreated(where:{eventGroup:"virtual-2020-dec"}) {
-                username
-                account {
-                  name
-                  discordId
-                }
+                  ...ProjectInformation
               }
             }
-        ''')
+        """
 
-        async for result in client.subscribe_async(query):
-            print(result)
+        async for result in GQLService.subscribe_ws(query):
+            yield result["projectCreated"]
 
     @staticmethod
-    async def team_submitted_listener():
-        transport = WebsocketsTransport(url='ws://graph.codeday.org/subscriptions')
-
-        client = Client(
-            transport=transport,
-            fetch_schema_from_transport=True,
-        )
-
-        query = gql('''
+    async def team_edited_listener():
+        query = """
             subscription {
               projectEdited(where:{eventGroup:"virtual-2020-dec"}) {
-                username
-                account {
-                  name
-                  discordId
-                }
+                  ...ProjectInformation
               }
             }
-        ''')
+        """
 
-        async for result in client.subscribe_async(query):
-            print(result)
+        async for result in GQLService.subscribe_ws(query):
+            yield result["projectEdited"]

@@ -1,6 +1,7 @@
 from discord.ext import commands, tasks
 
 from services.gqlservice import GQLService
+from utils.subscriptions import subscribe
 
 
 class ListenCog(commands.Cog, name="Listen"):
@@ -9,25 +10,27 @@ class ListenCog(commands.Cog, name="Listen"):
     def __init__(self, bot):
         self.bot = bot
 
-    @tasks.loop(seconds=60.0)
-    async def on_team_created(self):
-        """Checks if available pod, if so assigns pod, if not adds to overflow pod"""
-        await GQLService.team_created_listener()
+    def cog_unload(self):
+        self.on_team_created.stop()
+        self.on_team_join.stop()
+        self.on_team_leave.stop()
+        self.on_team_edited.stop()
 
-    @tasks.loop(seconds=5.0)
-    async def on_team_join(self):
-        """Adds a newly joined student to their teams pod"""
-        await GQLService.member_added_listener()
+    @subscribe(GQLService.team_created_listener)
+    async def on_team_created(self, project):
+        print("Project created", project)
 
-    @tasks.loop(seconds=5.0)
-    async def on_team_leave(self):
-        """Removes a left student from their teams pod"""
-        await GQLService.member_removed_listener()
+    @subscribe(GQLService.member_added_listener)
+    async def on_team_join(self, member):
+        print("Team member added", )
 
-    @tasks.loop(seconds=60.0)
-    async def on_submit_project(self):
-        """Congratulates and confirms the submission of a teams project"""
-        await GQLService.team_submitted_listener()
+    @subscribe(GQLService.member_removed_listener)
+    async def on_team_leave(self, member):
+        print("Team member removed", member)
+
+    @subscribe(GQLService.team_edited_listener)
+    async def on_submit_project(self, project):
+        print("Team edited", project)
 
 
 def setup(bot):
