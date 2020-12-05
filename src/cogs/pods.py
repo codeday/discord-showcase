@@ -39,8 +39,8 @@ class Pods(commands.Cog, name="Pods"):
         self.staff_role = int(getenv("ROLE_STAFF", 689960285926195220))
         self.mentor_role = int(getenv("ROLE_MENTOR", 782363834836975646))
         self.category = int(getenv("CATEGORY", 783229579732320257))
-        self.numOfMentors = 3
-        self.teams_per_pod = 3
+        self.numOfMentors = 10
+        self.teams_per_pod = 5
         self.check_in_messages = {}
 
     @commands.command(name='create_pod')
@@ -65,8 +65,10 @@ class Pods(commands.Cog, name="Pods"):
         await tc.set_permissions(mentor, overwrite=discord.PermissionOverwrite(**dict(discord.Permissions.text())))
 
         await tc.send(
-            "Hello <@" + str(mentor.id) + "> you have been selected to be the mentor for this pod! Teams will be "
-                                          "added shortly.")
+            "Hello <@" +
+            str(mentor.id) +
+            "> you have been selected to be the mentor for this pod! Teams will be "
+            "added shortly.")
 
         PodService.create_pod(pod_name, tc.id, mentor.id)
 
@@ -144,11 +146,9 @@ class Pods(commands.Cog, name="Pods"):
         session.commit()
         session.close()
 
-
     @staticmethod
     async def remove_user_from_pod_tc(bot: discord.ext.commands.Bot, member_with_project):
         print(member_with_project)
-
 
     @staticmethod
     async def assign_pods_helper(bot: discord.ext.commands.Bot):

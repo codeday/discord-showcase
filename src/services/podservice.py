@@ -109,10 +109,12 @@ class PodService:
         if session is None:
             session = session_creator()
             sess_flag = True
-        team = session.query(Team).filter(Team.showcase_id == showcase_id).first()
+        team = session.query(Team).filter(
+            Team.showcase_id == showcase_id).first()
         if not team:
             PodService.create_team(showcase_id)
-            team = session.query(Team).filter(Team.showcase_id == showcase_id).first()
+            team = session.query(Team).filter(
+                Team.showcase_id == showcase_id).first()
         if sess_flag:
             session.commit()
             session.close()
@@ -145,7 +147,7 @@ class PodService:
         return pod
 
     @staticmethod
-    def get_smallest_pod(session = None, team_size = 3):
+    def get_smallest_pod(session=None, team_size=5):
         """returns the smallest pod under given team size"""
         sess_flag = False
         if session is None:
