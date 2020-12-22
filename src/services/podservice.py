@@ -2,6 +2,7 @@ from typing import Optional
 
 from sqlalchemy.exc import IntegrityError
 
+from cogs.pods import Pods
 from db.models import session_creator, Pod, Team
 from services.gqlservice import GQLService
 
@@ -147,7 +148,7 @@ class PodService:
         return pod
 
     @staticmethod
-    def get_smallest_pod(session=None, team_size=5):
+    def get_smallest_pod(session=None):
         """returns the smallest pod under given team size"""
         sess_flag = False
         if session is None:
@@ -158,7 +159,7 @@ class PodService:
         if sess_flag:
             session.commit()
             session.close()
-        if len(pods[0].teams) <= team_size:
+        if len(pods[0].teams) <= Pods.teams_per_pod:
             return pods[0]
         else:
             return None

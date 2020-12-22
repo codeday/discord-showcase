@@ -16,12 +16,21 @@ from utils import checks
 class Pods(commands.Cog, name="Pods"):
     """Contains information pertaining to Pods"""
 
+    # How many pods should be in a singular pod? Change that value here. Default is 5.
+    teams_per_pod = 5
+
     def __init__(self, bot):
         self.bot: discord.ext.commands.Bot = bot
+
+        # The role in which the bot will give all permissions to the pod channels
         self.staff_role = int(getenv("ROLE_STAFF", 689960285926195220))
+
+        # The role in which the bot will pick a mentor from for each text channel
         self.mentor_role = int(getenv("ROLE_MENTOR", 782363834836975646))
+
+        # The category in which the pods will reside
         self.category = int(getenv("CATEGORY", 783229579732320257))
-        self.teams_per_pod = 5
+
 
     @commands.command(name='create_pod')
     @checks.requires_staff_role()
