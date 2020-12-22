@@ -8,7 +8,6 @@ from db.models import session_creator
 from services.podservice import PodService
 from text.podhelpchannel import PodHelpChannel
 from text.podnames import PodNames
-from utils.person import id_from_mention
 from services.gqlservice import GQLService
 from utils import checks
 
@@ -16,7 +15,7 @@ from utils import checks
 class Pods(commands.Cog, name="Pods"):
     """Contains information pertaining to Pods"""
 
-    # How many pods should be in a singular pod? Change that value here. Default is 5.
+    # How many teams should be in a singular pod? Change that value here. Default is 5.
     teams_per_pod = 5
 
     def __init__(self, bot):
