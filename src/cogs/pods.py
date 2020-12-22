@@ -6,6 +6,7 @@ from os import getenv
 
 from db.models import session_creator
 from services.podservice import PodService
+from text.podhelpchannel import PodHelpChannel
 from text.podnames import PodNames
 from utils.person import id_from_mention
 from services.gqlservice import GQLService
@@ -21,7 +22,6 @@ class Pods(commands.Cog, name="Pods"):
         self.mentor_role = int(getenv("ROLE_MENTOR", 782363834836975646))
         self.category = int(getenv("CATEGORY", 783229579732320257))
         self.teams_per_pod = 5
-        self.check_in_messages = {}
 
     @commands.command(name='create_pod')
     @checks.requires_staff_role()
@@ -59,9 +59,21 @@ class Pods(commands.Cog, name="Pods"):
     async def create_pods(self, ctx: commands.Context, number_of_mentors):
         """Creates all PODS for all TEAMS"""
         # First, create a help channel with text from the podhelpchannel.py file
-        await
+        guild: discord.Guild = ctx.guild
+        overwrites = {
+            # Default User Access to the help channel
+            guild.default_role: discord.PermissionOverwrite(read_messages=True, read_message_history=True),
+            guild.get_role(self.staff_role): discord.PermissionOverwrite(**dict(discord.Permissions.text())),
+            guild.me: discord.PermissionOverwrite(read_messages=True, read_message_history=True),
+        }
 
-        # Then, create the actual pods by calling the singular create_pod command
+        tc = await guild.create_text_channel("what-is-a-pod?", overwrites=overwrites,
+                                             category=guild.get_channel(self.category),
+                                             reason=None)
+        await tc.send(PodHelpChannel.initial_message)
+        # END of help channel text channel creation
+
+        # Then, create the actual pods by calling the singular create_pod function
         for x in range(0, int(number_of_mentors)):
             await self.create_pod(ctx, self.find_a_suitable_pod_name(), self.find_a_suitable_mentor(ctx))
         await self.create_pod(ctx, "overflow", self.find_a_suitable_mentor(ctx))
