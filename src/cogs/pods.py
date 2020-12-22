@@ -88,7 +88,8 @@ class Pods(commands.Cog, name="Pods"):
         # END of help channel text channel creation
 
         # Then, create the actual pods by calling the singular create_pod function
-        for x in range(0, int(number_of_mentors)):
+        # We subtract one so that there is an extra mentor left, who is designated too the pod called overflow
+        for x in range(0, int(number_of_mentors)-1):
             await self.create_pod(ctx, self.find_a_suitable_pod_name(), self.find_a_suitable_mentor(ctx))
         await self.create_pod(ctx, "overflow", self.find_a_suitable_mentor(ctx))
 
