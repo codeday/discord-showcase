@@ -42,7 +42,8 @@ class Pods(commands.Cog, name="Pods"):
                                                  self.category),
                                              reason=None)
         print(mentor)
-        await tc.set_permissions(mentor, overwrite=discord.PermissionOverwrite(**dict(discord.Permissions.text())))
+        await tc.set_permissions(mentor, overwrite=discord.PermissionOverwrite(**dict(discord.Permissions.text())),
+                                 mention_everyone=True)
 
         await tc.send(
             "Hello <@" +
