@@ -125,8 +125,9 @@ class Pods(commands.Cog, name="Pods"):
                 except:
                     print("Some other sort of error has occurred.")
 
+    #
     @staticmethod
-    async def add_user_to_pod_tc(bot: discord.ext.commands.Bot, member_with_project):
+    async def add_or_remove_user_to_pod_tc(bot: discord.ext.commands.Bot, member_with_project, should_be_removed):
         # Get User Member Object AND Get text channel object
         session = session_creator()
         print(member_with_project)
@@ -141,16 +142,29 @@ class Pods(commands.Cog, name="Pods"):
 
                 tc = await bot.fetch_channel(pod.tc_id)
 
-                await tc.set_permissions(member, read_messages=True, read_message_history=True,
-                                         send_messages=True, embed_links=True, attach_files=True,
-                                         external_emojis=True, add_reactions=True)
-                embed = discord.Embed(
-                    title=f"{member_with_project['account']['name']}joined team {showcase_team['name']} joined team {showcase_team['name']}",
-                    url=f"https://showcase.codeday.org/project/{showcase_team['id']}",
-                    color=0xff6766)
-                embed.add_field(name="Member: ", value=f"<@{member_with_project['account']['discordId']}>",
-                                inline=False)
-                # Put something here that links back to initialDiscordMessage and edits it to add new member
+                # User is being removed from the pod tc
+                if should_be_removed:
+                    await tc.set_permissions(member, read_messages=True, read_message_history=True,
+                                             send_messages=True, embed_links=True, attach_files=True,
+                                             external_emojis=True, add_reactions=True)
+                    embed = discord.Embed(
+                        title=f"{member_with_project['account']['name']}joined team {showcase_team['name']} joined team {showcase_team['name']}",
+                        url=f"https://showcase.codeday.org/project/{showcase_team['id']}",
+                        color=0xff6766)
+                    embed.add_field(name="Member: ", value=f"<@{member_with_project['account']['discordId']}>",
+                                    inline=False)
+                # User is being added to the pod tc
+                else:
+                    await tc.set_permissions(member, read_messages=False, read_message_history=False,
+                                             send_messages=False, embed_links=False, attach_files=False,
+                                             external_emojis=False, add_reactions=False)
+                    embed = discord.Embed(
+                        title=f"{member_with_project['account']['name']}left team {showcase_team['name']} left team {showcase_team['name']}",
+                        url=f"https://showcase.codeday.org/project/{showcase_team['id']}",
+                        color=0xff6766)
+                    embed.add_field(name="Member: ", value=f"<@{member_with_project['account']['discordId']}>",
+                                    inline=False)
+
                 await tc.send(embed=embed)
             except discord.errors.NotFound:
                 print("A user was not found within the server")
@@ -158,10 +172,6 @@ class Pods(commands.Cog, name="Pods"):
                 print("Some other sort of error has occurred.")
         session.commit()
         session.close()
-
-    @staticmethod
-    async def remove_user_from_pod_tc(bot: discord.ext.commands.Bot, member_with_project):
-        print(member_with_project)
 
     @staticmethod
     async def assign_pods_helper(bot: discord.ext.commands.Bot):

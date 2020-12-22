@@ -30,11 +30,11 @@ class ListenCog(commands.Cog, name="Listen"):
 
     @subscribe(GQLService.member_added_listener)
     async def on_project_member_added(self, member_with_project):
-        await Pods.add_user_to_pod_tc(self.bot, member_with_project)
+        await Pods.add_or_remove_user_to_pod_tc(self.bot, member_with_project, False)
 
     @subscribe(GQLService.member_removed_listener)
     async def on_project_member_removed(self, member_with_project):
-        await Pods.add_user_to_pod_tc(self.bot, member_with_project)
+        await Pods.add_or_remove_user_to_pod_tc(self.bot, member_with_project, True)
 
     @subscribe(GQLService.team_edited_listener)
     async def on_project_edited(self, project):
