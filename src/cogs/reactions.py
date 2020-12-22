@@ -37,12 +37,10 @@ class Reactions(commands.Cog, name="Reactions"):
             session.commit()
             session.close()
 
-    @staticmethod
-    def emoji_is_valid(emoji):
+    def emoji_is_valid(self, emoji):
         return emoji == "😀" or emoji == "😐" or emoji == "☹"
 
-    @staticmethod
-    def emoji_to_value(emoji):
+    def emoji_to_value(self, emoji):
         emoji_values = {
             "😀": 1,
             "😐": 0,

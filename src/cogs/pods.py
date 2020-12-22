@@ -103,6 +103,11 @@ class Pods(commands.Cog, name="Pods"):
         """Assigns remaining TEAMS to PODS"""
         await self.assign_pods_helper(self.bot)
 
+    # Some notes about embedded messages:
+    # - To display fields side-by-side, you need at least two consecutive fields set to inline
+    # - The timestamp will automatically adjust the timezone depending on the user's device
+    # - Mentions of any kind will only render correctly in field values and descriptions
+    # - Mentions in embeds will not trigger a notification
     @staticmethod
     async def assign_pod_helper(bot: discord.ext.commands.Bot, team_id, pod_name, session):
         current_pod = PodService.get_pod_by_name(pod_name, session)
@@ -115,10 +120,10 @@ class Pods(commands.Cog, name="Pods"):
             tc = await bot.fetch_channel(int(current_pod.tc_id))
             member_mentions = []
             for showcase_member in showcase_team["members"]:
-                member_mentions.append(f"<@{showcase_member['account']['discordId']}>")
-            embed = discord.Embed(title=f"Team {showcase_team['name']} has joined the pod!",
+                member_mentions.append(f"<@{str(showcase_member['account']['discordId'])}>")
+            embed = discord.Embed(title=f"Project {showcase_team['name']} has joined the pod!",
                                   url=f"https://showcase.codeday.org/project/{team_id}", color=0xff6766)
-            embed.add_field(name=f"Team member(s): {', '.join(member_mentions)}", value="", inline=False)
+            embed.add_field(name=f"Project member(s): ", value=f"{', '.join(member_mentions)}", inline=False)
             await tc.send(embed=embed)
 
             # store initial message in gql
@@ -137,7 +142,22 @@ class Pods(commands.Cog, name="Pods"):
                 except:
                     print("Some other sort of error has occurred.")
 
-    #
+    @staticmethod
+    async def assign_pods_helper(bot: discord.ext.commands.Bot):
+        session = session_creator()
+        all_teams_without_pods = await GQLService.get_all_showcase_teams_without_pods()
+
+        for team in all_teams_without_pods:
+            smallest_pod = PodService.get_smallest_pod(session)
+            print(smallest_pod)
+            if smallest_pod:
+                await Pods.assign_pod_helper(bot, team["id"], smallest_pod.name, session)
+            else:
+                await Pods.assign_pod_helper(bot, team["id"], "overflow", session)
+
+        session.commit()
+        session.close()
+
     @staticmethod
     async def add_or_remove_user_to_pod_tc(bot: discord.ext.commands.Bot, member_with_project, should_be_removed):
         # Get User Member Object AND Get text channel object
@@ -160,24 +180,27 @@ class Pods(commands.Cog, name="Pods"):
                                              send_messages=True, embed_links=True, attach_files=True,
                                              external_emojis=True, add_reactions=True)
                     embed = discord.Embed(
-                        title=f"{member_with_project['account']['name']}joined team {showcase_team['name']} joined team {showcase_team['name']}",
+                        title=f"{member_with_project['account']['name']} joined project {showcase_team['name']}",
                         url=f"https://showcase.codeday.org/project/{showcase_team['id']}",
                         color=0xff6766)
                     embed.add_field(name="Member: ", value=f"<@{member_with_project['account']['discordId']}>",
                                     inline=False)
+                    await tc.send(embed=embed)
+
                 # User is being added to the pod tc
                 else:
                     await tc.set_permissions(member, read_messages=False, read_message_history=False,
                                              send_messages=False, embed_links=False, attach_files=False,
                                              external_emojis=False, add_reactions=False)
                     embed = discord.Embed(
-                        title=f"{member_with_project['account']['name']}left team {showcase_team['name']} left team {showcase_team['name']}",
+                        title=f"{member_with_project['account']['name']}left team {showcase_team['name']}",
                         url=f"https://showcase.codeday.org/project/{showcase_team['id']}",
                         color=0xff6766)
                     embed.add_field(name="Member: ", value=f"<@{member_with_project['account']['discordId']}>",
                                     inline=False)
+                    await tc.send(embed=embed)
 
-                await tc.send(embed=embed)
+
             except discord.errors.NotFound:
                 print("A user was not found within the server")
             except:
@@ -185,23 +208,6 @@ class Pods(commands.Cog, name="Pods"):
         session.commit()
         session.close()
 
-
-
-    @staticmethod
-    async def assign_pods_helper(bot: discord.ext.commands.Bot):
-        session = session_creator()
-        all_teams_without_pods = await GQLService.get_all_showcase_teams_without_pods()
-
-        for team in all_teams_without_pods:
-            smallest_pod = PodService.get_smallest_pod(session)
-            print(smallest_pod)
-            if smallest_pod:
-                await Pods.assign_pod_helper(bot, team["id"], smallest_pod.name, session)
-            else:
-                await Pods.assign_pod_helper(bot, team["id"], "overflow", session)
-
-        session.commit()
-        session.close()
 
     @commands.command(name='list_teams')
     @checks.requires_staff_role()
