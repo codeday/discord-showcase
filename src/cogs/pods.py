@@ -6,29 +6,10 @@ from os import getenv
 
 from db.models import session_creator
 from services.podservice import PodService
+from text.podnames import PodNames
 from utils.person import id_from_mention
 from services.gqlservice import GQLService
 from utils import checks
-
-# The list below shows all possible names that a pod can have. There are currently 118 different names.
-available_names = ["Hydrogen", "Helium", "Lithium", "Beryllium", "Boron", "Carbon", "Nitrogen",
-                   "Oxygen", "Fluorine", "Neon", "Sodium", "Magnesium", "Aluminum", "Silicon",
-                   "Phosphorus", "Sulfur", "Chlorine", "Argon", "Potassium", "Calcium", "Scandium",
-                   "Titanium", "Vanadium", "Chromium", "Manganese", "Iron", "Cobalt", "Nickel",
-                   "Copper", "Zinc", "Gallium", "Germanium", "Arsenic", "Selenium", "Bromine",
-                   "Krypton", "Rubidium", "Strontium", "Yttrium", "Zirconium", "Niobium",
-                   "Molybdenum", "Technetium", "Ruthenium", "Rhodium", "Palladium", "Silver",
-                   "Cadmium", "Indium", "Tin", "Antimony", "Tellurium", "Iodine", "Xenon",
-                   "Caesium", "Barium", "Lanthanum", "Cerium", "Praseodymium", "Neodymium",
-                   "Promethium", "Samarium", "Europium", "Gadolinium", "Terbium", "Dysprosium",
-                   "Holmium", "Erbium", "Thulium", "Ytterbium", "Lutetium", "Hafnium", "Tantalum",
-                   "Tungsten", "Rhenium", "Osmium", "Iridium", "Platinum", "Gold", "Mercury", "Thallium",
-                   "Lead", "Bismuth", "Polonium", "Astatine", "Radon", "Francium", "Radium", "Actinium",
-                   "Thorium", "Protactinium", "Uranium", "Neptunium", "Plutonium", "Americium", "Curium",
-                   "Berkelium", "Californium", "Einsteinium", "Fermium", "Mendelevium", "Nobelium", "Lawrencium",
-                   "Rutherfordium", "Dubnium", "Seaborgium", "Bohrium", "Hassium", "Meitnerium", "Darmstadtium",
-                   "Roentgenium", "Copernicium", "Nihonium", "Flerovium", "Moscovium", "Livermorium", "Tennessine",
-                   "Oganesson"]
 
 
 class Pods(commands.Cog, name="Pods"):
@@ -39,7 +20,6 @@ class Pods(commands.Cog, name="Pods"):
         self.staff_role = int(getenv("ROLE_STAFF", 689960285926195220))
         self.mentor_role = int(getenv("ROLE_MENTOR", 782363834836975646))
         self.category = int(getenv("CATEGORY", 783229579732320257))
-        self.numOfMentors = 10
         self.teams_per_pod = 5
         self.check_in_messages = {}
 
@@ -78,8 +58,11 @@ class Pods(commands.Cog, name="Pods"):
     @checks.requires_staff_role()
     async def create_pods(self, ctx: commands.Context, number_of_mentors):
         """Creates all PODS for all TEAMS"""
-        self.numOfMentors = number_of_mentors
-        for x in range(0, int(self.numOfMentors)):
+        # First, create a help channel with text from the podhelpchannel.py file
+        await
+
+        # Then, create the actual pods by calling the singular create_pod command
+        for x in range(0, int(number_of_mentors)):
             await self.create_pod(ctx, self.find_a_suitable_pod_name(), self.find_a_suitable_mentor(ctx))
         await self.create_pod(ctx, "overflow", self.find_a_suitable_mentor(ctx))
 
@@ -105,7 +88,15 @@ class Pods(commands.Cog, name="Pods"):
             await GQLService.record_pod_on_team_metadata(showcase_team["id"], str(current_pod.id))
 
             tc = await bot.fetch_channel(int(current_pod.tc_id))
-            await tc.send("Team " + showcase_team["name"] + " has joined the pod!")
+            member_mentions = []
+            for showcase_member in showcase_team["members"]:
+                member_mentions.append(f"<@{showcase_member['account']['discordId']}>")
+            embed = discord.Embed(title=f"Team {showcase_team['name']} has joined the pod!",
+                                  url=f"https://showcase.codeday.org/project/{team_id}", color=0xff6766)
+            embed.add_field(name=f"Team member(s): {', '.join(member_mentions)}", value="", inline=False)
+            await tc.send(embed=embed)
+
+            # store initial message in gql
             # Add all members to text channel
             print(showcase_team["members"])
             guild: discord.Guild = await bot.fetch_guild(689213562740277361)
@@ -114,7 +105,8 @@ class Pods(commands.Cog, name="Pods"):
                 print(discordID)
                 try:
                     member = await guild.fetch_member(discordID)
-                    await tc.set_permissions(member, overwrite=discord.PermissionOverwrite(**dict(discord.Permissions.text())))
+                    await tc.set_permissions(member,
+                                             overwrite=discord.PermissionOverwrite(**dict(discord.Permissions.text())))
                 except discord.errors.NotFound:
                     print("A user was not found within the server")
                 except:
@@ -139,6 +131,14 @@ class Pods(commands.Cog, name="Pods"):
                 await tc.set_permissions(member, read_messages=True, read_message_history=True,
                                          send_messages=True, embed_links=True, attach_files=True,
                                          external_emojis=True, add_reactions=True)
+                embed = discord.Embed(
+                    title=f"{member_with_project['account']['name']}joined team {showcase_team['name']} joined team {showcase_team['name']}",
+                    url=f"https://showcase.codeday.org/project/{showcase_team['id']}",
+                    color=0xff6766)
+                embed.add_field(name="Member: ", value=f"<@{member_with_project['account']['discordId']}>",
+                                inline=False)
+                # Put something here that links back to initialDiscordMessage and edits it to add new member
+                await tc.send(embed=embed)
             except discord.errors.NotFound:
                 print("A user was not found within the server")
             except:
@@ -225,9 +225,8 @@ class Pods(commands.Cog, name="Pods"):
         current_channel: discord.DMChannel = ctx.channel
         await current_channel.send("The team that " + user + " is in is " + team)
 
-
     def find_a_suitable_pod_name(self):
-        for pod_name in available_names:
+        for pod_name in PodNames.available_names:
             if PodService.get_pod_by_name(pod_name) is None:
                 # Pod Name is suitable, return that pod name
                 return pod_name
@@ -243,8 +242,6 @@ class Pods(commands.Cog, name="Pods"):
                 # Mentor is Suitable, return that mentor object
                 return member
         return None  # No Mentor was available
-
-
 
 
 def setup(bot):
