@@ -57,7 +57,7 @@ class ListenCog(commands.Cog, name="Listen"):
                 user_who_posted_message = message.author
                 if user_who_posted_message == self.bot.user.id:
                     await GQLService.send_team_reacted(str(team_that_reacted.id), str(showcase_user.username),
-                                                       int(self.emoji_to_value(payload.emoji)))
+                                                       float(self.emoji_to_value(payload.emoji)))
             session.commit()
             session.close()
 

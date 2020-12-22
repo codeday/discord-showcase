@@ -31,6 +31,10 @@ class Pods(commands.Cog, name="Pods"):
         # The category in which the pods will reside
         self.category = int(getenv("CATEGORY", 783229579732320257))
 
+    # For permissions attributes and other information, use the following link:
+    # https://discordpy.readthedocs.io/en/latest/api.html#discord.Permissions
+    # https://discordpy.readthedocs.io/en/latest/api.html#discord.TextChannel.set_permissions
+
 
     @commands.command(name='create_pod')
     @checks.requires_staff_role()
