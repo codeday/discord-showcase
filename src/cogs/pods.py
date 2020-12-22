@@ -44,7 +44,7 @@ class Pods(commands.Cog, name="Pods"):
         self.check_in_messages = {}
 
     @commands.command(name='create_pod')
-    # @checks.requires_staff_role()
+    @checks.requires_staff_role()
     async def create_pod(self, ctx: commands.Context, pod_name, mentor: discord.Member):
         """Creates a POD for a team"""
 
@@ -75,7 +75,7 @@ class Pods(commands.Cog, name="Pods"):
         pass
 
     @commands.command(name='create_pods')
-    # @checks.requires_staff_role()
+    @checks.requires_staff_role()
     async def create_pods(self, ctx: commands.Context, number_of_mentors):
         """Creates all PODS for all TEAMS"""
         self.numOfMentors = number_of_mentors
@@ -84,13 +84,13 @@ class Pods(commands.Cog, name="Pods"):
         await self.create_pod(ctx, "overflow", self.find_a_suitable_mentor(ctx))
 
     @commands.command(name='assign_pod')
-    # @checks.requires_staff_role()
+    @checks.requires_staff_role()
     async def assign_pod(self, ctx: commands.Context, team_id, pod_name):
         """Assigns a TEAM to a particular POD"""
         await self.assign_pod_helper(self.bot, team_id, pod_name)
 
     @commands.command(name='assign_pods')
-    # @checks.requires_staff_role()
+    @checks.requires_staff_role()
     async def assign_pods(self, ctx: commands.Context):
         """Assigns remaining TEAMS to PODS"""
         await self.assign_pods_helper(self.bot)
@@ -167,7 +167,7 @@ class Pods(commands.Cog, name="Pods"):
         session.close()
 
     @commands.command(name='list_teams')
-    # @checks.requires_staff_role()
+    @checks.requires_staff_role()
     async def list_teams(self, ctx: commands.Context, pod_name):
         """Displays TEAMS of a POD in CHANNEL"""
         session = session_creator()
@@ -180,7 +180,7 @@ class Pods(commands.Cog, name="Pods"):
         session.close()
 
     @commands.command(name='list_pods')
-    # @checks.requires_staff_role()
+    @checks.requires_staff_role()
     async def list_pods(self, ctx: commands.Context):
         """Displays PODS in CHANNEL"""
         session = session_creator()
@@ -193,7 +193,7 @@ class Pods(commands.Cog, name="Pods"):
         session.close()
 
     @commands.command(name='remove_all_pods')
-    # @checks.requires_staff_role()
+    @checks.requires_staff_role()
     async def remove_all_pods(self, ctx: commands.Context):
         """Removes all Pods from Alembic"""
         session = session_creator()
@@ -206,7 +206,7 @@ class Pods(commands.Cog, name="Pods"):
         session.close()
 
     @commands.command(name='get_teams_from_gql')
-    # @checks.requires_staff_role()
+    @checks.requires_staff_role()
     async def get_teams_from_gql(self, ctx: commands.Context):
         """Displays PODS in CHANNEL"""
         all_teams = await GQLService.get_all_showcase_teams()
@@ -216,7 +216,7 @@ class Pods(commands.Cog, name="Pods"):
             await current_channel.send("Team " + team['name'])
 
     @commands.command(name='get_teams_by_user')
-    # @checks.requires_staff_role()
+    @checks.requires_staff_role()
     async def get_teams_by_user_gql(self, ctx: commands.Context, user: discord.User):
         """Displays PODS in CHANNEL"""
         usergql = str(await GQLService.get_showcase_username_from_discord_id(str(user.id)))
