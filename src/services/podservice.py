@@ -2,7 +2,6 @@ from typing import Optional
 
 from sqlalchemy.exc import IntegrityError
 
-from cogs.pods import Pods
 from db.models import session_creator, Pod, Team
 from services.gqlservice import GQLService
 
@@ -159,7 +158,7 @@ class PodService:
         if sess_flag:
             session.commit()
             session.close()
-        if len(pods[0].teams) <= Pods.teams_per_pod:
+        if len(pods[0].teams) <= 5:
             return pods[0]
         else:
             return None

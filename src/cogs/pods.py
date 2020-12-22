@@ -54,8 +54,7 @@ class Pods(commands.Cog, name="Pods"):
                                                  self.category),
                                              reason=None)
         print(mentor)
-        await tc.set_permissions(mentor, overwrite=discord.PermissionOverwrite(**dict(discord.Permissions.text())),
-                                 mention_everyone=True)
+        await tc.set_permissions(mentor, overwrite=discord.PermissionOverwrite(**dict(discord.Permissions.text())))
 
         await tc.send(
             "Hello <@" +
@@ -80,7 +79,7 @@ class Pods(commands.Cog, name="Pods"):
             guild.me: discord.PermissionOverwrite(read_messages=True, read_message_history=True),
         }
 
-        tc = await guild.create_text_channel("what-is-a-pod?", overwrites=overwrites,
+        tc = await guild.create_text_channel("what-is-a-pod", overwrites=overwrites,
                                              category=guild.get_channel(self.category),
                                              reason=None)
         await tc.send(PodHelpChannel.initial_message)
@@ -185,6 +184,8 @@ class Pods(commands.Cog, name="Pods"):
                 print("Some other sort of error has occurred.")
         session.commit()
         session.close()
+
+
 
     @staticmethod
     async def assign_pods_helper(bot: discord.ext.commands.Bot):

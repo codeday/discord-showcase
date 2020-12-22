@@ -24,7 +24,8 @@ bot = commands.Bot(command_prefix='s~', intents=intents)
 initial_cogs = [
     'cogs.listen',
     'cogs.checkin',
-    'cogs.pods'
+    'cogs.pods',
+    'cogs.reactions'
 ]
 for cog in initial_cogs:
     try:
