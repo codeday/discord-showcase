@@ -31,7 +31,7 @@ class CheckinCommands(commands.Cog, name="Checkin"):
         self.category = int(getenv("CATEGORY", 783229579732320257))
 
     @commands.command(name='checkin')
-    # @checks.requires_staff_role()
+    @checks.requires_staff_role()
     async def checkin(self, ctx: commands.Context, pod_name):
         """Checks in on a specific pod"""
         session = session_creator()
@@ -50,7 +50,7 @@ class CheckinCommands(commands.Cog, name="Checkin"):
         session.close()
 
     @commands.command(name='checkin_all')
-    # @checks.requires_staff_role()
+    @checks.requires_staff_role()
     async def checkin_all(self, ctx: commands.Context):
         """checks in on all teams"""
         session = session_creator()

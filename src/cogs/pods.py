@@ -34,7 +34,6 @@ class Pods(commands.Cog, name="Pods"):
     # https://discordpy.readthedocs.io/en/latest/api.html#discord.Permissions
     # https://discordpy.readthedocs.io/en/latest/api.html#discord.TextChannel.set_permissions
 
-
     @commands.command(name='create_pod')
     @checks.requires_staff_role()
     async def create_pod(self, ctx: commands.Context, pod_name, mentor: discord.Member):
@@ -87,7 +86,7 @@ class Pods(commands.Cog, name="Pods"):
 
         # Then, create the actual pods by calling the singular create_pod function
         # We subtract one so that there is an extra mentor left, who is designated too the pod called overflow
-        for x in range(0, int(number_of_mentors)-1):
+        for x in range(0, int(number_of_mentors) - 1):
             await self.create_pod(ctx, self.find_a_suitable_pod_name(), self.find_a_suitable_mentor(ctx))
         await self.create_pod(ctx, "overflow", self.find_a_suitable_mentor(ctx))
 
@@ -207,7 +206,6 @@ class Pods(commands.Cog, name="Pods"):
                 print("Some other sort of error has occurred.")
         session.commit()
         session.close()
-
 
     @commands.command(name='list_teams')
     @checks.requires_staff_role()

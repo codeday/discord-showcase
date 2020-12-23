@@ -5,7 +5,6 @@ import traceback
 
 import discord
 
-from services.gqlservice import GQLService
 from discord.ext import commands
 from raygun4py import raygunprovider
 
@@ -27,6 +26,7 @@ initial_cogs = [
     'cogs.pods',
     'cogs.reactions'
 ]
+
 for cog in initial_cogs:
     try:
         bot.load_extension(cog)

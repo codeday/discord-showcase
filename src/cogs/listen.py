@@ -1,10 +1,7 @@
-import discord
 from discord.ext import commands, tasks
 
 from cogs.pods import Pods
-from db.models import session_creator
 from services.gqlservice import GQLService
-from services.podservice import PodService
 from utils.subscriptions import subscribe
 
 
@@ -39,6 +36,7 @@ class ListenCog(commands.Cog, name="Listen"):
     @subscribe(GQLService.team_edited_listener)
     async def on_project_edited(self, project):
         pass
+
 
 def setup(bot):
     bot.add_cog(ListenCog(bot))
