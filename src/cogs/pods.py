@@ -30,7 +30,8 @@ class Pods(commands.Cog, name="Pods"):
         # The category in which the pods will reside
         self.category = int(getenv("CATEGORY", 783229579732320257))
 
-    # For permissions attributes and other information, use the following link:
+
+    # For permissions attributes and other information, use the following links:
     # https://discordpy.readthedocs.io/en/latest/api.html#discord.Permissions
     # https://discordpy.readthedocs.io/en/latest/api.html#discord.TextChannel.set_permissions
 
@@ -147,7 +148,7 @@ class Pods(commands.Cog, name="Pods"):
         all_teams_without_pods = await GQLService.get_all_showcase_teams_without_pods()
 
         for team in all_teams_without_pods:
-            smallest_pod = PodService.get_smallest_pod(session)
+            smallest_pod = PodService.get_smallest_pod(session, Pods.teams_per_pod)
             print(smallest_pod)
             if smallest_pod:
                 await Pods.assign_pod_helper(bot, team["id"], smallest_pod.name, session)

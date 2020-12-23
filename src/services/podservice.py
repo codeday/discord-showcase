@@ -147,7 +147,7 @@ class PodService:
         return pod
 
     @staticmethod
-    def get_smallest_pod(session=None):
+    def get_smallest_pod(session=None, size=5):
         """returns the smallest pod under given team size"""
         sess_flag = False
         if session is None:
@@ -158,7 +158,7 @@ class PodService:
         if sess_flag:
             session.commit()
             session.close()
-        if len(pods[0].teams) <= 5:
+        if len(pods[0].teams) <= (size-1):
             return pods[0]
         else:
             return None
