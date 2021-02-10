@@ -224,9 +224,12 @@ class Pods(commands.Cog, name="Pods"):
         session = session_creator()
         all_pods = PodService.get_all_pods(session)
         current_channel: discord.DMChannel = ctx.channel
-        await current_channel.send("The current created pods are:")
-        for pod in all_pods:
-            await current_channel.send("Pod " + pod.name)
+        if len(all_pods) >= 1:
+            await current_channel.send("The current created pods are:")
+            for pod in all_pods:
+                await current_channel.send("Pod " + pod.name)
+        else:
+            await current_channel.send("There are no pods.")
         session.commit()
         session.close()
 
