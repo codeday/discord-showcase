@@ -85,7 +85,7 @@ class Pods(commands.Cog, name="Pods"):
         # END of help channel text channel creation
 
         # Then, create the actual pods by calling the singular create_pod function
-        # We subtract one so that there is an extra mentor left, who is designated too the pod called overflow
+        # We subtract one so that there is an extra mentor left, who is designated to the pod called overflow
         for x in range(0, int(number_of_mentors) - 1):
             await self.create_pod(ctx, self.find_a_suitable_pod_name(), self.find_a_suitable_mentor(ctx))
         await self.create_pod(ctx, "overflow", self.find_a_suitable_mentor(ctx))
@@ -239,29 +239,47 @@ class Pods(commands.Cog, name="Pods"):
         session = session_creator()
         pod_to_be_merged = PodService.get_pod_by_name(pod_from, session)
         pod_being_merged_into = PodService.get_pod_by_name(pod_to, session)
+        print(pod_to_be_merged)
+        print(pod_being_merged_into)
         current_channel: discord.DMChannel = ctx.channel
-        pod_being_merged_into_channel: discord.DMChannel = await self.bot.fetch_channel(pod_being_merged_into.tc_id)
-        await pod_being_merged_into_channel.send("A pod is being merged into this channel...")
-        await pod_being_merged_into_channel.send("The teams joining this pod are: ")
-        for team in pod_to_be_merged.teams:
-            await self.assign_pod_helper(self.bot, team.showcase_id, pod_being_merged_into, session)
-            showcase_team = await GQLService.get_showcase_team_by_id(team.showcase_id)
-            await GQLService.record_pod_on_team_metadata(showcase_team["id"], str(pod_being_merged_into.id))
+        if pod_being_merged_into is not None and pod_being_merged_into is not None:
+            await current_channel.send("Pods are currently being merged... give me one second...")
+            pod_being_merged_into_channel: discord.DMChannel = await self.bot.fetch_channel(pod_being_merged_into.tc_id)
+            pod_to_be_merged_channel = await self.bot.fetch_channel(pod_to_be_merged.tc_id)
+            await pod_being_merged_into_channel.send("A pod is being merged into this channel...")
+            await pod_being_merged_into_channel.send("The teams joining this pod are: ")
+            PodService.remove_pod(pod_from)
+            pod_to_be_merged_channel.delete()
+            for team in pod_to_be_merged.teams:
+                await self.assign_pod_helper(self.bot, team.showcase_id, pod_being_merged_into.name, session)
+                # showcase_team = await GQLService.get_showcase_team_by_id(team.showcase_id)
+                await GQLService.unset_team_metadata(team.showcase_id)
+                await GQLService.record_pod_on_team_metadata(team.showcase_id, str(pod_being_merged_into.id))
+            await current_channel.send("Done!")
+        else:
+            await current_channel.send("One of the pod names were not correct. Please specify only the name after pod-")
 
         session.commit()
         session.close()
-
 
     @commands.command(name='remove_all_pods')
     @checks.requires_staff_role()
     async def remove_all_pods(self, ctx: commands.Context):
         """Removes all Pods from Alembic"""
         session = session_creator()
-        PodService.remove_all_pods()
-        allTeams = await GQLService.get_all_showcase_teams()
-        for team in allTeams:
-            await GQLService.unset_team_metadata(team["id"])
-        await ctx.send("All Pods have been removed.")
+        all_pods = PodService.get_all_pods(session)
+        if len(all_pods) >= 1:
+            await ctx.send("Removing all pods... give me one second...")
+            category = discord.utils.get(ctx.guild.categories, id=self.category)
+            for channel in category.channels:
+                await channel.delete()
+            PodService.remove_all_pods()
+            allTeams = await GQLService.get_all_showcase_teams()
+            for team in allTeams:
+                await GQLService.unset_team_metadata(team["id"])
+            await ctx.send("All Pods have been removed.")
+        else:
+            await ctx.send("There are no pods to remove.")
         session.commit()
         session.close()
 
