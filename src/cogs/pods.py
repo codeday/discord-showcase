@@ -111,8 +111,8 @@ class Pods(commands.Cog, name="Pods"):
     async def assign_pod_helper(bot: discord.ext.commands.Bot, team_id, pod_name, session):
         current_pod = PodService.get_pod_by_name(pod_name, session)
         showcase_team = await GQLService.get_showcase_team_by_id(team_id)
-
-        if current_pod is not None:
+        print(showcase_team)
+        if current_pod is not None and showcase_team is not None:
             PodService.add_team_to_pod(current_pod, team_id, session)
             await GQLService.record_pod_on_team_metadata(showcase_team["id"], str(current_pod.id))
 
@@ -140,6 +140,8 @@ class Pods(commands.Cog, name="Pods"):
                     print("A user was not found within the server")
                 except:
                     print("Some other sort of error has occurred.")
+        else:
+            print("Did nto make it ")
 
     @staticmethod
     async def assign_pods_helper(bot: discord.ext.commands.Bot):
@@ -147,12 +149,14 @@ class Pods(commands.Cog, name="Pods"):
         all_teams_without_pods = await GQLService.get_all_showcase_teams_without_pods()
 
         for team in all_teams_without_pods:
-            smallest_pod = PodService.get_smallest_pod(session, Pods.teams_per_pod)
-            print(smallest_pod)
-            if smallest_pod:
-                await Pods.assign_pod_helper(bot, team["id"], smallest_pod.name, session)
-            else:
-                await Pods.assign_pod_helper(bot, team["id"], "overflow", session)
+            if len(team["members"]) >= 1:
+                print(team)
+                smallest_pod = PodService.get_smallest_pod(session, Pods.teams_per_pod)
+                print(smallest_pod)
+                if smallest_pod:
+                    await Pods.assign_pod_helper(bot, team["id"], smallest_pod.name, session)
+                else:
+                    await Pods.assign_pod_helper(bot, team["id"], "overflow", session)
 
         session.commit()
         session.close()
@@ -249,7 +253,7 @@ class Pods(commands.Cog, name="Pods"):
             await pod_being_merged_into_channel.send("A pod is being merged into this channel...")
             await pod_being_merged_into_channel.send("The teams joining this pod are: ")
             PodService.remove_pod(pod_from)
-            pod_to_be_merged_channel.delete()
+            await pod_to_be_merged_channel.delete()
             for team in pod_to_be_merged.teams:
                 await self.assign_pod_helper(self.bot, team.showcase_id, pod_being_merged_into.name, session)
                 # showcase_team = await GQLService.get_showcase_team_by_id(team.showcase_id)

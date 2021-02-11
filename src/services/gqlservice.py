@@ -63,31 +63,32 @@ class GQLService:
         query = """
             query getAllShowcaseTeamsWithoutPods($eventGroup: String!) {
               showcase {
-                projects(eventGroup: $eventGroup) {
+                projects(where: {eventGroup: $eventGroup}) {
                     ...ProjectInformation
                 }
               }
             }
         """
 
-        params = {"eventGroup", event_id}
+        params = {"eventGroup": event_id}
 
         result = await GQLService.query_http(query, variable_values=params)
         return result['showcase']['projects']
 
     @staticmethod
     async def get_all_showcase_teams_without_pods():
+        print(event_id)
         query = """
             query getAllShowcaseTeamsWithoutPods($eventGroup: String!) {
               showcase {
-                projects(eventGroup: $eventGroup) {
+                projects(where: {eventGroup: $eventGroup}) {
                     ...ProjectInformation
                 }
               }
             }
         """
 
-        params = {"eventGroup", event_id}
+        params = {"eventGroup": event_id}
 
         result = await GQLService.query_http(query, variable_values=params)
         return [p for p in result["showcase"]["projects"] if (not ("pod" in p) or p["pod"] == None)]
