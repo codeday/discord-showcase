@@ -5,6 +5,8 @@ import time
 from jwt import encode
 from os import getenv
 
+event_id = int(getenv("EVENT_ID", "virtual-codeday-winter-2021"))
+
 
 class GQLService:
 
@@ -59,29 +61,35 @@ class GQLService:
     @staticmethod
     async def get_all_showcase_teams():
         query = """
-            query {
+            query getAllShowcaseTeamsWithoutPods($eventGroup: String!) {
               showcase {
-                projects {
+                projects(eventGroup: $eventGroup) {
                     ...ProjectInformation
                 }
               }
             }
         """
-        result = await GQLService.query_http(query)
+
+        params = {"eventGroup", event_id}
+
+        result = await GQLService.query_http(query, variable_values=params)
         return result['showcase']['projects']
 
     @staticmethod
     async def get_all_showcase_teams_without_pods():
         query = """
-            query {
+            query getAllShowcaseTeamsWithoutPods($eventGroup: String!) {
               showcase {
-                projects {
+                projects(eventGroup: $eventGroup) {
                     ...ProjectInformation
                 }
               }
             }
         """
-        result = await GQLService.query_http(query)
+
+        params = {"eventGroup", event_id}
+
+        result = await GQLService.query_http(query, variable_values=params)
         return [p for p in result["showcase"]["projects"] if (not ("pod" in p) or p["pod"] == None)]
 
     @staticmethod
