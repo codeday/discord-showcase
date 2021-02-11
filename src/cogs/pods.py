@@ -233,6 +233,25 @@ class Pods(commands.Cog, name="Pods"):
         session.commit()
         session.close()
 
+    @commands.command(name="merge_pods")
+    @checks.requires_staff_role()
+    async def merge_pods(self, ctx: commands.Context, pod_from, pod_to):
+        session = session_creator()
+        pod_to_be_merged = PodService.get_pod_by_name(pod_from, session)
+        pod_being_merged_into = PodService.get_pod_by_name(pod_to, session)
+        current_channel: discord.DMChannel = ctx.channel
+        pod_being_merged_into_channel: discord.DMChannel = await self.bot.fetch_channel(pod_being_merged_into.tc_id)
+        await pod_being_merged_into_channel.send("A pod is being merged into this channel...")
+        await pod_being_merged_into_channel.send("The teams joining this pod are: ")
+        for team in pod_to_be_merged.teams:
+            await self.assign_pod_helper(self.bot, team.showcase_id, pod_being_merged_into, session)
+            showcase_team = await GQLService.get_showcase_team_by_id(team.showcase_id)
+            await GQLService.record_pod_on_team_metadata(showcase_team["id"], str(pod_being_merged_into.id))
+
+        session.commit()
+        session.close()
+
+
     @commands.command(name='remove_all_pods')
     @checks.requires_staff_role()
     async def remove_all_pods(self, ctx: commands.Context):

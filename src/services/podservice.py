@@ -78,13 +78,22 @@ class PodService:
 
     @staticmethod
     def remove_all_pods():
-        """Deletes team with given id"""
+        """Deletes ALL pods from Alembic"""
         session = session_creator()
         for pod in PodService.get_all_pods():
             session.delete(pod)
 
             session.commit()
             session.close()
+
+    @staticmethod
+    def remove_pod(name_of_pod):
+        """Deletes A SINGULAR pod by NAME from Alembic"""
+        session = session_creator()
+        pod = PodService.get_pod_by_name(name_of_pod)
+        session.delete(pod)
+        session.commit()
+        session.close()
 
     @staticmethod
     def create_team(showcase_id) -> bool:
