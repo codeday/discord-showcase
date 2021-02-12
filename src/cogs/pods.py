@@ -211,7 +211,7 @@ class Pods(commands.Cog, name="Pods"):
     @commands.command(name='list_teams')
     @checks.requires_staff_role()
     async def list_teams(self, ctx: commands.Context, pod_name):
-        """Displays TEAMS of a POD in CHANNEL"""
+        """Displays TEAMS of a POD in CURRENT CHANNEL"""
         session = session_creator()
         pod = PodService.get_pod_by_name(pod_name, session)
         current_channel: discord.DMChannel = ctx.channel
@@ -224,7 +224,7 @@ class Pods(commands.Cog, name="Pods"):
     @commands.command(name='list_pods')
     @checks.requires_staff_role()
     async def list_pods(self, ctx: commands.Context):
-        """Displays PODS in CHANNEL"""
+        """Displays ALL PODS in CURRENT CHANNEL"""
         session = session_creator()
         all_pods = PodService.get_all_pods(session)
         current_channel: discord.DMChannel = ctx.channel
@@ -240,6 +240,7 @@ class Pods(commands.Cog, name="Pods"):
     @commands.command(name="merge_pods")
     @checks.requires_staff_role()
     async def merge_pods(self, ctx: commands.Context, pod_from, pod_to):
+        """Merges one PDO into another POD"""
         session = session_creator()
         pod_to_be_merged = PodService.get_pod_by_name(pod_from, session)
         pod_being_merged_into = PodService.get_pod_by_name(pod_to, session)
@@ -269,7 +270,7 @@ class Pods(commands.Cog, name="Pods"):
     @commands.command(name='remove_all_pods')
     @checks.requires_staff_role()
     async def remove_all_pods(self, ctx: commands.Context):
-        """Removes all Pods from Alembic"""
+        """Removes all Pods from Alembic and deletes all text channels from category"""
         session = session_creator()
         all_pods = PodService.get_all_pods(session)
         if len(all_pods) >= 1:
