@@ -3,7 +3,10 @@ A bot to integrate [showcase.codeday.org](https://showcase.codeday.org/) with th
 
 ### Description
 <div>
-This bot allows for the use of a pod-system. This pod system is 
+This bot allows for the use of a pod-system. A pod-system is a 
+collection of showcase projects/teams where the purpose is to allow
+mentors to better help a larger amount of members working on their
+projects. This pod system is 
 created using the s~create_pods <number_of_pods> command. Each pod 
 is also assigned a mentor upon the creation of the pod. After creating
 the pods, the administrator must run s~assign_pods to do a GQL query and
