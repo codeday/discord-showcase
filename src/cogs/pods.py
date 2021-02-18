@@ -16,7 +16,7 @@ class Pods(commands.Cog, name="Pods"):
     """Contains information pertaining to Pods"""
 
     # How many teams should be in a singular pod? Change that value here. Default is 5.
-    teams_per_pod = 5
+    teams_per_pod = int(getenv("TEAMS_PER_POD", 5))
 
     def __init__(self, bot):
         self.bot: discord.ext.commands.Bot = bot

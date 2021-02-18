@@ -5,7 +5,7 @@ import time
 from jwt import encode
 from os import getenv
 
-event_id = str(getenv("EVENT_ID", "virtual-codeday-winter-2020"))
+event_id = str(getenv("EVENT_ID", "virtual-codeday-december-2020"))
 
 
 class GQLService:
