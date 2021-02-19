@@ -134,8 +134,9 @@ class Pods(commands.Cog, name="Pods"):
                 print(discordID)
                 try:
                     member = await guild.fetch_member(discordID)
-                    await tc.set_permissions(member,
-                                             overwrite=discord.PermissionOverwrite(**dict(discord.Permissions.text())))
+                    await tc.set_permissions(member, read_messages=True, read_message_history=True,
+                                             send_messages=True, embed_links=True, attach_files=True,
+                                             external_emojis=True, add_reactions=True)
                 except discord.errors.NotFound:
                     print("A user was not found within the server")
                 except:
