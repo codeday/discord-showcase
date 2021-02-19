@@ -210,15 +210,31 @@ class Pods(commands.Cog, name="Pods"):
         session.close()
 
     @commands.command(name='list_teams')
-    @checks.requires_staff_role()
-    async def list_teams(self, ctx: commands.Context, pod_name):
+    @checks.requires_mentor_role()
+    async def list_teams(self, ctx: commands.Context, pod_name=None):
         """Displays TEAMS of a POD in CURRENT CHANNEL"""
         session = session_creator()
-        pod = PodService.get_pod_by_name(pod_name, session)
-        current_channel: discord.DMChannel = ctx.channel
-        await current_channel.send("The current teams inside of Pod " + pod_name + " are:")
+        current_channel: discord.TextChannel = ctx.channel
+        pod = None
+        print(pod_name)
+        # If the pod name is not given, use the current channels name as the argument
+        if pod_name is None:
+            current_channel_name = str(current_channel.name)
+            if '-' in current_channel_name:
+                pod = PodService.get_pod_by_name(current_channel_name.split('-')[1].capitalize(), session)
+        else:
+            pod = PodService.get_pod_by_name(pod_name, session)
+
+        await current_channel.send("The current project(s) inside of Pod " + pod.name + " are:")
         for team in pod.teams:
-            await current_channel.send("Team " + team.showcase_id)
+            showcase_team = await GQLService.get_showcase_team_by_id(team.showcase_id)
+            member_mentions = []
+            for showcase_member in showcase_team["members"]:
+                member_mentions.append(f"<@{str(showcase_member['account']['discordId'])}>")
+            embed = discord.Embed(title=f"Project {showcase_team['name']}",
+                                  url=f"https://showcase.codeday.org/project/{team.showcase_id}", color=0xff6766)
+            embed.add_field(name=f"Project member(s): ", value=f"{', '.join(member_mentions)}", inline=False)
+            await current_channel.send(embed=embed)
         session.commit()
         session.close()
 
