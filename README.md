@@ -26,8 +26,9 @@ The command prefix for any command is s~, for example:
 | checkin         | <pod_name>                    | Asks members in a specific pod how they are doing by listening for reactions and reporting it to grafana.codeday.org                                                                                            |
 | checkin_all     | none                          | Asks members in ALL pods how they are doing by listening for reactions and reporting it to grafana.codeday.org                                                                                                  |
 | list_pods       | none                          | Displays all the current pods in the channel the command is given.                                                                                                                                              |
-| list_teams      | <pod_name>                    | Displays all the teams of a particular pod in the channel the command is given.                                                                                                                                 |
+| list_teams      | <pod_name> OR none            | Displays all the teams of a particular pod in the channel the command is given or for the given pod name                                                                                                        |
 | merge_pods      | <pod_from_name> <pod_to_name> | Will remove the pod_from_name pod and merge it into pod_to_names. This will delete the text-channel for pod_from_name and move all members within that text channel to the new channel in pod_to_names channel. |
+| remove_pod      | <pod_name>                    | Removes a singular pod specified by its name, removes the text channel and any traces in alembic.                                                                                      |
 | remove_all_pods | none                          | Removes all pods from alembic and deletes all the text channels under the pods category given in the environment variable.                                                                                      |
 
 ### Environment Variables
