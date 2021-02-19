@@ -7,6 +7,7 @@ def requires_staff_role():
     """A check that scans for a staff role. Staff roles must be updated here, which isn't that obvious,
     but it will try to pull from env vars, then fall back to the staff role listed.
     """
+
     async def predicate(ctx: Context):
         # Current "Staff", "Employee", and Test Server Admin roles ID as of 12/22/20
         staff_id = json.loads(os.getenv("ROLES_STAFF", '["689215241996730417", "712062910897061979", '
@@ -14,4 +15,21 @@ def requires_staff_role():
         if [i for i in [str(role.id) for role in ctx.author.roles] if i in staff_id]:
             return True
         raise MissingAnyRole(staff_id)
+
+    return check(predicate)
+
+
+def requires_mentor_role():
+    """A check that scans for a mentor role. Mentor roles must be updated here, which isn't that obvious,
+    but it will try to pull from env vars, then fall back to the staff role listed.
+    """
+
+    async def predicate(ctx: Context):
+        # Current "Mentor" roles ID as of 2/19/2021
+        mentor_id = json.loads(os.getenv("ROLE_MENTOR"))
+
+        if [i for i in [str(role.id) for role in ctx.author.roles] if i in mentor_id]:
+            return True
+        raise MissingAnyRole(mentor_id)
+
     return check(predicate)
