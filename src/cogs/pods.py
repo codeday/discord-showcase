@@ -252,8 +252,7 @@ class Pods(commands.Cog, name="Pods"):
             pod_being_merged_into_channel: discord.DMChannel = await self.bot.fetch_channel(pod_being_merged_into.tc_id)
             pod_to_be_merged_channel = await self.bot.fetch_channel(pod_to_be_merged.tc_id)
             await pod_being_merged_into_channel.send("A pod is being merged into this channel...")
-            await pod_being_merged_into_channel.send("The teams joining this pod are: ")
-            PodService.remove_pod(pod_from)
+            await pod_being_merged_into_channel.send("The projects joining this pod are: ")
             await pod_to_be_merged_channel.delete()
             for team in pod_to_be_merged.teams:
                 await self.assign_pod_helper(self.bot, team.showcase_id, pod_being_merged_into.name, session)
@@ -261,8 +260,10 @@ class Pods(commands.Cog, name="Pods"):
                 await GQLService.unset_team_metadata(team.showcase_id)
                 await GQLService.record_pod_on_team_metadata(team.showcase_id, str(pod_being_merged_into.id))
             await current_channel.send("Done!")
+            PodService.remove_pod(pod_from)
         else:
             await current_channel.send("One of the pod names were not correct. Please specify only the name after pod-")
+
 
         session.commit()
         session.close()
