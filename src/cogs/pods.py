@@ -254,17 +254,32 @@ class Pods(commands.Cog, name="Pods"):
             await pod_being_merged_into_channel.send("A pod is being merged into this channel...")
             await pod_being_merged_into_channel.send("The projects joining this pod are: ")
             await pod_to_be_merged_channel.delete()
-            for team in pod_to_be_merged.teams:
+            while len(pod_to_be_merged.teams) > 0:
+                team = pod_to_be_merged.teams[0]
                 await self.assign_pod_helper(self.bot, team.showcase_id, pod_being_merged_into.name, session)
                 # showcase_team = await GQLService.get_showcase_team_by_id(team.showcase_id)
                 await GQLService.unset_team_metadata(team.showcase_id)
                 await GQLService.record_pod_on_team_metadata(team.showcase_id, str(pod_being_merged_into.id))
             await current_channel.send("Done!")
-            PodService.remove_pod(pod_from)
         else:
             await current_channel.send("One of the pod names were not correct. Please specify only the name after pod-")
+        session.commit()
+        session.close()
 
+        PodService.remove_pod(pod_from)
 
+    @commands.command(name='remove_pod')
+    @checks.requires_staff_role()
+    async def remove_pod(self, ctx: commands.Context, name_of_pod):
+        session = session_creator()
+        pod_to_remove = PodService.get_pod_by_name(name_of_pod, session)
+        await ctx.send("Deleting the " + pod_to_remove.name + " pod...")
+        pod_to_remove_channel = await self.bot.fetch_channel(pod_to_remove.tc_id)
+        await pod_to_remove_channel.delete()
+        for team in pod_to_remove.teams:
+            await GQLService.unset_team_metadata(team.showcase_id)
+        PodService.remove_pod(name_of_pod)
+        await ctx.send("Pod " + pod_to_remove.name + " has been removed.")
         session.commit()
         session.close()
 

@@ -5,7 +5,7 @@ import time
 from jwt import encode
 from os import getenv
 
-event_id = str(getenv("EVENT_ID", "virtual-codeday-december-2020"))
+event_id = str(getenv("EVENT_ID", "virtual-codeday-winter-2021"))
 
 
 class GQLService:
@@ -187,6 +187,7 @@ class GQLService:
         """
 
         params = {"project_id": project_id, "member": member, "value": value}
+        print(params)
         await GQLService.query_http(query, variable_values=params, with_fragments=False)
 
     """Everything beyond this point is related to GQL Subscriptions and Bot Listener Stuff"""
