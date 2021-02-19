@@ -1,4 +1,4 @@
-from discord.ext.commands import Context, check, MissingAnyRole
+from discord.ext.commands import Context, check, MissingAnyRole, MissingRole
 import json
 import os
 
@@ -25,11 +25,11 @@ def requires_mentor_role():
     """
 
     async def predicate(ctx: Context):
-        # Current "Mentor" roles ID as of 2/19/2021
-        mentor_id = json.loads(os.getenv("ROLE_MENTOR"))
+        # Current "Mentor" role ID from test server as of 2/19/2021
+        mentor_id = os.getenv("ROLE_MENTOR", "782363834836975646")
 
-        if [i for i in [str(role.id) for role in ctx.author.roles] if i in mentor_id]:
+        if str(mentor_id) in [str(role.id) for role in ctx.author.roles]:
             return True
-        raise MissingAnyRole(mentor_id)
+        raise MissingRole(mentor_id)
 
     return check(predicate)
