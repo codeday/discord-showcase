@@ -25,10 +25,11 @@ class Reactions(commands.Cog, name="Reactions"):
                 message = await channel.fetch_message(payload.message_id)
                 user_who_posted_message = message.author.id
                 if user_who_posted_message == self.bot.user.id:
-                    showcase_user = await GQLService.get_showcase_user_from_discord_id(str(payload.member.id))
-                    team_that_reacted = await GQLService.get_showcase_team_by_showcase_user(showcase_user['username'])
-                    await GQLService.send_team_reacted(str(team_that_reacted[0]['id']), str(showcase_user['username']),
-                                                       self.emoji_to_value(str(payload.emoji)))
+                    if payload.member.id != self.bot.user.id:
+                        showcase_user = await GQLService.get_showcase_user_from_discord_id(str(payload.member.id))
+                        team_that_reacted = await GQLService.get_showcase_team_by_showcase_user(showcase_user['username'])
+                        await GQLService.send_team_reacted(str(team_that_reacted[0]['id']), str(showcase_user['username']),
+                                                           self.emoji_to_value(str(payload.emoji)))
             session.commit()
             session.close()
 
