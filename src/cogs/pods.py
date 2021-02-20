@@ -254,6 +254,23 @@ class Pods(commands.Cog, name="Pods"):
         session.commit()
         session.close()
 
+    @commands.command("add_mentor")
+    @checks.requires_staff_role()
+    async def add_mentor(self, ctx: commands.Context, mentor: discord.Member, pod_name):
+        """Gives additional permissions to a particular discord member"""
+        session = session_creator()
+        pod = PodService.get_pod_by_name(pod_name, session)
+        pod_channel: discord.TextChannel = await self.bot.fetch_channel(pod.tc_id)
+        await pod_channel.set_permissions(mentor,
+                                          overwrite=discord.PermissionOverwrite(**dict(discord.Permissions.text())))
+        await pod_channel.send(
+            "Hello <@" +
+            str(mentor.id) +
+            "> you have been added as a mentor to this pod! To see a list of teams, type s~list_teams")
+        session.commit()
+        session.close()
+
+
     @commands.command(name="merge_pods")
     @checks.requires_staff_role()
     async def merge_pods(self, ctx: commands.Context, pod_from, pod_to):
