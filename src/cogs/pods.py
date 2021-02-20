@@ -115,6 +115,7 @@ class Pods(commands.Cog, name="Pods"):
         if current_pod is not None and showcase_team is not None:
             PodService.add_team_to_pod(current_pod, team_id, session)
             await GQLService.record_pod_on_team_metadata(showcase_team["id"], str(current_pod.id))
+            await GQLService.record_pod_name_on_team_metadata(showcase_team["id"], str(current_pod.name))
 
             tc = await bot.fetch_channel(int(current_pod.tc_id))
             member_mentions = []
@@ -293,6 +294,8 @@ class Pods(commands.Cog, name="Pods"):
                 # showcase_team = await GQLService.get_showcase_team_by_id(team.showcase_id)
                 await GQLService.unset_team_metadata(team.showcase_id)
                 await GQLService.record_pod_on_team_metadata(team.showcase_id, str(pod_being_merged_into.id))
+                await GQLService.record_pod_name_on_team_metadata(team.showcase_id, str(pod_being_merged_into.name))
+
             await current_channel.send("Done!")
         else:
             await current_channel.send("One of the pod names were not correct. Please specify only the name after pod-")
