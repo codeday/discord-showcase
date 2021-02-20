@@ -162,11 +162,25 @@ class GQLService:
         await GQLService.query_http(query, variable_values=params, with_fragments=False)
 
     @staticmethod
+    async def record_pod_name_on_team_metadata(project_id, value):
+        query = """
+            mutation recordPodOnTeam($project_id: String!, $value: String!) {
+                showcase {
+                    setMetadata(project: $project_id, key: "pod.name", value: $value, visibility: PUBLIC)
+                }
+            }
+            """
+
+        params = {"project_id": project_id, "value": value}
+        await GQLService.query_http(query, variable_values=params, with_fragments=False)
+
+    @staticmethod
     async def unset_team_metadata(project_id):
         query = """
             mutation unsetTeamMetaData($project_id: String!) {
                 showcase {
-                    unsetMetadata(project: $project_id, key: "pod")
+                    result1: unsetMetadata(project: $project_id, key: "pod")
+                    result2: unsetMetadata(project: $project_id, key: "pod.name")
                 }
             }
             """
