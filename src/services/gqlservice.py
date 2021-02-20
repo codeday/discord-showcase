@@ -114,16 +114,16 @@ class GQLService:
     @staticmethod
     async def get_showcase_team_by_showcase_user(username):
         query = """
-            query getShowcaseTeamByUser($username: String!) {
+            query getShowcaseTeamByUser($eventGroup: String!, $username: String!) {
               showcase {
-                projects(where: {user: $username}) {
+                projects(where: {eventGroup: $eventGroup user: $username}) {
                     ...ProjectInformation
                 }
               }
             }
         """
 
-        params = {"username": username}
+        params = {"eventGroup": event_id, "username": username}
 
         # Execute the query on the transport
         result = await GQLService.query_http(query, variable_values=params)
@@ -136,9 +136,7 @@ class GQLService:
               account {
                 getUser(where: {discordId: $discordId}) {
                     username
-                    account {
-                        discordId
-                    }
+                    discordId
                 }
               }
             }
@@ -147,7 +145,7 @@ class GQLService:
         params = {"discordId": discord_id}
 
         # Execute the query on the transport
-        result = await GQLService.query_http(query, variable_values=params)
+        result = await GQLService.query_http(query, variable_values=params, with_fragments=False)
         return result["account"]["getUser"]
 
     @staticmethod
