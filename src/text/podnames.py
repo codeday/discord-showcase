@@ -16,7 +16,7 @@ class PodNames:
                        "Sinope", "Sirius", "Thebe", "Titan", "Uranus", "Venus", "Anchovy", "Anglerfish", "Barb",
                        "Barracuda", "Barramundi", "Bass", "Betta", "Blenny", "Bluefin", "Bluegill", "Bonito", "Bream",
                        "Brill", "Brisling", "Capelin", "Carp", "Catfish", "Caviar", "Chubb", "Clown", "Knife",
-                       "Clownfish", "Cod", "Coding", "Conger", "Corydora", "Crappy", "Cuttlefish", "Dab", "Dovii",
+                       "Clownfish", "Cod", "Coding", "Conger", "Corydora", "Cuttlefish", "Dab", "Dovii",
                        "Drum", "Eel", "Eelpout", "Flounder", "Flying", "Fish", "Frostfish",
                        "Fusilier", "Garfish", "Gaspargou", "Gilt", "Head", "Bream", "Goatfish", "Gobbleguts",
                        "Goldfish", "Green", "Terror", "Grayling", "Grilled", "Grouper", "Guppy", "Gurnard", "Haddock",
