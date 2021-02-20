@@ -17,7 +17,7 @@ def handle_exception(exc_type, exc_value, exc_traceback):
 sys.excepthook = handle_exception
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')
-intents = discord.Intents(messages=True, guilds=True, members=True)
+intents = discord.Intents(messages=True, guilds=True, members=True, reactions=True)
 bot = commands.Bot(command_prefix='s~', intents=intents)
 
 initial_cogs = [

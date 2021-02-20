@@ -270,7 +270,6 @@ class Pods(commands.Cog, name="Pods"):
         session.commit()
         session.close()
 
-
     @commands.command(name="merge_pods")
     @checks.requires_staff_role()
     async def merge_pods(self, ctx: commands.Context, pod_from, pod_to):
