@@ -57,7 +57,7 @@ class CheckinCommands(commands.Cog, name="Checkin"):
         guild: discord.Guild = ctx.guild
         for pod in PodService.get_all_pods(session):
             channel: discord.DMChannel = guild.get_channel(int(pod.tc_id))
-            message = await channel.send("Hello <@everyone>, can you quickly react to this message to let us know how "
+            message = await channel.send("Hello @everyone, can you quickly react to this message to let us know how "
                                          "you're feeling about your project right now:")
             await message.add_reaction("😀")
             await message.add_reaction("😐")
