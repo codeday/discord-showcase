@@ -36,7 +36,7 @@ class CheckinCommands(commands.Cog, name="Checkin"):
         """Checks in on a specific pod"""
         session = session_creator()
         guild: discord.Guild = ctx.guild
-        pod = PodService.get_pod_by_name(pod_name, session)
+        pod = PodService.get_pod_by_name(str(pod_name).capitalize(), session)
         if pod is not None:
             channel: discord.DMChannel = guild.get_channel(int(pod.tc_id))
             await channel.send("Hello! This is your friendly Showcase bot!")

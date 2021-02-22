@@ -88,7 +88,7 @@ class Pods(commands.Cog, name="Pods"):
         # We subtract one so that there is an extra mentor left, who is designated to the pod called overflow
         for x in range(0, int(number_of_mentors) - 1):
             await self.create_pod(ctx, self.find_a_suitable_pod_name(), self.find_a_suitable_mentor(ctx))
-        await self.create_pod(ctx, "overflow", self.find_a_suitable_mentor(ctx))
+        await self.create_pod(ctx, "Overflow", self.find_a_suitable_mentor(ctx))
 
     @commands.command(name='assign_pod')
     @checks.requires_staff_role()
@@ -260,7 +260,7 @@ class Pods(commands.Cog, name="Pods"):
     async def add_mentor(self, ctx: commands.Context, mentor: discord.Member, pod_name):
         """Gives additional permissions to a particular discord member"""
         session = session_creator()
-        pod = PodService.get_pod_by_name(pod_name, session)
+        pod = PodService.get_pod_by_name(str(pod_name).capitalize(), session)
         pod_channel: discord.TextChannel = await self.bot.fetch_channel(pod.tc_id)
         await pod_channel.set_permissions(mentor,
                                           overwrite=discord.PermissionOverwrite(**dict(discord.Permissions.text())))
@@ -276,8 +276,8 @@ class Pods(commands.Cog, name="Pods"):
     async def merge_pods(self, ctx: commands.Context, pod_from, pod_to):
         """Merges one PDO into another POD"""
         session = session_creator()
-        pod_to_be_merged = PodService.get_pod_by_name(pod_from, session)
-        pod_being_merged_into = PodService.get_pod_by_name(pod_to, session)
+        pod_to_be_merged = PodService.get_pod_by_name(str(pod_from).capitalize(), session)
+        pod_being_merged_into = PodService.get_pod_by_name(str(pod_to).capitalize(), session)
         print(pod_to_be_merged)
         print(pod_being_merged_into)
         current_channel: discord.DMChannel = ctx.channel
@@ -308,7 +308,7 @@ class Pods(commands.Cog, name="Pods"):
     @checks.requires_staff_role()
     async def remove_pod(self, ctx: commands.Context, name_of_pod):
         session = session_creator()
-        pod_to_remove = PodService.get_pod_by_name(name_of_pod, session)
+        pod_to_remove = PodService.get_pod_by_name(str(name_of_pod).capitalize(), session)
         await ctx.send("Deleting the " + pod_to_remove.name + " pod...")
         pod_to_remove_channel = await self.bot.fetch_channel(pod_to_remove.tc_id)
         await pod_to_remove_channel.delete()
