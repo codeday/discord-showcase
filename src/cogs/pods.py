@@ -312,6 +312,9 @@ class Pods(commands.Cog, name="Pods"):
     @commands.command(name='remove_pod')
     @checks.requires_staff_role()
     async def remove_pod(self, ctx: commands.Context, name_of_pod):
+        if str(name_of_pod).lower() == "overflow":
+            await ctx.send("You cannot delete the overflow pod unless you are removing all pods.")
+            return
         session = session_creator()
         pod_to_remove = PodService.get_pod_by_name(str(name_of_pod).capitalize(), session)
         await ctx.send("Deleting the " + pod_to_remove.name + " pod...")
