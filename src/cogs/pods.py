@@ -348,6 +348,29 @@ class Pods(commands.Cog, name="Pods"):
         session.commit()
         session.close()
 
+    @commands.command(name='send_message')
+    @checks.requires_staff_role()
+    async def send_message(self, ctx: commands.Context, pod_name, *message):
+        """Sends a message to a single pod using the bot account"""
+        session = session_creator()
+        pod = PodService.get_pod_by_name(str(pod_name).capitalize(), session)
+        pod_channel = await self.bot.fetch_channel(pod.tc_id)
+        await pod_channel.send(" ".join(message[:]))
+        session.commit()
+        session.close()
+
+    @commands.command(name='send_message_all')
+    @checks.requires_staff_role()
+    async def send_message_all(self, ctx: commands.Context, *message):
+        """Sends a message to every pod using the bot account"""
+        session = session_creator()
+        all_pods = PodService.get_all_pods(session)
+        for pod in all_pods:
+            pod_channel = await self.bot.fetch_channel(pod.tc_id)
+            await pod_channel.send(" ".join(message[:]))
+        session.commit()
+        session.close()
+
     @commands.command(name='get_teams_from_gql')
     @checks.requires_staff_role()
     async def get_teams_from_gql(self, ctx: commands.Context):
