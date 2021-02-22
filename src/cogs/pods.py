@@ -278,31 +278,31 @@ class Pods(commands.Cog, name="Pods"):
         session = session_creator()
         pod_to_be_merged = PodService.get_pod_by_name(str(pod_from).capitalize(), session)
         pod_being_merged_into = PodService.get_pod_by_name(str(pod_to).capitalize(), session)
-        print(pod_to_be_merged)
-        print(pod_being_merged_into)
         current_channel: discord.DMChannel = ctx.channel
         if pod_being_merged_into is not None and pod_being_merged_into is not None:
             await current_channel.send("Pods are currently being merged... give me one second...")
             pod_being_merged_into_channel: discord.DMChannel = await self.bot.fetch_channel(pod_being_merged_into.tc_id)
             pod_to_be_merged_channel = await self.bot.fetch_channel(pod_to_be_merged.tc_id)
-            await pod_being_merged_into_channel.send("A pod is being merged into this channel...")
-            await pod_being_merged_into_channel.send("The projects joining this pod are: ")
             await pod_to_be_merged_channel.delete()
-            while len(pod_to_be_merged.teams) > 0:
-                team = pod_to_be_merged.teams[0]
-                await self.assign_pod_helper(self.bot, team.showcase_id, pod_being_merged_into.name, session)
-                # showcase_team = await GQLService.get_showcase_team_by_id(team.showcase_id)
-                await GQLService.unset_team_metadata(team.showcase_id)
-                await GQLService.record_pod_on_team_metadata(team.showcase_id, str(pod_being_merged_into.id))
-                await GQLService.record_pod_name_on_team_metadata(team.showcase_id, str(pod_being_merged_into.name))
-
-            await current_channel.send("Done!")
+            if len(pod_to_be_merged.teams) > 0:
+                await pod_being_merged_into_channel.send("A pod is being merged into this channel...")
+                await pod_being_merged_into_channel.send("The projects joining this pod are: ")
+                while len(pod_to_be_merged.teams) > 0:
+                    team = pod_to_be_merged.teams[0]
+                    await self.assign_pod_helper(self.bot, team.showcase_id, pod_being_merged_into.name, session)
+                    
+                    await GQLService.unset_team_metadata(team.showcase_id)
+                    await GQLService.record_pod_on_team_metadata(team.showcase_id, str(pod_being_merged_into.id))
+                    await GQLService.record_pod_name_on_team_metadata(team.showcase_id, str(pod_being_merged_into.name))
+                await current_channel.send("Done! All teams have also been merged into the new pod.")
+            else:
+                await current_channel.send("Done! There were no teams to merge into the new pod.")
         else:
             await current_channel.send("One of the pod names were not correct. Please specify only the name after pod-")
         session.commit()
         session.close()
 
-        PodService.remove_pod(pod_from)
+        PodService.remove_pod(str(pod_from).capitalize())
 
     @commands.command(name='remove_pod')
     @checks.requires_staff_role()
