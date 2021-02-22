@@ -259,9 +259,13 @@ class Pods(commands.Cog, name="Pods"):
     @checks.requires_staff_role()
     async def add_mentor(self, ctx: commands.Context, mentor: discord.Member, pod_name):
         """Gives additional permissions to a particular discord member"""
+        await self.add_mentor_helper(mentor, pod_name)
+
+    @staticmethod
+    async def add_mentor_helper(bot: discord.ext.commands.Bot, mentor: discord.Member, pod_name):
         session = session_creator()
         pod = PodService.get_pod_by_name(str(pod_name).capitalize(), session)
-        pod_channel: discord.TextChannel = await self.bot.fetch_channel(pod.tc_id)
+        pod_channel: discord.TextChannel = await bot.fetch_channel(pod.tc_id)
         await pod_channel.set_permissions(mentor,
                                           overwrite=discord.PermissionOverwrite(**dict(discord.Permissions.text())))
         await pod_channel.send(
@@ -290,13 +294,14 @@ class Pods(commands.Cog, name="Pods"):
                 while len(pod_to_be_merged.teams) > 0:
                     team = pod_to_be_merged.teams[0]
                     await self.assign_pod_helper(self.bot, team.showcase_id, pod_being_merged_into.name, session)
-                    
                     await GQLService.unset_team_metadata(team.showcase_id)
                     await GQLService.record_pod_on_team_metadata(team.showcase_id, str(pod_being_merged_into.id))
                     await GQLService.record_pod_name_on_team_metadata(team.showcase_id, str(pod_being_merged_into.name))
                 await current_channel.send("Done! All teams have also been merged into the new pod.")
             else:
                 await current_channel.send("Done! There were no teams to merge into the new pod.")
+            mentor = await self.bot.fetch_user(int(pod_to_be_merged.mentor))
+            await self.add_mentor_helper(ctx.bot, mentor, pod_being_merged_into.name)
         else:
             await current_channel.send("One of the pod names were not correct. Please specify only the name after pod-")
         session.commit()
