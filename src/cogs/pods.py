@@ -259,7 +259,7 @@ class Pods(commands.Cog, name="Pods"):
     @checks.requires_staff_role()
     async def add_mentor(self, ctx: commands.Context, mentor: discord.Member, pod_name):
         """Gives additional permissions to a particular discord member"""
-        await self.add_mentor_helper(mentor, pod_name)
+        await self.add_mentor_helper(ctx.bot, mentor, pod_name)
 
     @staticmethod
     async def add_mentor_helper(bot: discord.ext.commands.Bot, mentor: discord.Member, pod_name):
