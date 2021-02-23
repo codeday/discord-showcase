@@ -303,15 +303,26 @@ class Pods(commands.Cog, name="Pods"):
 
     @commands.command(name='remove_pod')
     @checks.requires_staff_role()
-    async def remove_pod(self, ctx: commands.Context, name_of_pod=None):
+    async def remove_pod(self, ctx: commands.Context, pod_name=None):
         session = session_creator()
-        pod_to_remove = PodService.get_pod_by_name(str(name_of_pod).capitalize(), session)
+
+        pod_to_remove = None
+
+        # If the pod name is not given, use the current channels name as the argument
+        if pod_name is None:
+            current_channel: discord.TextChannel = ctx.channel
+            current_channel_name = str(current_channel.name)
+            if '-' in current_channel_name:
+                pod_to_remove = PodService.get_pod_by_name(current_channel_name.split('-')[1].capitalize(), session)
+        else:
+            pod_to_remove = PodService.get_pod_by_name(pod_name, session)
+
         await ctx.send("Deleting the " + pod_to_remove.name + " pod...")
         pod_to_remove_channel = await self.bot.fetch_channel(pod_to_remove.tc_id)
         await pod_to_remove_channel.delete()
         for team in pod_to_remove.teams:
             await GQLService.unset_team_metadata(team.showcase_id)
-        PodService.remove_pod(name_of_pod)
+        PodService.remove_pod(pod_name)
         await ctx.send("Pod " + pod_to_remove.name + " has been removed.")
         session.commit()
         session.close()
