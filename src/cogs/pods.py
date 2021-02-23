@@ -69,21 +69,6 @@ class Pods(commands.Cog, name="Pods"):
     @checks.requires_staff_role()
     async def create_pods(self, ctx: commands.Context, number_of_mentors):
         """Creates all PODS for all TEAMS"""
-        # First, create a help channel with text from the podhelpchannel.py file
-        guild: discord.Guild = ctx.guild
-        overwrites = {
-            # Default User Access to the help channel
-            guild.default_role: discord.PermissionOverwrite(read_messages=True, read_message_history=True),
-            guild.get_role(self.staff_role): discord.PermissionOverwrite(**dict(discord.Permissions.text())),
-            guild.me: discord.PermissionOverwrite(read_messages=True, read_message_history=True),
-        }
-
-        tc = await guild.create_text_channel("what-is-a-pod", overwrites=overwrites,
-                                             category=guild.get_channel(self.category),
-                                             reason=None)
-        await tc.send(PodHelpChannel.initial_message)
-        # END of help channel text channel creation
-
         # Then, create the actual pods by calling the singular create_pod function
         # We subtract one so that there is an extra mentor left, who is designated to the pod called overflow
         for x in range(0, int(number_of_mentors) - 1):
@@ -217,7 +202,7 @@ class Pods(commands.Cog, name="Pods"):
         session = session_creator()
         current_channel: discord.TextChannel = ctx.channel
         pod = None
-        print(pod_name)
+
         # If the pod name is not given, use the current channels name as the argument
         if pod_name is None:
             current_channel_name = str(current_channel.name)
@@ -256,13 +241,20 @@ class Pods(commands.Cog, name="Pods"):
         session.close()
 
     @commands.command("add_mentor")
-    @checks.requires_staff_role()
-    async def add_mentor(self, ctx: commands.Context, mentor: discord.Member, pod_name):
+    @checks.requires_mentor_role()
+    async def add_mentor(self, ctx: commands.Context, mentor: discord.Member, pod_name=None):
         """Gives additional permissions to a particular discord member"""
-        await self.add_mentor_helper(ctx.bot, mentor, pod_name)
+        # If the pod name is not given, use the current channels name as the argument
+        if pod_name is None:
+            current_channel: discord.TextChannel = ctx.channel
+            current_channel_name = str(current_channel.name)
+            if '-' in current_channel_name:
+                await self.add_mentor_helper(ctx.bot, mentor, current_channel_name.split('-')[1].capitalize())
+        else:
+            await self.add_mentor_helper(ctx.bot, mentor, pod_name)
 
     @staticmethod
-    async def add_mentor_helper(bot: discord.ext.commands.Bot, mentor: discord.Member, pod_name):
+    async def add_mentor_helper(bot: discord.ext.commands.Bot, mentor: discord.Member, pod_name=None):
         session = session_creator()
         pod = PodService.get_pod_by_name(str(pod_name).capitalize(), session)
         pod_channel: discord.TextChannel = await bot.fetch_channel(pod.tc_id)
@@ -311,10 +303,7 @@ class Pods(commands.Cog, name="Pods"):
 
     @commands.command(name='remove_pod')
     @checks.requires_staff_role()
-    async def remove_pod(self, ctx: commands.Context, name_of_pod):
-        if str(name_of_pod).lower() == "overflow":
-            await ctx.send("You cannot delete the overflow pod unless you are removing all pods.")
-            return
+    async def remove_pod(self, ctx: commands.Context, name_of_pod=None):
         session = session_creator()
         pod_to_remove = PodService.get_pod_by_name(str(name_of_pod).capitalize(), session)
         await ctx.send("Deleting the " + pod_to_remove.name + " pod...")
