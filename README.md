@@ -14,6 +14,9 @@ retrieve the projects from showcase to fill the pods with teams and
 the members within those teams.
 </div>
 
+### Are you a mentor?
+Click the following [link](https://docs.google.com/document/d/1PAS1kiid47MkcNUrk7mVlUp6sD5Qp5ZTwZFoqAYdc48/edit?usp=sharing)
+
 ### Noteworthy Commands
 The command prefix for any command is s~, for example:
 > s~create_pods 3
