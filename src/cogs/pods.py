@@ -87,6 +87,12 @@ class Pods(commands.Cog, name="Pods"):
         """Assigns remaining TEAMS to PODS"""
         await self.assign_pods_helper(self.bot)
 
+    @commands.command(name='secret')
+    @checks.requires_staff_role()
+    async def assign_pods(self, ctx: commands.Context):
+        """Secret Command"""
+        await ctx.send("Jacob Cuomo is my dad.")
+
     # Some notes about embedded messages:
     # - To display fields side-by-side, you need at least two consecutive fields set to inline
     # - The timestamp will automatically adjust the timezone depending on the user's device
@@ -317,15 +323,18 @@ class Pods(commands.Cog, name="Pods"):
         else:
             pod_to_remove = PodService.get_pod_by_name(pod_name, session)
 
-        await ctx.send("Deleting the " + pod_to_remove.name + " pod...")
         pod_to_remove_channel = await self.bot.fetch_channel(pod_to_remove.tc_id)
-        await pod_to_remove_channel.delete()
         for team in pod_to_remove.teams:
             await GQLService.unset_team_metadata(team.showcase_id)
-        PodService.remove_pod(pod_name)
-        await ctx.send("Pod " + pod_to_remove.name + " has been removed.")
+        # await ctx.send("Pod " + pod_to_remove.name + " has been removed.")
+        await pod_to_remove_channel.delete()
+        PodService.remove_pod(str(pod_to_remove.name).capitalize())
+
         session.commit()
         session.close()
+
+        print(PodService.get_all_pods)
+
 
     @commands.command(name='remove_all_pods')
     @checks.requires_staff_role()
