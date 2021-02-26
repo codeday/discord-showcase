@@ -22,13 +22,13 @@ class PodNames:
                        "Goldfish", "Green", "Terror", "Grayling", "Grilled", "Grouper", "Guppy", "Gurnard", "Haddock",
                        "Hake", "Halibut", "Herring", "Horse", "Mackerel", "Joey", "John", "Dory", "Koi", "Ling",
                        "Mackerel", "Managuense", "Marlin", "Meagre", "Minnow", "Monkfish", "Moray", "Morwong", "Mullet",
-                       "Muskey", "Nudibranch", "Octopus", "Oilfish", "Oscar", "Parrot", "fish", "Perch", "Pike",
+                       "Muskey", "Nudibranch", "Octopus", "Oilfish", "Oscar", "Parrot", "Perch", "Pike",
                        "Pilchard", "Piranha", "Plaice", "Platty", "Pollack", "Pompano", "Pout",
                        "Red", "Bream", "Redfish", "Remora", "Sailfish", "Saithe", "Salmon", "Sandeel",
                        "Sardine", "Sardinella", "Scorpionfish", "Sea", "Bream", "Shark",
-                       "Sheepshead", "Smelt", "Smoked", "strips", "of", "shark", "belly", "Snapper", "Sockeye", "Sole",
+                       "Sheepshead", "Smelt", "Smoked", "Snapper", "Sockeye", "Sole",
                        "Sprat", "Squid", "Stickleback", "Stockfish", "Sturgeon", "Sunfish", "Sunny", "Swordfish",
-                       "Talapia", "Talma", "Tarpon", "Tench", "Tetra", "Trimac", "Trout", "Trumpeter", "Tub", "gurnard",
+                       "Talapia", "Talma", "Tarpon", "Tench", "Tetra", "Trimac", "Trout", "Trumpeter", "Tub", "Gurnard",
                        "Tuna", "Turbot", "Walleye", "Weever", "Whipray", "Hake", "Wirrah",
                        "Wobbegong", "Wrasse"]
     shuffle(available_names)
