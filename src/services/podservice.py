@@ -3,46 +3,37 @@ from typing import Optional
 from sqlalchemy.exc import IntegrityError
 
 from db.models import session_creator, Pod, Team
+from main import session
+from utils.exceptions import PodNameNotFound, PodTCNotFound, PodIDNotFound
 
 
 class PodService:
     @staticmethod
-    def get_pod_by_name(name, session=None) -> Optional[Pod]:
+    def get_pod_by_name(name) -> Optional[Pod]:
         """Returns the pod with the given name, or none if it doesn't exist"""
-        sess_flag = False
-        if session is None:
-            session = session_creator()
-            sess_flag = True
-        pod = session.query(Pod).filter(Pod.name == name).first()
-        if sess_flag:
-            session.commit()
-            session.close()
-        return pod
-
-    def get_pod_by_channel_id(tc_id, session=None) -> Optional[Pod]:
-        """Returns the pod with the given text channel id, or none if it doesn't exist"""
-        sess_flag = False
-        if session is None:
-            session = session_creator()
-            sess_flag = True
-        pod = session.query(Pod).filter(Pod.tc_id == tc_id).first()
-        if sess_flag:
-            session.commit()
-            session.close()
-        return pod
+        try:
+            pod = session.query(Pod).filter(Pod.name == name).first()
+            return pod
+        except PodNameNotFound(name):
+            return False
 
     @staticmethod
-    def get_pod_by_id(id, session=None) -> Optional[Pod]:
+    def get_pod_by_channel_id(tc_id) -> Optional[Pod]:
+        """Returns the pod with the given text channel id, or none if it doesn't exist"""
+        try:
+            pod = session.query(Pod).filter(Pod.tc_id == tc_id).first()
+            return pod
+        except PodTCNotFound:
+            return False
+
+    @staticmethod
+    def get_pod_by_id(id) -> Optional[Pod]:
         """Returns the pod with the given id, or none if it doesn't exist"""
-        sess_flag = False
-        if session is None:
-            session = session_creator()
-            sess_flag = True
-        pod = session.query(Pod).filter(Pod.id == id).first()
-        if sess_flag:
-            session.commit()
-            session.close()
-        return pod
+        try:
+            pod = session.query(Pod).filter(Pod.id == id).first()
+            return pod
+        except PodIDNotFound:
+            return False
 
     @staticmethod
     def get_all_pods(session=None) -> list:

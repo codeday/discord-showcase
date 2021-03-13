@@ -4,10 +4,7 @@ import discord
 from discord.ext import commands
 from os import getenv
 
-from db.models import session_creator
-from obj.VerifyPod import Pod
-from services.podservice import PodService
-from text.podhelpchannel import PodHelpChannel
+from obj.VerifyPod import VerifyPod
 from text.podnames import PodNames
 from services.gqlservice import GQLService
 from utils import checks
@@ -202,21 +199,19 @@ class Pods(commands.Cog, name="Pods"):
         session.commit()
         session.close()
 
+    @commands.command(name="test")
+    @checks.requires_staff_role()
+    async def test(self, ctx: commands.Context, pod: VerifyPod):
+        await ctx.send(f'Pod was found maybe? ID is {pod.id}')
+
     @commands.command(name='list_teams')
     @checks.requires_mentor_role()
-    async def list_teams(self, ctx: commands.Context, pod_name: Pod): # s~list_teams rigel
+    async def list_teams(self, ctx: commands.Context, pod: VerifyPod): # s~list_teams rigel
         """Displays TEAMS of a POD in CURRENT CHANNEL"""
-        session = session_creator()
         current_channel: discord.TextChannel = ctx.channel
-        pod = None
+        #if pod is None:
 
-        # If the pod name is not given, use the current channels name as the argument
-        if pod_name is None:
-            current_channel_name = str(current_channel.name)
-            if '-' in current_channel_name:
-                pod = PodService.get_pod_by_name(current_channel_name.split('-')[1].capitalize(), session)
-        else:
-            pod = PodService.get_pod_by_name(pod_name, session)
+
 
         await current_channel.send("The current project(s) inside of Pod " + pod.name + " are:")
         for team in pod.teams:
