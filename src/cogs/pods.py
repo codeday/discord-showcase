@@ -5,6 +5,7 @@ from discord.ext import commands
 from os import getenv
 
 from db.models import session_creator
+from obj.VerifyPod import Pod
 from services.podservice import PodService
 from text.podhelpchannel import PodHelpChannel
 from text.podnames import PodNames
@@ -203,7 +204,7 @@ class Pods(commands.Cog, name="Pods"):
 
     @commands.command(name='list_teams')
     @checks.requires_mentor_role()
-    async def list_teams(self, ctx: commands.Context, pod_name=None):
+    async def list_teams(self, ctx: commands.Context, pod_name: Pod): # s~list_teams rigel
         """Displays TEAMS of a POD in CURRENT CHANNEL"""
         session = session_creator()
         current_channel: discord.TextChannel = ctx.channel
@@ -227,6 +228,9 @@ class Pods(commands.Cog, name="Pods"):
                                   url=f"https://showcase.codeday.org/project/{team.showcase_id}", color=0xff6766)
             embed.add_field(name=f"Project member(s): ", value=f"{', '.join(member_mentions)}", inline=False)
             await current_channel.send(embed=embed)
+        if len(pod.teams):
+            current_channel.send(
+                "There are no projects in your pod yet. Project(s) are still being created by attendee's.")
         session.commit()
         session.close()
 
@@ -247,7 +251,7 @@ class Pods(commands.Cog, name="Pods"):
         session.close()
 
     @commands.command("add_mentor")
-    @checks.requires_mentor_role()
+    @checks.requires_staff_role()
     async def add_mentor(self, ctx: commands.Context, mentor: discord.Member, pod_name=None):
         """Gives additional permissions to a particular discord member"""
         # If the pod name is not given, use the current channels name as the argument
@@ -334,7 +338,6 @@ class Pods(commands.Cog, name="Pods"):
         session.close()
 
         print(PodService.get_all_pods)
-
 
     @commands.command(name='remove_all_pods')
     @checks.requires_staff_role()
