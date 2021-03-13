@@ -2,11 +2,17 @@ import logging
 import os
 import sys
 import traceback
+import atexit
 
 import discord
 
 from discord.ext import commands
 from raygun4py import raygunprovider
+from db.models import session_creator
+
+# The best way to handle session with a cmd program (discord bot) is to have a global session variable.
+# Information on why that is can be found here: https://docs.sqlalchemy.org/en/13/orm/session_basics.html
+session = session_creator()
 
 
 def handle_exception(exc_type, exc_value, exc_traceback):
@@ -39,5 +45,12 @@ for cog in initial_cogs:
 @bot.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
+    atexit.register(exit_handler)
+
+def exit_handler():
+    print('The application is ending!')
+    session.commit()
+    session.close()
+
 
 bot.run(BOT_TOKEN, bot=True, reconnect=True)
