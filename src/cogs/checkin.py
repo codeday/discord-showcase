@@ -5,7 +5,6 @@ import discord
 from discord.ext import commands
 
 from db.models import session_creator
-from services.podservice import PodService
 from utils import checks
 
 

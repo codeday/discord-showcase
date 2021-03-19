@@ -1,10 +1,10 @@
 from idlelib.undo import CommandSequence
 
 import discord
+
+from converters.PodConverter import PodConverter
 from discord.ext import commands
 from os import getenv
-
-from obj.VerifyPod import VerifyPod
 from text.podnames import PodNames
 from services.gqlservice import GQLService
 from utils import checks
@@ -18,7 +18,7 @@ class Pods(commands.Cog, name="Pods"):
 
     def __init__(self, bot):
         self.bot: discord.ext.commands.Bot = bot
-
+        print(PodConverter)
         # The role in which the bot will give all permissions to the pod channels
         self.staff_role = int(getenv("ROLE_STAFF", 689960285926195220))
 
@@ -87,7 +87,7 @@ class Pods(commands.Cog, name="Pods"):
 
     @commands.command(name='secret')
     @checks.requires_staff_role()
-    async def assign_pods(self, ctx: commands.Context):
+    async def secret(self, ctx: commands.Context):
         """Secret Command"""
         await ctx.send("Jacob Cuomo is my dad.")
 
@@ -201,12 +201,12 @@ class Pods(commands.Cog, name="Pods"):
 
     @commands.command(name="test")
     @checks.requires_staff_role()
-    async def test(self, ctx: commands.Context, pod: VerifyPod):
+    async def test(self, ctx: commands.Context, *, pod: PodConverter):
         await ctx.send(f'Pod was found maybe? ID is {pod.id}')
 
     @commands.command(name='list_teams')
     @checks.requires_mentor_role()
-    async def list_teams(self, ctx: commands.Context, pod: VerifyPod): # s~list_teams rigel
+    async def list_teams(self, ctx: commands.Context, pod: PodConverter): # s~list_teams rigel
         """Displays TEAMS of a POD in CURRENT CHANNEL"""
         current_channel: discord.TextChannel = ctx.channel
         #if pod is None:
