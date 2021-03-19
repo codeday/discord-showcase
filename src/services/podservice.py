@@ -3,8 +3,11 @@ from typing import Optional
 from sqlalchemy.exc import IntegrityError
 
 from db.models import session_creator, Pod, Team
-from main import session
 from utils.exceptions import PodNameNotFound, PodTCNotFound, PodIDNotFound
+
+# The best way to handle session with a cmd program (discord bot) is to have a global session variable.
+# Information on why that is can be found here: https://docs.sqlalchemy.org/en/13/orm/session_basics.html
+session = session_creator()
 
 
 class PodService:
@@ -157,7 +160,7 @@ class PodService:
         if sess_flag:
             session.commit()
             session.close()
-        if len(pods[0].teams) <= (size-1):
+        if len(pods[0].teams) <= (size - 1):
             return pods[0]
         else:
             return None
