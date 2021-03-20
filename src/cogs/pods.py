@@ -307,10 +307,10 @@ class Pods(commands.Cog, name="Pods"):
 
     @commands.command(name='remove_pod')
     @checks.requires_staff_role()
-    async def remove_pod(self, ctx: commands.Context, *, pod: PodConverter = None):
+    async def remove_pod(self, ctx: commands.Context, pod_name=None):
         current_channel: discord.TextChannel = ctx.channel
+        pod = await PodConverter.get_pod(current_channel, pod_name)
         if pod is None:
-            await current_channel.send("A pod was not able to be found by the text channel or by name.")
             return
 
         pod_to_remove_channel = await self.bot.fetch_channel(pod.tc_id)
@@ -328,45 +328,41 @@ class Pods(commands.Cog, name="Pods"):
     @checks.requires_staff_role()
     async def remove_all_pods(self, ctx: commands.Context):
         """Removes all Pods from Alembic and deletes all text channels from category"""
-        session = session_creator()
-        all_pods = PodService.get_all_pods(session)
-        if len(all_pods) >= 1:
-            await ctx.send("Removing all pods... give me one second...")
-            category = discord.utils.get(ctx.guild.categories, id=self.category)
-            for channel in category.channels:
-                await channel.delete()
-            PodService.remove_all_pods()
-            allTeams = await GQLService.get_all_showcase_teams()
-            for team in allTeams:
-                await GQLService.unset_team_metadata(team["id"])
-            await ctx.send("All Pods have been removed.")
-        else:
+        all_pods = PodService.get_all_pods()
+        if len(all_pods) == 0:
             await ctx.send("There are no pods to remove.")
-        session.commit()
-        session.close()
+            return
+
+        await ctx.send("I am in the process of removing pods, give me a couple of seconds... "
+                       "I will let you know when I am done.")
+        category = discord.utils.get(ctx.guild.categories, id=self.category)
+        PodService.remove_all_pods()
+        for channel in category.channels:
+            await channel.delete()
+        all_teams = await GQLService.get_all_showcase_teams()
+        for team in all_teams:
+            await GQLService.unset_team_metadata(team["id"])
+        await ctx.send("All pods have been removed.")
 
     @commands.command(name='send_message')
     @checks.requires_staff_role()
     async def send_message(self, ctx: commands.Context, pod_name, *message):
         """Sends a message to a single pod using the bot account"""
-        session = session_creator()
-        pod = PodService.get_pod_by_name(str(pod_name).capitalize(), session)
+        pod = PodConverter.get_pod(ctx.channel, pod_name)
+        if pod is None:
+            return
+
         pod_channel = await self.bot.fetch_channel(pod.tc_id)
         await pod_channel.send(" ".join(message[:]))
-        session.commit()
-        session.close()
 
     @commands.command(name='send_message_all')
     @checks.requires_staff_role()
     async def send_message_all(self, ctx: commands.Context, *message):
         """Sends a message to every pod using the bot account"""
-        session = session_creator()
-        all_pods = PodService.get_all_pods(session)
+        all_pods = PodService.get_all_pods()
         for pod in all_pods:
             pod_channel = await self.bot.fetch_channel(pod.tc_id)
             await pod_channel.send(" ".join(message[:]))
-        session.commit()
-        session.close()
 
     @commands.command(name='get_teams_from_gql')
     @checks.requires_staff_role()
