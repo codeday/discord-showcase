@@ -6,7 +6,7 @@ from converters.PodConverter import PodConverter
 from discord.ext import commands
 from os import getenv
 
-from services.podservice import PodService
+from services.podservice import PodService, session
 from text.podnames import PodNames
 from services.gqlservice import GQLService
 from utils import checks
@@ -75,6 +75,12 @@ class Pods(commands.Cog, name="Pods"):
             await self.create_pod(ctx, self.find_a_suitable_pod_name(), self.find_a_suitable_mentor(ctx))
         await self.create_pod(ctx, "Overflow", self.find_a_suitable_mentor(ctx))
 
+    @commands.command(name='secret')
+    @checks.requires_staff_role()
+    async def secret(self, ctx: commands.Context):
+        """Secret Command"""
+        await ctx.send("Jacob Cuomo is my dad.")
+
     @commands.command(name='assign_pod')
     @checks.requires_staff_role()
     async def assign_pod(self, ctx: commands.Context, team_id, pod_name):
@@ -86,12 +92,6 @@ class Pods(commands.Cog, name="Pods"):
     async def assign_pods(self, ctx: commands.Context):
         """Assigns remaining TEAMS to PODS"""
         await self.assign_pods_helper(self.bot)
-
-    @commands.command(name='secret')
-    @checks.requires_staff_role()
-    async def secret(self, ctx: commands.Context):
-        """Secret Command"""
-        await ctx.send("Jacob Cuomo is my dad.")
 
     # Some notes about embedded messages:
     # - To display fields side-by-side, you need at least two consecutive fields set to inline
@@ -138,35 +138,28 @@ class Pods(commands.Cog, name="Pods"):
 
     @staticmethod
     async def assign_pods_helper(bot: discord.ext.commands.Bot):
-        session = session_creator()
         all_teams_without_pods = await GQLService.get_all_showcase_teams_without_pods()
 
         for team in all_teams_without_pods:
             if len(team["members"]) >= 1:
-                print(team)
-                smallest_pod = PodService.get_smallest_pod(session, Pods.teams_per_pod)
-                print(smallest_pod)
+                smallest_pod = PodService.get_smallest_pod(Pods.teams_per_pod)
                 if smallest_pod:
-                    await Pods.assign_pod_helper(bot, team["id"], smallest_pod.name, session)
+                    await Pods.assign_pod_helper(bot, team["id"], smallest_pod.name)
                 else:
-                    await Pods.assign_pod_helper(bot, team["id"], "overflow", session)
-
+                    await Pods.assign_pod_helper(bot, team["id"], "overflow")
         session.commit()
-        session.close()
 
     @staticmethod
     async def add_or_remove_user_to_pod_tc(bot: discord.ext.commands.Bot, member_with_project, should_be_removed):
         # Get User Member Object AND Get text channel object
-        session = session_creator()
         print(member_with_project)
         discord_id = member_with_project["account"]["discordId"]
         guild: discord.Guild = await bot.fetch_guild(689213562740277361)
         showcase_team = await GQLService.get_showcase_team_by_id(member_with_project["project"]["id"])
 
-        pod = PodService.get_pod_by_id(showcase_team["pod"], session)
+        pod = PodService.get_pod_by_id(showcase_team["pod"])
         try:
             member: discord.Member = await guild.fetch_member(discord_id)
-
             tc = await bot.fetch_channel(pod.tc_id)
 
             # User is being removed from the pod tc
@@ -208,12 +201,10 @@ class Pods(commands.Cog, name="Pods"):
 
     @commands.command(name='list_teams')
     @checks.requires_mentor_role()
-    async def list_teams(self, ctx: commands.Context, pod: PodConverter): # s~list_teams rigel
+    async def list_teams(self, ctx: commands.Context, *, pod: PodConverter):  # s~list_teams rigel
         """Displays TEAMS of a POD in CURRENT CHANNEL"""
         current_channel: discord.TextChannel = ctx.channel
-        #if pod is None:
-
-
+        # if pod is None:
 
         await current_channel.send("The current project(s) inside of Pod " + pod.name + " are:")
         for team in pod.teams:
@@ -226,7 +217,7 @@ class Pods(commands.Cog, name="Pods"):
             embed.add_field(name=f"Project member(s): ", value=f"{', '.join(member_mentions)}", inline=False)
             await current_channel.send(embed=embed)
         if len(pod.teams):
-            current_channel.send(
+            await current_channel.send(
                 "There are no projects in your pod yet. Project(s) are still being created by attendee's.")
         session.commit()
         session.close()
@@ -235,8 +226,7 @@ class Pods(commands.Cog, name="Pods"):
     @checks.requires_staff_role()
     async def list_pods(self, ctx: commands.Context):
         """Displays ALL PODS in CURRENT CHANNEL"""
-        session = session_creator()
-        all_pods = PodService.get_all_pods(session)
+        all_pods = PodService.get_all_pods()
         current_channel: discord.DMChannel = ctx.channel
         if len(all_pods) >= 1:
             await current_channel.send("The current created pods are:")
@@ -244,8 +234,6 @@ class Pods(commands.Cog, name="Pods"):
                 await current_channel.send("Pod " + pod.name)
         else:
             await current_channel.send("There are no pods.")
-        session.commit()
-        session.close()
 
     @commands.command("add_mentor")
     @checks.requires_staff_role()
@@ -262,8 +250,7 @@ class Pods(commands.Cog, name="Pods"):
 
     @staticmethod
     async def add_mentor_helper(bot: discord.ext.commands.Bot, mentor: discord.Member, pod_name=None):
-        session = session_creator()
-        pod = PodService.get_pod_by_name(str(pod_name).capitalize(), session)
+        pod = PodService.get_pod_by_name(str(pod_name).capitalize())
         pod_channel: discord.TextChannel = await bot.fetch_channel(pod.tc_id)
         await pod_channel.set_permissions(mentor,
                                           overwrite=discord.PermissionOverwrite(**dict(discord.Permissions.text())))
@@ -271,8 +258,6 @@ class Pods(commands.Cog, name="Pods"):
             "Hello <@" +
             str(mentor.id) +
             "> you have been added as a mentor to this pod! To see a list of teams, type s~list_teams")
-        session.commit()
-        session.close()
 
     @commands.command(name="merge_pods")
     @checks.requires_staff_role()

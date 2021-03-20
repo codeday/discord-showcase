@@ -113,7 +113,7 @@ class PodService:
     @staticmethod
     def add_team_to_pod(pod, team_showcase_id):
         session.add(pod)
-        team = PodService.get_team_by_showcase_id(team_showcase_id, session)
+        team = PodService.get_team_by_showcase_id(team_showcase_id)
         team.pod = pod
         session.commit()
 
