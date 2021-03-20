@@ -196,11 +196,6 @@ class Pods(commands.Cog, name="Pods"):
         session.commit()
         session.close()
 
-    @commands.command(name="test")
-    @checks.requires_staff_role()
-    async def test(self, ctx: commands.Context, *, pod: PodConverter):
-        await ctx.send(f'Pod was found maybe? ID is {pod.id}')
-
     @commands.command(name='list_teams')
     @checks.requires_mentor_role()
     async def list_teams(self, ctx: commands.Context, *, pod: PodConverter):  # s~list_teams rigel
@@ -300,27 +295,36 @@ class Pods(commands.Cog, name="Pods"):
 
         PodService.remove_pod(str(pod_from).capitalize())
 
+    @commands.command(name="test")
+    @checks.requires_staff_role()
+    async def test(self, ctx: commands.Context, *, pod: Optional[PodConverter]):
+        current_channel: discord.TextChannel = ctx.channel
+        if pod is None:
+            pod = PodService.get_pod_by_channel_id(current_channel.id)
+            if pod is None:
+                await current_channel.send("A pod was not able to be found by the text channel or by name.")
+                return
+
+        await ctx.send(f'Pod was found maybe? ID is {pod.id}')
+
     @commands.command(name='remove_pod')
     @checks.requires_staff_role()
-    async def remove_pod(self, ctx: commands.Context, *, pod: Optional[PodConverter]):
+    async def remove_pod(self, ctx: commands.Context, *, pod: PodConverter = None):
         current_channel: discord.TextChannel = ctx.channel
         if pod is None:
             await current_channel.send("A pod was not able to be found by the text channel or by name.")
             return
 
         pod_to_remove_channel = await self.bot.fetch_channel(pod.tc_id)
-        for team in pod.teams:
-            await GQLService.unset_team_metadata(team.showcase_id)
-        # await ctx.send("Pod " + pod_to_remove.name + " has been removed.")
         try:
+            for team in pod.teams:
+                await GQLService.unset_team_metadata(team.showcase_id)
             PodService.remove_pod(pod.name)
             await pod_to_remove_channel.delete()
         except PodDeleteFailed(pod):
             return False
         finally:
-            await ctx.send("Pod " + pod.name + " has been removed.")
-
-        session.commit()
+            session.commit()
 
     @commands.command(name='remove_all_pods')
     @checks.requires_staff_role()
