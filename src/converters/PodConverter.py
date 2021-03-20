@@ -5,13 +5,15 @@ from services.podservice import PodService
 from utils.exceptions import PodNameNotFound, PodTCNotFound
 
 
-class PodConverter(commands.Converter):
+class PodConverter:
 
-    async def convert(self, ctx, argument=None):
-        print("start")
-        if argument is None:
-            current_channel: discord.TextChannel = ctx.channel
-            pod = PodService.get_pod_by_id(str(current_channel.id))
+    @staticmethod
+    async def get_pod(current_channel: discord.TextChannel, pod_name=None):
+        if pod_name is None:
+            pod = PodService.get_pod_by_channel_id(str(current_channel.id))
         else:
-            pod = PodService.get_pod_by_name(argument.capitalize())
+            pod = PodService.get_pod_by_name(str(pod_name).capitalize())
+        if pod is None:
+            await current_channel.send("A pod was not able to be found by the text channel or by name.")
         return pod
+

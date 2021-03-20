@@ -297,15 +297,13 @@ class Pods(commands.Cog, name="Pods"):
 
     @commands.command(name="test")
     @checks.requires_staff_role()
-    async def test(self, ctx: commands.Context, *, pod: Optional[PodConverter]):
+    async def test(self, ctx: commands.Context, pod_name=None):
         current_channel: discord.TextChannel = ctx.channel
+        pod = await PodConverter.get_pod(current_channel, pod_name)
         if pod is None:
-            pod = PodService.get_pod_by_channel_id(current_channel.id)
-            if pod is None:
-                await current_channel.send("A pod was not able to be found by the text channel or by name.")
-                return
+            return
 
-        await ctx.send(f'Pod was found maybe? ID is {pod.id}')
+        await ctx.send(f'Pod was found. ID is {pod.id}')
 
     @commands.command(name='remove_pod')
     @checks.requires_staff_role()
