@@ -3,7 +3,7 @@ from typing import Optional
 from sqlalchemy.exc import IntegrityError
 
 from db.models import session_creator, Pod, Team
-from utils.exceptions import PodNameNotFound, PodTCNotFound, PodIDNotFound
+from utils.exceptions import PodNameNotFound, PodTCNotFound, PodIDNotFound, PodDeleteFailed, PodWithMentorIDNotFound
 
 # The best way to handle session with a cmd program (discord bot) is to have a global session variable.
 # Information on why that is can be found here: https://docs.sqlalchemy.org/en/13/orm/session_basics.html
@@ -39,23 +39,18 @@ class PodService:
             return False
 
     @staticmethod
-    def get_all_pods(session=None) -> list:
+    def get_all_pods() -> list:
         """Returns a list of pod objects"""
-        sess_flag = False
-        if session is None:
-            session = session_creator()
-            sess_flag = True
-        pods = session.query(Pod).all()
-        if sess_flag:
-            session.commit()
-            session.close()
-        return pods
+        try:
+            pods = session.query(Pod).all()
+            return pods
+        except Exception:
+            return False
 
     @staticmethod
     def create_pod(name, tc_id, mentor) -> bool:
         """Create a new pod"""
         try:
-            session = session_creator()
             session.add(
                 Pod(
                     name=name,
@@ -64,7 +59,6 @@ class PodService:
                 )
             )
             session.commit()
-            session.close()
             return True
         except IntegrityError:
             return False
@@ -72,94 +66,72 @@ class PodService:
     @staticmethod
     def remove_all_pods():
         """Deletes ALL pods from Alembic"""
-        session = session_creator()
         for pod in PodService.get_all_pods():
-            session.delete(pod)
-
-            session.commit()
-            session.close()
+            try:
+                session.delete(pod)
+                session.commit()
+            except PodDeleteFailed:
+                return False
 
     @staticmethod
-    def remove_pod(name_of_pod):
+    def remove_pod(pod_name):
         """Deletes A SINGULAR pod by NAME from Alembic"""
-        session = session_creator()
-        pod = PodService.get_pod_by_name(name_of_pod)
-        session.delete(pod)
-        session.commit()
-        session.close()
+        pod = PodService.get_pod_by_name(pod_name)
+
+        try:
+            session.delete(pod)
+            session.commit()
+        except PodDeleteFailed:
+            return False
 
     @staticmethod
     def create_team(showcase_id) -> bool:
         """Create a new team"""
         try:
-            session = session_creator()
             session.add(
                 Team(
                     showcase_id=showcase_id
                 )
             )
             session.commit()
-            session.close()
             return True
         except IntegrityError:
             return False
 
     @staticmethod
-    def get_team_by_showcase_id(showcase_id, session=None) -> Team:
+    def get_team_by_showcase_id(showcase_id) -> Team:
         """returns a Team with the given showcase id, freshly created if it doesn't exist"""
-        sess_flag = False
-        if session is None:
-            session = session_creator()
-            sess_flag = True
         team = session.query(Team).filter(
             Team.showcase_id == showcase_id).first()
         if not team:
             PodService.create_team(showcase_id)
             team = session.query(Team).filter(
                 Team.showcase_id == showcase_id).first()
-        if sess_flag:
             session.commit()
-            session.close()
         return team
 
     @staticmethod
-    def add_team_to_pod(pod, team_showcase_id, session=None):
-        sess_flag = False
-        if session is None:
-            session = session_creator()
-            sess_flag = True
+    def add_team_to_pod(pod, team_showcase_id):
         session.add(pod)
         team = PodService.get_team_by_showcase_id(team_showcase_id, session)
         team.pod = pod
-        if sess_flag:
-            session.commit()
-            session.close()
+        session.commit()
 
     @staticmethod
-    def get_pod_by_mentor_id(mentor_id, session=None) -> Optional[Pod]:
+    def get_pod_by_mentor_id(mentor_id) -> Optional[Pod]:
         """Returns the pod with the given mentor, or none if it doesn't exist"""
-        sess_flag = False
-        if session is None:
-            session = session_creator()
-            sess_flag = True
-        pod = session.query(Pod).filter(Pod.mentor == mentor_id).first()
-        if sess_flag:
-            session.commit()
-            session.close()
-        return pod
+        try:
+            pod = session.query(Pod).filter(Pod.mentor == mentor_id).first()
+            return pod
+        except PodWithMentorIDNotFound(mentor_id):
+            return False
 
     @staticmethod
-    def get_smallest_pod(session=None, size=5):
+    def get_smallest_pod(size=5):
         """returns the smallest pod under given team size"""
-        sess_flag = False
-        if session is None:
-            session = session_creator()
-            sess_flag = True
         pods = session.query(Pod).all()
         pods.sort(key=lambda x: len(x.teams))
-        if sess_flag:
-            session.commit()
-            session.close()
+
         if len(pods[0].teams) <= (size - 1):
             return pods[0]
         else:
