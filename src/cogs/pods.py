@@ -1,4 +1,5 @@
 from idlelib.undo import CommandSequence
+from typing import Optional
 
 import discord
 
@@ -10,6 +11,7 @@ from services.podservice import PodService, session
 from text.podnames import PodNames
 from services.gqlservice import GQLService
 from utils import checks
+from utils.exceptions import PodDeleteFailed
 
 
 class Pods(commands.Cog, name="Pods"):
@@ -227,14 +229,18 @@ class Pods(commands.Cog, name="Pods"):
     @checks.requires_staff_role()
     async def list_pods(self, ctx: commands.Context):
         """Displays ALL PODS in CURRENT CHANNEL"""
-        all_pods = PodService.get_all_pods()
         current_channel: discord.DMChannel = ctx.channel
-        if len(all_pods) >= 1:
-            await current_channel.send("The current created pods are:")
-            for pod in all_pods:
-                await current_channel.send("Pod " + pod.name)
-        else:
+        all_pods = PodService.get_all_pods()
+        if len(all_pods) == 0:
             await current_channel.send("There are no pods.")
+            return
+
+        message = ""
+        if len(all_pods) >= 1:
+            message += "The current created pods are: \n"
+            for pod in all_pods:
+                message += f"Pod {pod.name}\n"
+        await current_channel.send(message)
 
     @commands.command("add_mentor")
     @checks.requires_staff_role()
@@ -296,31 +302,25 @@ class Pods(commands.Cog, name="Pods"):
 
     @commands.command(name='remove_pod')
     @checks.requires_staff_role()
-    async def remove_pod(self, ctx: commands.Context, pod_name=None):
-        session = session_creator()
+    async def remove_pod(self, ctx: commands.Context, *, pod: Optional[PodConverter]):
+        current_channel: discord.TextChannel = ctx.channel
+        if pod is None:
+            await current_channel.send("A pod was not able to be found by the text channel or by name.")
+            return
 
-        pod_to_remove = None
-
-        # If the pod name is not given, use the current channels name as the argument
-        if pod_name is None:
-            current_channel: discord.TextChannel = ctx.channel
-            current_channel_name = str(current_channel.name)
-            if '-' in current_channel_name:
-                pod_to_remove = PodService.get_pod_by_name(current_channel_name.split('-')[1].capitalize(), session)
-        else:
-            pod_to_remove = PodService.get_pod_by_name(pod_name, session)
-
-        pod_to_remove_channel = await self.bot.fetch_channel(pod_to_remove.tc_id)
-        for team in pod_to_remove.teams:
+        pod_to_remove_channel = await self.bot.fetch_channel(pod.tc_id)
+        for team in pod.teams:
             await GQLService.unset_team_metadata(team.showcase_id)
         # await ctx.send("Pod " + pod_to_remove.name + " has been removed.")
-        await pod_to_remove_channel.delete()
-        PodService.remove_pod(str(pod_to_remove.name).capitalize())
+        try:
+            PodService.remove_pod(pod.name)
+            await pod_to_remove_channel.delete()
+        except PodDeleteFailed(pod):
+            return False
+        finally:
+            await ctx.send("Pod " + pod.name + " has been removed.")
 
         session.commit()
-        session.close()
-
-        print(PodService.get_all_pods)
 
     @commands.command(name='remove_all_pods')
     @checks.requires_staff_role()
