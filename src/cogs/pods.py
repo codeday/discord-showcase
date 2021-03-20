@@ -5,6 +5,8 @@ import discord
 from converters.PodConverter import PodConverter
 from discord.ext import commands
 from os import getenv
+
+from services.podservice import PodService
 from text.podnames import PodNames
 from services.gqlservice import GQLService
 from utils import checks
