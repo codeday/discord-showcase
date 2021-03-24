@@ -22,7 +22,7 @@ class Pods(commands.Cog, name="Pods"):
 
     def __init__(self, bot):
         self.bot: discord.ext.commands.Bot = bot
-        print(PodConverter)
+
         # The role in which the bot will give all permissions to the pod channels
         self.staff_role = int(getenv("ROLE_STAFF", 689960285926195220))
 
@@ -384,23 +384,6 @@ class Pods(commands.Cog, name="Pods"):
         current_channel: discord.DMChannel = ctx.channel
         await current_channel.send("The team that " + user + " is in is " + team)
 
-    def find_a_suitable_pod_name(self):
-        for pod_name in PodNames.available_names:
-            if PodService.get_pod_by_name(pod_name) is None:
-                # Pod Name is suitable, return that pod name
-                return pod_name
-        return None  # No Valid Name was available
-
-    def find_a_suitable_mentor(self, ctx):
-        # Get List of Mentors from Discord Role and see if they're already in the taken mentors list
-        guild: discord.Guild = ctx.guild
-        role: discord.Role = guild.get_role(self.mentor_role)
-        print(role.members)
-        for member in role.members:
-            if PodService.get_pod_by_mentor_id(str(member.id)) is None:
-                # Mentor is Suitable, return that mentor object
-                return member
-        return None  # No Mentor was available
 
 
 def setup(bot):
