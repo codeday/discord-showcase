@@ -4,6 +4,7 @@ import discord
 
 from db.models import Pod
 from services.podservice import PodService
+from utils.exceptions import PodNotFound
 
 """
     The purpose of this class will be to sanitize input and return an appropriate pod object from alembic if found.
@@ -24,4 +25,4 @@ class PodConverter:
             pod = PodService.get_pod_by_name(str(pod_name).capitalize())
         if pod is None:
             await current_channel.send("A pod was not able to be found by the text channel or by name.")
-        return pod
+        raise PodNotFound(pod_name, current_channel.id)
