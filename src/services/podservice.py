@@ -14,29 +14,22 @@ class PodService:
     @staticmethod
     def get_pod_by_name(name) -> Optional[Pod]:
         """Returns the pod with the given name, or none if it doesn't exist"""
-        try:
-            pod = session.query(Pod).filter(Pod.name == name).first()
-            return pod
-        except PodNameNotFound(name):
-            return False
+        pod = session.query(Pod).filter(Pod.name == name).first()
+        if pod is None:
+            raise PodNameNotFound(name)
+        return pod
 
     @staticmethod
     def get_pod_by_channel_id(tc_id) -> Optional[Pod]:
         """Returns the pod with the given text channel id, or none if it doesn't exist"""
-        try:
-            pod = session.query(Pod).filter(Pod.tc_id == tc_id).first()
-            return pod
-        except PodTCNotFound:
-            return False
+        pod = session.query(Pod).filter(Pod.tc_id == tc_id).first()
+        return pod
 
     @staticmethod
     def get_pod_by_id(id) -> Optional[Pod]:
         """Returns the pod with the given id, or none if it doesn't exist"""
-        try:
-            pod = session.query(Pod).filter(Pod.id == id).first()
-            return pod
-        except PodIDNotFound:
-            return False
+        pod = session.query(Pod).filter(Pod.id == id).first()
+        return pod
 
     @staticmethod
     def get_all_pods() -> list:
