@@ -81,3 +81,33 @@ class PodWithMentorIDNotFound(Exception):
 
     def __str__(self):
         return f'{self.mentor_id} -> {self.message}'
+
+
+class NoPodNamesAvailable(Exception):
+    """Exception raised for errors when no pod names are left to be used.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message="There are no available pod names left to be used."):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.message}'
+
+
+class NoMentorsAvailable(Exception):
+    """Exception raised for errors when no mentors are left to be used.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message="There are no available mentors left to be used."):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.message}'
