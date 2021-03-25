@@ -7,6 +7,7 @@ from converters.PodConverter import PodConverter
 from discord.ext import commands
 from os import getenv
 
+from services.PodDispatcher import PodDispatcher
 from services.poddbservice import PodService, session
 from text.podnames import PodNames
 from services.podgqlservice import GQLService
@@ -348,17 +349,13 @@ class Pods(commands.Cog, name="Pods"):
     @checks.requires_staff_role()
     async def send_message(self, ctx: commands.Context, pod_name, *message):
         """Sends a message to a single pod using the bot account"""
-        pod = PodConverter.get_pod(ctx.channel, pod_name)
-        if pod is None:
-            return
-
-        pod_channel = await self.bot.fetch_channel(pod.tc_id)
-        await pod_channel.send(" ".join(message[:]))
+        await PodDispatcher.send_message(ctx.bot, pod_name, *message)
 
     @commands.command(name='send_message_all')
     @checks.requires_staff_role()
     async def send_message_all(self, ctx: commands.Context, *message):
         """Sends a message to every pod using the bot account"""
+
         all_pods = PodService.get_all_pods()
         for pod in all_pods:
             pod_channel = await self.bot.fetch_channel(pod.tc_id)
