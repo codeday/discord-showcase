@@ -1,5 +1,5 @@
 import unittest
-import src.services.gqlservice
+import src.services.podgqlservice
 
 class MyTestCase(unittest.TestCase):
     def test_something(self):

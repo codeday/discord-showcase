@@ -3,7 +3,7 @@ from typing import Union
 import discord
 
 from db.models import Pod
-from services.podservice import PodService
+from services.poddbservice import PodService
 from utils.exceptions import PodNotFound
 
 """

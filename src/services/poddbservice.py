@@ -10,7 +10,7 @@ from utils.exceptions import PodNameNotFound, PodTCNotFound, PodIDNotFound, PodD
 session = session_creator()
 
 
-class PodService:
+class PodDBService:
     @staticmethod
     def get_pod_by_name(name) -> Optional[Pod]:
         """Returns the pod with the given name, or none if it doesn't exist"""

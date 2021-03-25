@@ -7,9 +7,9 @@ from converters.PodConverter import PodConverter
 from discord.ext import commands
 from os import getenv
 
-from services.podservice import PodService, session
+from services.poddbservice import PodService, session
 from text.podnames import PodNames
-from services.gqlservice import GQLService
+from services.podgqlservice import GQLService
 from utils import checks
 from utils.exceptions import PodDeleteFailed
 
@@ -364,18 +364,6 @@ class Pods(commands.Cog, name="Pods"):
             pod_channel = await self.bot.fetch_channel(pod.tc_id)
             await pod_channel.send(" ".join(message[:]))
 
-    @commands.command(name='get_all_teams')
-    @checks.requires_staff_role()
-    async def get_all_teams(self, ctx: commands.Context):
-        """Displays PODS in CHANNEL"""
-        all_teams = await GQLService.get_all_showcase_teams()
-        current_channel: discord.DMChannel = ctx.channel
-        await current_channel.send("The current created team(s) in showcase are: ")
-        teams_message = ""
-        for team in all_teams:
-            teams_message += team['name']
-        await current_channel.send(teams_message)
-
     @commands.command(name='teams')
     @checks.requires_staff_role()
     async def teams(self, ctx: commands.Context, user: discord.User):
@@ -388,6 +376,17 @@ class Pods(commands.Cog, name="Pods"):
             teams_message += team['name']
         await current_channel.send("The team(s) that " + user.display_name + " is in are" + teams_message)
 
+    @commands.command(name='get_all_teams')
+    @checks.requires_staff_role()
+    async def get_all_teams(self, ctx: commands.Context):
+        """Displays PODS in CHANNEL"""
+        all_teams = await GQLService.get_all_showcase_teams()
+        current_channel: discord.DMChannel = ctx.channel
+        await current_channel.send("The current created team(s) in showcase are: ")
+        teams_message = ""
+        for team in all_teams:
+            teams_message += team['name']
+        await current_channel.send(teams_message)
 
 def setup(bot):
     bot.add_cog(Pods(bot))

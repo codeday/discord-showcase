@@ -1,4 +1,4 @@
-from services.podservice import PodService
+from services.poddbservice import PodService
 from text.podnames import PodNames
 from utils.exceptions import NoPodNamesAvailable
 

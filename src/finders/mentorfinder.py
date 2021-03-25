@@ -2,7 +2,7 @@ from os import getenv
 
 import discord
 
-from services.podservice import PodService
+from services.poddbservice import PodService
 from utils.exceptions import NoPodNamesAvailable, NoMentorsAvailable
 
 """

@@ -8,7 +8,7 @@ from os import getenv
 event_id = str(getenv("EVENT_ID", "virtual-codeday-winter-2021"))
 
 
-class GQLService:
+class PodGQLService:
 
     @staticmethod
     def make_token():

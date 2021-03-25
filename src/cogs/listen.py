@@ -1,7 +1,7 @@
 from discord.ext import commands, tasks
 
 from cogs.pods import Pods
-from services.gqlservice import GQLService
+from services.podgqlservice import GQLService
 from utils.subscriptions import subscribe
 
 

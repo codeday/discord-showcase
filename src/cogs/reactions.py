@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 
 from db.models import session_creator
-from services.gqlservice import GQLService
+from services.podgqlservice import GQLService
 
 
 class Reactions(commands.Cog, name="Reactions"):
