@@ -364,26 +364,29 @@ class Pods(commands.Cog, name="Pods"):
             pod_channel = await self.bot.fetch_channel(pod.tc_id)
             await pod_channel.send(" ".join(message[:]))
 
-    @commands.command(name='get_teams_from_gql')
+    @commands.command(name='get_all_teams')
     @checks.requires_staff_role()
-    async def get_teams_from_gql(self, ctx: commands.Context):
+    async def get_all_teams(self, ctx: commands.Context):
         """Displays PODS in CHANNEL"""
         all_teams = await GQLService.get_all_showcase_teams()
         current_channel: discord.DMChannel = ctx.channel
-        await current_channel.send("The current created teams in showcase are:")
+        await current_channel.send("The current created team(s) in showcase are: ")
+        teams_message = ""
         for team in all_teams:
-            await current_channel.send("Team " + team['name'])
+            teams_message += team['name']
+        await current_channel.send(teams_message)
 
-    @commands.command(name='get_teams_by_user')
+    @commands.command(name='teams')
     @checks.requires_staff_role()
-    async def get_teams_by_user_gql(self, ctx: commands.Context, user: discord.User):
+    async def teams(self, ctx: commands.Context, user: discord.User):
         """Displays PODS in CHANNEL"""
         usergql = str(await GQLService.get_showcase_username_from_discord_id(str(user.id)))
-        team = await GQLService.get_showcase_team_by_showcase_user(usergql)
-        print(team)
+        teams = await GQLService.get_showcase_team_by_showcase_user(usergql)
         current_channel: discord.DMChannel = ctx.channel
-        await current_channel.send("The team that " + user + " is in is " + team)
-
+        teams_message = "\n"
+        for team in teams:
+            teams_message += team['name']
+        await current_channel.send("The team(s) that " + user.display_name + " is in are" + teams_message)
 
 
 def setup(bot):
