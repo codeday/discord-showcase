@@ -380,8 +380,8 @@ class Pods(commands.Cog, name="Pods"):
     @checks.requires_staff_role()
     async def teams(self, ctx: commands.Context, user: discord.User):
         """Displays PODS in CHANNEL"""
-        usergql = str(await GQLService.get_showcase_username_from_discord_id(str(user.id)))
-        teams = await GQLService.get_showcase_team_by_showcase_user(usergql)
+        user_gql = str(await GQLService.get_showcase_user_from_discord_id(str(user.id)))
+        teams = await GQLService.get_showcase_team_by_showcase_user(user_gql)
         current_channel: discord.DMChannel = ctx.channel
         teams_message = "\n"
         for team in teams:
