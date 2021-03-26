@@ -10,12 +10,7 @@ from os import getenv
 from finders.mentorfinder import MentorFinder
 from finders.podnamefinder import PodNameFinder
 from services.PodDispatcher import PodDispatcher
-from services.poddbservice import PodService, session, PodDBService
-from text.podnames import PodNames
-from services.podgqlservice import GQLService
 from utils import checks
-from utils.exceptions import PodDeleteFailed
-
 
 class Pods(commands.Cog, name="Pods"):
     """Contains information pertaining to Pods"""
