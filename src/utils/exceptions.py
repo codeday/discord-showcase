@@ -150,4 +150,37 @@ class PodNotFound(Exception):
         super().__init__(self.message)
 
     def __str__(self):
-        return f'{self.name} and {self.channel} -> {self.message}'
+        return f'{self.name} and {self.channel_id} -> {self.message}'
+
+
+class TeamIDNotFound(Exception):
+    """Exception raised for errors in the team ID.
+
+    Attributes:
+        team_id -- input pod_id that caused the error
+        message -- explanation of the error
+    """
+
+    def __init__(self, team_id, message="The given team id was not able to be found from showcase"):
+        self.pod_id = team_id
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.pod_id} -> {self.message}'
+
+
+class NoTeamsWithoutPods(Exception):
+    """Exception raised for errors in the team ID.
+
+    Attributes:
+        team_id -- input pod_id that caused the error
+        message -- explanation of the error
+    """
+
+    def __init__(self, message="There are no teams without pods."):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.message}'
