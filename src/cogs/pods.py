@@ -7,10 +7,12 @@ from converters.PodConverter import PodConverter
 from discord.ext import commands
 from os import getenv
 
+from converters.TeamConverter import TeamConverter
 from finders.mentorfinder import MentorFinder
 from finders.podnamefinder import PodNameFinder
 from services.PodDispatcher import PodDispatcher
 from utils import checks
+
 
 class Pods(commands.Cog, name="Pods"):
     """Contains information pertaining to Pods"""
@@ -96,44 +98,36 @@ class Pods(commands.Cog, name="Pods"):
     @staticmethod
     async def assign_pod_helper(bot: discord.ext.commands.Bot, team_id, pod_name):
         current_pod = PodConverter.get_pod_by_name(pod_name)
-        showcase_team = await GQLService.get_showcase_team_by_id(team_id)
+        showcase_team = await TeamConverter.get_showcase_team_by_id(team_id)
         print(showcase_team)
-        if current_pod is not None and showcase_team is not None:
-            PodService.add_team_to_pod(current_pod, team_id, session)
-            await GQLService.record_pod_on_team_metadata(showcase_team["id"], str(current_pod.id))
-            await GQLService.record_pod_name_on_team_metadata(showcase_team["id"], str(current_pod.name))
 
-            tc = await bot.fetch_channel(int(current_pod.tc_id))
-            member_mentions = []
-            for showcase_member in showcase_team["members"]:
-                member_mentions.append(f"<@{str(showcase_member['account']['discordId'])}>")
-            embed = discord.Embed(title=f"Project {showcase_team['name']} has joined the pod!",
-                                  url=f"https://showcase.codeday.org/project/{team_id}", color=0xff6766)
-            embed.add_field(name=f"Project member(s): ", value=f"{', '.join(member_mentions)}", inline=False)
-            await tc.send(embed=embed)
+        await PodDispatcher.assign_pod(current_pod, showcase_team)
 
-            # store initial message in gql
-            # Add all members to text channel
-            print(showcase_team["members"])
-            guild: discord.Guild = await bot.fetch_guild(689213562740277361)
-            for showcase_member in showcase_team["members"]:
-                discordID = showcase_member["account"]["discordId"]
-                print(discordID)
-                try:
-                    member = await guild.fetch_member(discordID)
-                    await tc.set_permissions(member, read_messages=True, read_message_history=True,
-                                             send_messages=True, embed_links=True, attach_files=True,
-                                             external_emojis=True, add_reactions=True)
-                except discord.errors.NotFound:
-                    print("A user was not found within the server")
-                except:
-                    print("Some other sort of error has occurred.")
-        else:
-            print("Did nto make it ")
+        tc = await bot.fetch_channel(int(current_pod.tc_id))
+        member_mentions = []
+        for showcase_member in showcase_team["members"]:
+            member_mentions.append(f"<@{str(showcase_member['account']['discordId'])}>")
+        embed = discord.Embed(title=f"Project {showcase_team['name']} has joined the pod!",
+                              url=f"https://showcase.codeday.org/project/{team_id}", color=0xff6766)
+        embed.add_field(name=f"Project member(s): ", value=f"{', '.join(member_mentions)}", inline=False)
+        await tc.send(embed=embed)
+
+        print(showcase_team["members"])
+        guild: discord.Guild = await bot.fetch_guild(689213562740277361)
+        for showcase_member in showcase_team["members"]:
+            discord_id = showcase_member["account"]["discordId"]
+            print(discord_id)
+            try:
+                member = await guild.fetch_member(discord_id)
+                await tc.set_permissions(member, read_messages=True, read_message_history=True,
+                                         send_messages=True, embed_links=True, attach_files=True,
+                                         external_emojis=True, add_reactions=True)
+            except discord.errors.NotFound:
+                print("A user was not found within the server")
 
     @staticmethod
     async def assign_pods_helper(bot: discord.ext.commands.Bot):
-        all_teams_without_pods = await GQLService.get_all_showcase_teams_without_pods()
+        all_teams_without_pods = await TeamConverter.get_all_showcase_teams_without_pods()
 
         for team in all_teams_without_pods:
             if len(team["members"]) >= 1:
@@ -142,7 +136,6 @@ class Pods(commands.Cog, name="Pods"):
                     await Pods.assign_pod_helper(bot, team["id"], smallest_pod.name)
                 else:
                     await Pods.assign_pod_helper(bot, team["id"], "overflow")
-        session.commit()
 
     @staticmethod
     async def add_or_remove_user_to_pod_tc(bot: discord.ext.commands.Bot, member_with_project, should_be_removed):

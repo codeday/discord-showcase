@@ -35,3 +35,10 @@ class PodDispatcher:
     def create_pod(pod_name, text_channel_id, mentor_id):
         PodDBService.create_pod(str(pod_name).capitalize(), text_channel_id, mentor_id)
 
+    @staticmethod
+    async def assign_pod(pod, team):
+        if pod is not None and team is not None:
+            PodDBService.add_team_to_pod(pod, team_id)
+            await PodGQLService.record_pod_on_team_metadata(team["id"], str(pod.id))
+            await PodGQLService.record_pod_name_on_team_metadata(team["id"], str(pod.name))
+
