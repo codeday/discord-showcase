@@ -8,7 +8,7 @@ from discord.ext import commands
 from os import getenv
 
 from services.PodDispatcher import PodDispatcher
-from services.poddbservice import PodService, session
+from services.poddbservice import PodService, session, PodDBService
 from text.podnames import PodNames
 from services.podgqlservice import GQLService
 from utils import checks
@@ -243,30 +243,26 @@ class Pods(commands.Cog, name="Pods"):
     async def add_mentor(self, ctx: commands.Context, mentor: discord.Member, pod_name=None):
         """Gives additional permissions to a particular discord member"""
         # If the pod name is not given, use the current channels name as the argument
-        if pod_name is None:
-            current_channel: discord.TextChannel = ctx.channel
-            current_channel_name = str(current_channel.name)
-            if '-' in current_channel_name:
-                await self.add_mentor_helper(ctx.bot, mentor, current_channel_name.split('-')[1].capitalize())
-        else:
-            await self.add_mentor_helper(ctx.bot, mentor, pod_name)
+        pod = PodConverter.get_pod(ctx.channel, pod_name)
+        await self.add_mentor_helper(ctx.bot, mentor, None, pod)
 
     @staticmethod
-    async def add_mentor_helper(bot: discord.ext.commands.Bot, mentor: discord.Member, pod_name=None):
-        pod = PodService.get_pod_by_name(str(pod_name).capitalize())
+    async def add_mentor_helper(bot: discord.ext.commands.Bot, mentor: discord.Member, pod_name=None, pod=None):
+        if pod is None:
+            pod = PodConverter.get_pod_by_name(pod_name)
+
         pod_channel: discord.TextChannel = await bot.fetch_channel(pod.tc_id)
         await pod_channel.set_permissions(mentor,
                                           overwrite=discord.PermissionOverwrite(**dict(discord.Permissions.text())))
         await pod_channel.send(
             "Hello <@" +
             str(mentor.id) +
-            "> you have been added as a mentor to this pod! To see a list of teams, type s~list_teams")
+            "> you have been added as a mentor to this pod! To see a list of teams, type s~teams")
 
     @commands.command(name="merge_pods")
     @checks.requires_staff_role()
     async def merge_pods(self, ctx: commands.Context, pod_from, pod_to):
         """Merges one PDO into another POD"""
-        session = session_creator()
         pod_to_be_merged = PodService.get_pod_by_name(str(pod_from).capitalize(), session)
         pod_being_merged_into = PodService.get_pod_by_name(str(pod_to).capitalize(), session)
         current_channel: discord.DMChannel = ctx.channel
@@ -292,7 +288,6 @@ class Pods(commands.Cog, name="Pods"):
         else:
             await current_channel.send("One of the pod names were not correct. Please specify only the name after pod-")
         session.commit()
-        session.close()
 
         PodService.remove_pod(str(pod_from).capitalize())
 
@@ -301,9 +296,6 @@ class Pods(commands.Cog, name="Pods"):
     async def test(self, ctx: commands.Context, pod_name=None):
         current_channel: discord.TextChannel = ctx.channel
         pod = await PodConverter.get_pod(current_channel, pod_name)
-        if pod is None:
-            return
-
         await ctx.send(f'Pod was found. ID is {pod.id}')
 
     @commands.command(name='remove_pod')
@@ -311,51 +303,42 @@ class Pods(commands.Cog, name="Pods"):
     async def remove_pod(self, ctx: commands.Context, pod_name=None):
         current_channel: discord.TextChannel = ctx.channel
         pod = await PodConverter.get_pod(current_channel, pod_name)
-        if pod is None:
-            return
-
-        pod_to_remove_channel = await self.bot.fetch_channel(pod.tc_id)
-        try:
-            for team in pod.teams:
-                await GQLService.unset_team_metadata(team.showcase_id)
-            PodService.remove_pod(pod.name)
-            await pod_to_remove_channel.delete()
-        except PodDeleteFailed(pod):
-            return False
-        finally:
-            session.commit()
+        channel_to_remove = await self.bot.fetch_channel(pod.tc_id)
+        await PodDispatcher.remove_pod(pod, channel_to_remove)
 
     @commands.command(name='remove_all_pods')
     @checks.requires_staff_role()
     async def remove_all_pods(self, ctx: commands.Context):
         """Removes all Pods from Alembic and deletes all text channels from category"""
         all_pods = PodService.get_all_pods()
+        category = discord.utils.get(ctx.guild.categories, id=self.category)
         if len(all_pods) == 0:
             await ctx.send("There are no pods to remove.")
             return
 
         await ctx.send("I am in the process of removing pods, give me a couple of seconds... "
                        "I will let you know when I am done.")
-        category = discord.utils.get(ctx.guild.categories, id=self.category)
-        PodService.remove_all_pods()
-        for channel in category.channels:
-            await channel.delete()
-        all_teams = await GQLService.get_all_showcase_teams()
-        for team in all_teams:
-            await GQLService.unset_team_metadata(team["id"])
+
+        await PodDispatcher.remove_all_pods(category)
+
         await ctx.send("All pods have been removed.")
 
     @commands.command(name='send_message')
     @checks.requires_staff_role()
     async def send_message(self, ctx: commands.Context, pod_name, *message):
         """Sends a message to a single pod using the bot account"""
-        await PodDispatcher.send_message(ctx.bot, pod_name, *message)
+        pod = PodConverter.get_pod_by_name(pod_name)
+        pod_channel = await self.bot.fetch_channel(pod.tc_id)
+        await pod_channel.send(" ".join(message[:]))
 
     @commands.command(name='send_message_all')
     @checks.requires_staff_role()
     async def send_message_all(self, ctx: commands.Context, *message):
         """Sends a message to every pod using the bot account"""
-        await PodDispatcher.send_message_all(ctx.bot, *message)
+        all_pods = PodDBService.get_all_pods()
+        for pod in all_pods:
+            pod_channel = await self.bot.fetch_channel(pod.tc_id)
+            await pod_channel.send(" ".join(message[:]))
 
     @commands.command(name='teams')
     @checks.requires_staff_role()
@@ -380,6 +363,7 @@ class Pods(commands.Cog, name="Pods"):
         for team in all_teams:
             teams_message += team['name']
         await current_channel.send(teams_message)
+
 
 def setup(bot):
     bot.add_cog(Pods(bot))

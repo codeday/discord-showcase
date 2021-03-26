@@ -13,7 +13,7 @@ from services.poddbservice import PodDBService
 class PodConverter:
 
     @staticmethod
-    async def get_pod(current_channel: discord.TextChannel, pod_name=None) -> Union[Pod, None]:
+    def get_pod(current_channel: discord.TextChannel, pod_name=None) -> Union[Pod, None]:
         """
         Takes the current channel and an optional pod_name and attempts to find the pod from alembic from
         one of the arguments. If it finds nothing, it returns None and sends a message to the current_channel.
@@ -27,7 +27,7 @@ class PodConverter:
         return pod
 
     @staticmethod
-    async def get_pod_by_name(pod_name) -> Union[Pod, None]:
+    def get_pod_by_name(pod_name) -> Union[Pod, None]:
         """
         Takes the pod_name and attempts to find the pod from alembic. If it finds nothing,
         it returns None and sends a message to the current_channel.

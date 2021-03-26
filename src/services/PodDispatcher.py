@@ -1,20 +1,35 @@
+import discord
 from discord.ext import commands
 
 from converters.PodConverter import PodConverter
-from services.poddbservice import PodDBService
+from services.poddbservice import PodDBService, session
+from services.podgqlservice import PodGQLService
 
 
 class PodDispatcher:
 
     @staticmethod
-    async def send_message(bot, pod_name, *message):
-        pod = PodConverter.get_pod_by_name(pod_name)
-        pod_channel = await bot.fetch_channel(pod.tc_id)
-        await pod_channel.send(" ".join(message[:]))
+    async def remove_pod(pod, channel_to_remove: discord.TextChannel) -> bool:
+        for team in pod.teams:
+            await PodGQLService.unset_team_metadata(team.showcase_id)
+        PodDBService.remove_pod(pod.name)
+        await channel_to_remove.delete()
+        session.commit()
+        return True
 
     @staticmethod
-    async def send_message_all(bot, *message):
-        all_pods = PodDBService.get_all_pods()
-        for pod in all_pods:
-            pod_channel = await bot.fetch_channel(pod.tc_id)
-            await pod_channel.send(" ".join(message[:]))
+    async def remove_all_pods(category) -> bool:
+        PodDBService.remove_all_pods()
+        for channel in category.channels:
+            await channel.delete()
+        all_teams = await PodGQLService.get_all_showcase_teams()
+        for team in all_teams:
+            await PodGQLService.unset_team_metadata(team["id"])
+        return True
+
+    @staticmethod
+    async def merge_pods(pod_from, pod_to):
+        pass
+
+
+
