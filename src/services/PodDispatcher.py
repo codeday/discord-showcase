@@ -31,5 +31,7 @@ class PodDispatcher:
     async def merge_pods(pod_from, pod_to):
         pass
 
-
+    @staticmethod
+    def create_pod(pod_name, text_channel_id, mentor_id):
+        PodDBService.create_pod(str(pod_name).capitalize(), text_channel_id, mentor_id)
 

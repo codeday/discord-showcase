@@ -7,6 +7,8 @@ from converters.PodConverter import PodConverter
 from discord.ext import commands
 from os import getenv
 
+from finders.mentorfinder import MentorFinder
+from finders.podnamefinder import PodNameFinder
 from services.PodDispatcher import PodDispatcher
 from services.poddbservice import PodService, session, PodDBService
 from text.podnames import PodNames
@@ -45,7 +47,6 @@ class Pods(commands.Cog, name="Pods"):
         """Create a text channel"""
         guild: discord.Guild = ctx.guild
         overwrites = {
-            # Default User Access to a Pod
             guild.default_role: discord.PermissionOverwrite(read_messages=False),
             guild.get_role(self.staff_role): discord.PermissionOverwrite(**dict(discord.Permissions.text())),
             guild.me: discord.PermissionOverwrite(read_messages=True, read_message_history=True),
@@ -64,9 +65,7 @@ class Pods(commands.Cog, name="Pods"):
             "> you have been selected to be the mentor for this pod! Teams will be "
             "added shortly.")
 
-        PodService.create_pod(pod_name, tc.id, mentor.id)
-
-        pass
+        PodDispatcher.create_pod(pod_name, tc.id, mentor.id)
 
     @commands.command(name='create_pods')
     @checks.requires_staff_role()
@@ -75,14 +74,12 @@ class Pods(commands.Cog, name="Pods"):
         # Then, create the actual pods by calling the singular create_pod function
         # We subtract one so that there is an extra mentor left, who is designated to the pod called overflow
         for x in range(0, int(number_of_mentors) - 1):
-            await self.create_pod(ctx, self.find_a_suitable_pod_name(), self.find_a_suitable_mentor(ctx))
-        await self.create_pod(ctx, "Overflow", self.find_a_suitable_mentor(ctx))
-
-    @commands.command(name='secret')
-    @checks.requires_staff_role()
-    async def secret(self, ctx: commands.Context):
-        """Secret Command"""
-        await ctx.send("Jacob Cuomo is my dad.")
+            await self.create_pod(ctx,
+                                  PodNameFinder.find_a_suitable_pod_name(),
+                                  MentorFinder.find_a_suitable_mentor(ctx))
+        await self.create_pod(ctx,
+                              "Overflow",
+                              MentorFinder.find_a_suitable_mentor(ctx))
 
     @commands.command(name='assign_pod')
     @checks.requires_staff_role()
@@ -102,8 +99,8 @@ class Pods(commands.Cog, name="Pods"):
     # - Mentions of any kind will only render correctly in field values and descriptions
     # - Mentions in embeds will not trigger a notification
     @staticmethod
-    async def assign_pod_helper(bot: discord.ext.commands.Bot, team_id, pod_name, session):
-        current_pod = PodService.get_pod_by_name(pod_name, session)
+    async def assign_pod_helper(bot: discord.ext.commands.Bot, team_id, pod_name):
+        current_pod = PodConverter.get_pod_by_name(pod_name)
         showcase_team = await GQLService.get_showcase_team_by_id(team_id)
         print(showcase_team)
         if current_pod is not None and showcase_team is not None:
@@ -363,6 +360,12 @@ class Pods(commands.Cog, name="Pods"):
         for team in all_teams:
             teams_message += team['name']
         await current_channel.send(teams_message)
+
+    @commands.command(name='secret')
+    @checks.requires_staff_role()
+    async def secret(self, ctx: commands.Context):
+        """Secret Command"""
+        await ctx.send("Jacob Cuomo is my dad.")
 
 
 def setup(bot):

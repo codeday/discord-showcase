@@ -15,7 +15,7 @@ mentor_role = int(getenv("ROLE_MENTOR", 782363834836975646))
 class MentorFinder:
 
     @staticmethod
-    def find_a_suitable_mentor(ctx) -> list[discord.Member]:
+    def find_a_suitable_mentor(ctx) -> discord.Member:
         guild: discord.Guild = ctx.guild
         role: discord.Role = guild.get_role(mentor_role)
         print(role.members)
