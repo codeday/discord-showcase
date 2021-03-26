@@ -184,3 +184,35 @@ class NoTeamsWithoutPods(Exception):
 
     def __str__(self):
         return f'{self.message}'
+
+
+class NoTeamsWithoutPods(Exception):
+    """Exception raised for errors in the team ID.
+
+    Attributes:
+        team_id -- input pod_id that caused the error
+        message -- explanation of the error
+    """
+
+    def __init__(self, message="There are no teams without pods."):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.message}'
+
+
+class TeamNotFound(Exception):
+    """Exception raised for errors in TeamConverter.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, message="Unable to find any teams, occurs in TeamConverter.py when no discord member, "
+                               "channel id, or pod name had any teams."):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.message}'
