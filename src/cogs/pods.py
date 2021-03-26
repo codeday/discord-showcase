@@ -1,5 +1,5 @@
 from idlelib.undo import CommandSequence
-from typing import Optional
+from typing import Optional, Union
 
 import discord
 
@@ -175,26 +175,24 @@ class Pods(commands.Cog, name="Pods"):
                             inline=False)
             await tc.send(embed=embed)
 
-    @commands.command(name='list_teams')
+    @commands.command(name='teams')
     @checks.requires_mentor_role()
-    async def list_teams(self, ctx: commands.Context, *, pod: PodConverter):  # s~list_teams rigel
+    async def teams(self, ctx: commands.Context, pod_name_or_discord_user: Union[str, discord.Member] = None):
         """Displays TEAMS of a POD in CURRENT CHANNEL"""
         current_channel: discord.TextChannel = ctx.channel
-        if pod is None:
-            await current_channel.send("A pod was not able to be found by the text channel or by name.")
-            return
-        if len(pod.teams) == 0:
+        teams = await TeamConverter.get_teams(current_channel, pod_name_or_discord_user)
+
+        if len(teams) == 0:
             await current_channel.send(
                 "There are no projects in your pod yet. Project(s) are still being created by attendee's.")
             return
 
-        await current_channel.send("The current project(s) inside of Pod " + pod.name + " are:")
-        for team in pod.teams:
-            showcase_team = await GQLService.get_showcase_team_by_id(team.showcase_id)
+        await current_channel.send("I found a couple of project(s), here they are!")
+        for team in teams:
             member_mentions = []
-            for showcase_member in showcase_team["members"]:
+            for showcase_member in team["members"]:
                 member_mentions.append(f"<@{str(showcase_member['account']['discordId'])}>")
-            embed = discord.Embed(title=f"Project {showcase_team['name']}",
+            embed = discord.Embed(title=f"Project {team['name']}",
                                   url=f"https://showcase.codeday.org/project/{team.showcase_id}", color=0xff6766)
             embed.add_field(name=f"Project member(s): ", value=f"{', '.join(member_mentions)}", inline=False)
             await current_channel.send(embed=embed)
