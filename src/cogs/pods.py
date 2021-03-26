@@ -139,48 +139,41 @@ class Pods(commands.Cog, name="Pods"):
 
     @staticmethod
     async def add_or_remove_user_to_pod_tc(bot: discord.ext.commands.Bot, member_with_project, should_be_removed):
-        # Get User Member Object AND Get text channel object
+        """Add/remove users to a pod text channel, occurs when someone joins or leaves a team in showcase"""
         print(member_with_project)
         discord_id = member_with_project["account"]["discordId"]
         guild: discord.Guild = await bot.fetch_guild(689213562740277361)
-        showcase_team = await GQLService.get_showcase_team_by_id(member_with_project["project"]["id"])
+        showcase_team = await TeamConverter.get_showcase_team_by_id(member_with_project["project"]["id"])
 
-        pod = PodService.get_pod_by_id(showcase_team["pod"])
-        try:
-            member: discord.Member = await guild.fetch_member(discord_id)
-            tc = await bot.fetch_channel(pod.tc_id)
+        pod = PodConverter.get_pod_by_id(showcase_team["pod"])
 
-            # User is being removed from the pod tc
-            if should_be_removed:
-                await tc.set_permissions(member, read_messages=False, read_message_history=False,
-                                         send_messages=False, embed_links=False, attach_files=False,
-                                         external_emojis=False, add_reactions=False)
-                embed = discord.Embed(
-                    title=f"{member_with_project['username']} left project {showcase_team['name']}",
-                    url=f"https://showcase.codeday.org/project/{showcase_team['id']}",
-                    color=0xff6766)
-                embed.add_field(name="Member: ", value=f"<@{member_with_project['account']['discordId']}>",
-                                inline=False)
-                await tc.send(embed=embed)
+        member: discord.Member = await guild.fetch_member(discord_id)
+        tc = await bot.fetch_channel(pod.tc_id)
 
-            # User is being added to the pod tc
-            else:
-                await tc.set_permissions(member, read_messages=True, read_message_history=True,
-                                         send_messages=True, embed_links=True, attach_files=True,
-                                         external_emojis=True, add_reactions=True)
-                embed = discord.Embed(
-                    title=f"{member_with_project['username']} joined project {showcase_team['name']}",
-                    url=f"https://showcase.codeday.org/project/{showcase_team['id']}",
-                    color=0xff6766)
-                embed.add_field(name="Member: ", value=f"<@{member_with_project['account']['discordId']}>",
-                                inline=False)
-                await tc.send(embed=embed)
-        except discord.errors.NotFound:
-            print("A user was not found within the server")
-        except:
-            print("Some other sort of error has occurred.")
-        session.commit()
-        session.close()
+        # Occurs when a user left a showcase team and is now being removed from the pod text channel
+        if should_be_removed:
+            await tc.set_permissions(member, read_messages=False, read_message_history=False,
+                                     send_messages=False, embed_links=False, attach_files=False,
+                                     external_emojis=False, add_reactions=False)
+            embed = discord.Embed(
+                title=f"{member_with_project['username']} left project {showcase_team['name']}",
+                url=f"https://showcase.codeday.org/project/{showcase_team['id']}",
+                color=0xff6766)
+            embed.add_field(name="Member: ", value=f"<@{member_with_project['account']['discordId']}>",
+                            inline=False)
+            await tc.send(embed=embed)
+        # Occurs when a user joins a showcase team and is now being added to the pod text channel
+        else:
+            await tc.set_permissions(member, read_messages=True, read_message_history=True,
+                                     send_messages=True, embed_links=True, attach_files=True,
+                                     external_emojis=True, add_reactions=True)
+            embed = discord.Embed(
+                title=f"{member_with_project['username']} joined project {showcase_team['name']}",
+                url=f"https://showcase.codeday.org/project/{showcase_team['id']}",
+                color=0xff6766)
+            embed.add_field(name="Member: ", value=f"<@{member_with_project['account']['discordId']}>",
+                            inline=False)
+            await tc.send(embed=embed)
 
     @commands.command(name='list_teams')
     @checks.requires_mentor_role()

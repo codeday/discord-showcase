@@ -30,7 +30,16 @@ class PodConverter:
     def get_pod_by_name(pod_name) -> Union[Pod, None]:
         """
         Takes the pod_name and attempts to find the pod from alembic. If it finds nothing,
-        it returns None and sends a message to the current_channel.
+        it raises a PodNameNotFound exception message to the current_channel.
         """
         pod = PodDBService.get_pod_by_name(str(pod_name).capitalize())
+        return pod
+
+    @staticmethod
+    def get_pod_by_id(pod_id) -> Union[Pod, None]:
+        """
+        Takes the pod_id and attempts to find the pod from alembic. If it finds nothing,
+        it returns None and sends a message to the current_channel.
+        """
+        pod = PodDBService.get_pod_by_id(pod_id)
         return pod
