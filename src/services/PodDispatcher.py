@@ -42,3 +42,6 @@ class PodDispatcher:
             await PodGQLService.record_pod_on_team_metadata(team["id"], str(pod.id))
             await PodGQLService.record_pod_name_on_team_metadata(team["id"], str(pod.name))
 
+    @staticmethod
+    def get_smallest_pod():
+        return PodDBService.get_smallest_pod()

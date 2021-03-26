@@ -48,15 +48,12 @@ class PodDBService:
         return pod
 
     @staticmethod
-    def get_smallest_pod(size=5) -> Optional[Pod]:
+    def get_smallest_pod() -> Optional[Pod]:
         """Returns the smallest pod under given team size or none if no pod is the smallest"""
         pods = session.query(Pod).all()
         pods.sort(key=lambda x: len(x.teams))
 
-        if len(pods[0].teams) <= (size - 1):
-            return pods[0]
-        else:
-            return None
+        return pods[0]
 
     @staticmethod
     def get_all_pods() -> list:

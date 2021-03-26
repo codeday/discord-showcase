@@ -131,8 +131,8 @@ class Pods(commands.Cog, name="Pods"):
 
         for team in all_teams_without_pods:
             if len(team["members"]) >= 1:
-                smallest_pod = PodService.get_smallest_pod(Pods.teams_per_pod)
-                if smallest_pod:
+                smallest_pod = PodDispatcher.get_smallest_pod()
+                if len(smallest_pod.teams) < Pods.teams_per_pod:
                     await Pods.assign_pod_helper(bot, team["id"], smallest_pod.name)
                 else:
                     await Pods.assign_pod_helper(bot, team["id"], "overflow")
