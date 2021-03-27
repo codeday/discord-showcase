@@ -175,7 +175,7 @@ class Pods(commands.Cog, name="Pods"):
                             inline=False)
             await tc.send(embed=embed)
 
-    @commands.command(name='teams')
+    @commands.command(name='teams', aliases=['list-teams', 'list_teams', 'listteams'])
     @checks.requires_mentor_role()
     async def teams(self, ctx: commands.Context, pod_name_or_discord_user: Union[str, discord.Member] = None):
         """Displays TEAMS of a POD in CURRENT CHANNEL"""
