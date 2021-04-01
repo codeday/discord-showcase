@@ -216,3 +216,19 @@ class TeamNotFound(Exception):
 
     def __str__(self):
         return f'{self.message}'
+
+class PodMergeFailed(Exception):
+    """Exception raised for errors in TeamConverter.
+
+    Attributes:
+        message -- explanation of the error
+    """
+
+    def __init__(self, pod_from, pod_to, message="An error has occurred when merging the pods and has been caught."):
+        self.pod_from = pod_from
+        self.pod_to = pod_to
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.pod_from} -> {self.pod_to} : {self.message}'

@@ -1,9 +1,11 @@
 import discord
 from discord.ext import commands
 
+from cogs.pods import Pods
 from converters.PodConverter import PodConverter
 from services.poddbservice import PodDBService, session
 from services.podgqlservice import PodGQLService
+from utils.exceptions import PodMergeFailed
 
 
 class PodDispatcher:
@@ -28,8 +30,24 @@ class PodDispatcher:
         return True
 
     @staticmethod
-    async def merge_pods(pod_from, pod_to):
-        pass
+    async def merge_pods(bot, pod_from, pod_to, from_channel, to_channel):
+        if pod_from is not None and pod_to is not None:
+            await from_channel.delete()
+            if len(pod_from.teams) > 0:
+                await to_channel.send("A pod is being merged into this channel...\n"
+                                      "The projects joining this pod are: ")
+                while len(pod_from.teams) > 0:
+                    team = pod_from.teams[0]
+                    await Pods.assign_pod_helper(bot, team.showcase_id, pod_to.name)
+                    await PodGQLService.unset_team_metadata(team.showcase_id)
+                    await PodGQLService.record_pod_on_team_metadata(team.showcase_id, str(pod_to.id))
+                    await PodGQLService.record_pod_name_on_team_metadata(team.showcase_id, str(pod_to.name))
+            mentor = await bot.fetch_user(int(pod_to.mentor))
+            await Pods.add_mentor_helper(bot, mentor, pod_to.name)
+            PodDBService.remove_pod(pod_from.name)
+            return
+        raise PodMergeFailed(pod_from, pod_to)
+
 
     @staticmethod
     def create_pod(pod_name, text_channel_id, mentor_id):
@@ -38,7 +56,7 @@ class PodDispatcher:
     @staticmethod
     async def assign_pod(pod, team):
         if pod is not None and team is not None:
-            PodDBService.add_team_to_pod(pod, team_id)
+            PodDBService.add_team_to_pod(pod, team["id"])
             await PodGQLService.record_pod_on_team_metadata(team["id"], str(pod.id))
             await PodGQLService.record_pod_name_on_team_metadata(team["id"], str(pod.name))
 

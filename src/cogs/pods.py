@@ -11,6 +11,7 @@ from converters.TeamConverter import TeamConverter
 from finders.mentorfinder import MentorFinder
 from finders.podnamefinder import PodNameFinder
 from services.PodDispatcher import PodDispatcher
+from services.poddbservice import PodDBService
 from utils import checks
 
 
@@ -202,16 +203,14 @@ class Pods(commands.Cog, name="Pods"):
     async def list_pods(self, ctx: commands.Context):
         """Displays ALL PODS in CURRENT CHANNEL"""
         current_channel: discord.DMChannel = ctx.channel
-        all_pods = PodService.get_all_pods()
+        all_pods = PodDBService.get_all_pods()
         if len(all_pods) == 0:
             await current_channel.send("There are no pods.")
             return
 
-        message = ""
-        if len(all_pods) >= 1:
-            message += "The current created pods are: \n"
-            for pod in all_pods:
-                message += f"Pod {pod.name}\n"
+        message = "The current created pods are: \n"
+        for pod in all_pods:
+            message += f"Pod {pod.name}\n"
         await current_channel.send(message)
 
     @commands.command("add_mentor")
@@ -239,33 +238,19 @@ class Pods(commands.Cog, name="Pods"):
     @checks.requires_staff_role()
     async def merge_pods(self, ctx: commands.Context, pod_from, pod_to):
         """Merges one PDO into another POD"""
-        pod_to_be_merged = PodService.get_pod_by_name(str(pod_from).capitalize(), session)
-        pod_being_merged_into = PodService.get_pod_by_name(str(pod_to).capitalize(), session)
+        pod_to_be_merged = PodConverter.get_pod_by_name(pod_from)
+        pod_being_merged_into = PodConverter.get_pod_by_name(pod_to)
+        pod_to_be_merged_channel = await self.bot.fetch_channel(pod_to_be_merged.tc_id)
+        pod_being_merged_into_channel: discord.DMChannel = await self.bot.fetch_channel(pod_being_merged_into.tc_id)
         current_channel: discord.DMChannel = ctx.channel
-        if pod_to_be_merged is not None and pod_being_merged_into is not None:
-            await current_channel.send("Pods are currently being merged... give me one second...")
-            pod_being_merged_into_channel: discord.DMChannel = await self.bot.fetch_channel(pod_being_merged_into.tc_id)
-            pod_to_be_merged_channel = await self.bot.fetch_channel(pod_to_be_merged.tc_id)
-            await pod_to_be_merged_channel.delete()
-            if len(pod_to_be_merged.teams) > 0:
-                await pod_being_merged_into_channel.send("A pod is being merged into this channel...")
-                await pod_being_merged_into_channel.send("The projects joining this pod are: ")
-                while len(pod_to_be_merged.teams) > 0:
-                    team = pod_to_be_merged.teams[0]
-                    await self.assign_pod_helper(self.bot, team.showcase_id, pod_being_merged_into.name, session)
-                    await GQLService.unset_team_metadata(team.showcase_id)
-                    await GQLService.record_pod_on_team_metadata(team.showcase_id, str(pod_being_merged_into.id))
-                    await GQLService.record_pod_name_on_team_metadata(team.showcase_id, str(pod_being_merged_into.name))
-                await current_channel.send("Done! All teams have also been merged into the new pod.")
-            else:
-                await current_channel.send("Done! There were no teams to merge into the new pod.")
-            mentor = await self.bot.fetch_user(int(pod_to_be_merged.mentor))
-            await self.add_mentor_helper(ctx.bot, mentor, pod_being_merged_into.name)
-        else:
-            await current_channel.send("One of the pod names were not correct. Please specify only the name after pod-")
-        session.commit()
 
-        PodService.remove_pod(str(pod_from).capitalize())
+        await current_channel.send("Pods are currently being merged... give me one second...")
+
+        await PodDispatcher.merge_pods(self.bot, pod_to_be_merged, pod_being_merged_into,
+                                       pod_to_be_merged, pod_being_merged_into)
+
+        await current_channel.send(f"Done! Pod {pod_from} has been successfully merged into {pod_to}. \n"
+                                   f"If there were any teams, they have been merged as well.")
 
     @commands.command(name="test")
     @checks.requires_staff_role()
