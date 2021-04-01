@@ -1,5 +1,6 @@
 import discord
 
+from helpers.helper import Helper
 from services.poddbservice import PodDBService, session
 from services.podgqlservice import PodGQLService
 from utils.exceptions import PodMergeFailed
@@ -44,10 +45,11 @@ class PodDispatcher:
                     await PodGQLService.record_pod_on_team_metadata(team.showcase_id, str(pod_to.id))
                     await PodGQLService.record_pod_name_on_team_metadata(team.showcase_id, str(pod_to.name))
             mentor = await bot.fetch_user(int(pod_to.mentor))
-            await Pods.add_mentor_helper(bot, mentor, pod_to.name)
+            await Helper.add_mentor_helper(bot, mentor, pod_to.name)
             PodDBService.remove_pod(pod_from.name)
             return
         raise PodMergeFailed(pod_from, pod_to)
+
 
 
     @staticmethod
