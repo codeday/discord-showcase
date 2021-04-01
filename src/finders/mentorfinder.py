@@ -2,7 +2,7 @@ from os import getenv
 
 import discord
 
-from services.poddbservice import PodService
+from services.poddbservice import PodDBService
 from utils.exceptions import NoPodNamesAvailable, NoMentorsAvailable
 
 """
@@ -20,7 +20,7 @@ class MentorFinder:
         role: discord.Role = guild.get_role(mentor_role)
         print(role.members)
         for member in role.members:
-            if PodService.get_pod_by_mentor_id(str(member.id)) is None:
+            if PodDBService.get_pod_by_mentor_id(str(member.id)) is None:
                 # Mentor is Suitable, return that mentor object
                 return member
         raise NoMentorsAvailable()

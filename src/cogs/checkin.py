@@ -33,9 +33,8 @@ class CheckinCommands(commands.Cog, name="Checkin"):
     @checks.requires_staff_role()
     async def checkin(self, ctx: commands.Context, pod_name):
         """Checks in on a specific pod"""
-        session = session_creator()
         guild: discord.Guild = ctx.guild
-        pod = PodService.get_pod_by_name(str(pod_name).capitalize(), session)
+        pod = PodService.get_pod_by_name(str(pod_name).capitalize())
         if pod is not None:
             channel: discord.DMChannel = guild.get_channel(int(pod.tc_id))
             await channel.send("Hello! This is your friendly Showcase bot!")
@@ -45,8 +44,7 @@ class CheckinCommands(commands.Cog, name="Checkin"):
             await message.add_reaction("😀")
             await message.add_reaction("😐")
             await message.add_reaction("☹")
-        session.commit()
-        session.close()
+
 
     @commands.command(name='checkin_all')
     @checks.requires_staff_role()

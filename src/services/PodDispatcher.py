@@ -1,8 +1,5 @@
 import discord
-from discord.ext import commands
 
-from cogs.pods import Pods
-from converters.PodConverter import PodConverter
 from services.poddbservice import PodDBService, session
 from services.podgqlservice import PodGQLService
 from utils.exceptions import PodMergeFailed

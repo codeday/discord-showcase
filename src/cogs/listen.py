@@ -1,7 +1,7 @@
-from discord.ext import commands, tasks
+from discord.ext import commands
 
 from cogs.pods import Pods
-from services.podgqlservice import GQLService
+from services.podgqlservice import PodGQLService
 from utils.subscriptions import subscribe
 
 
@@ -21,19 +21,19 @@ class ListenCog(commands.Cog, name="Listen"):
         self.on_project_member_removed.stop()
         self.on_project_edited.stop()
 
-    @subscribe(GQLService.team_created_listener)
+    @subscribe(PodGQLService.team_created_listener)
     async def on_project_created(self, project):
         await Pods.assign_pods_helper(self.bot)
 
-    @subscribe(GQLService.member_added_listener)
+    @subscribe(PodGQLService.member_added_listener)
     async def on_project_member_added(self, member_with_project):
         await Pods.add_or_remove_user_to_pod_tc(self.bot, member_with_project, False)
 
-    @subscribe(GQLService.member_removed_listener)
+    @subscribe(PodGQLService.member_removed_listener)
     async def on_project_member_removed(self, member_with_project):
         await Pods.add_or_remove_user_to_pod_tc(self.bot, member_with_project, True)
 
-    @subscribe(GQLService.team_edited_listener)
+    @subscribe(PodGQLService.team_edited_listener)
     async def on_project_edited(self, project):
         pass
 

@@ -1,4 +1,4 @@
-from services.poddbservice import PodService
+from services.poddbservice import PodDBService
 from text.podnames import PodNames
 from utils.exceptions import NoPodNamesAvailable
 
@@ -12,6 +12,6 @@ class PodNameFinder:
     @staticmethod
     def find_a_suitable_pod_name() -> str:
         for pod_name in PodNames.available_names:
-            if PodService.get_pod_by_name(pod_name) is None:
+            if PodDBService.get_pod_by_name(pod_name) is None:
                 return pod_name
         raise NoPodNamesAvailable()
