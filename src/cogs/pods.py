@@ -13,6 +13,8 @@ from services.PodDispatcher import PodDispatcher
 from services.poddbservice import PodDBService
 from services.podgqlservice import PodGQLService
 from utils import checks
+from utils.generateembed import GenerateEmbed
+from utils.setpermissions import SetPermissions
 
 
 class Pods(commands.Cog, name="Pods"):
@@ -105,26 +107,9 @@ class Pods(commands.Cog, name="Pods"):
         await PodDispatcher.assign_pod(current_pod, showcase_team)
 
         tc = await bot.fetch_channel(int(current_pod.tc_id))
-        member_mentions = []
-        for showcase_member in showcase_team["members"]:
-            member_mentions.append(f"<@{str(showcase_member['account']['discordId'])}>")
-        embed = discord.Embed(title=f"Project {showcase_team['name']} has joined the pod!",
-                              url=f"https://showcase.codeday.org/project/{team_id}", color=0xff6766)
-        embed.add_field(name=f"Project member(s): ", value=f"{', '.join(member_mentions)}", inline=False)
-        await tc.send(embed=embed)
 
-        print(showcase_team["members"])
-        guild: discord.Guild = await bot.fetch_guild(689213562740277361)
-        for showcase_member in showcase_team["members"]:
-            discord_id = showcase_member["account"]["discordId"]
-            print(discord_id)
-            try:
-                member = await guild.fetch_member(discord_id)
-                await tc.set_permissions(member, read_messages=True, read_message_history=True,
-                                         send_messages=True, embed_links=True, attach_files=True,
-                                         external_emojis=True, add_reactions=True)
-            except discord.errors.NotFound:
-                print("A user was not found within the server")
+        await tc.send(embed=GenerateEmbed.generate_embed(showcase_team))
+        await SetPermissions.for_channel_with_showcase_team(bot, tc, showcase_team)
 
     @staticmethod
     async def assign_pods_helper(bot: discord.ext.commands.Bot):

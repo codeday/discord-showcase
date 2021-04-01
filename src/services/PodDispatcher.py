@@ -3,6 +3,8 @@ import discord
 from services.poddbservice import PodDBService, session
 from services.podgqlservice import PodGQLService
 from utils.exceptions import PodMergeFailed
+from utils.generateembed import GenerateEmbed
+from utils.setpermissions import SetPermissions
 
 
 class PodDispatcher:
@@ -35,7 +37,9 @@ class PodDispatcher:
                                       "The projects joining this pod are: ")
                 while len(pod_from.teams) > 0:
                     team = pod_from.teams[0]
-                    await Pods.assign_pod_helper(bot, team.showcase_id, pod_to.name)
+                    await PodDispatcher.assign_pod(pod_to, team)
+                    await to_channel.send(embed=GenerateEmbed.generate_embed(team))
+                    await SetPermissions.for_channel_with_showcase_team(bot, to_channel, team)
                     await PodGQLService.unset_team_metadata(team.showcase_id)
                     await PodGQLService.record_pod_on_team_metadata(team.showcase_id, str(pod_to.id))
                     await PodGQLService.record_pod_name_on_team_metadata(team.showcase_id, str(pod_to.name))
