@@ -1,5 +1,4 @@
-from idlelib.undo import CommandSequence
-from typing import Optional, Union
+from typing import Union
 
 import discord
 
@@ -12,6 +11,7 @@ from finders.mentorfinder import MentorFinder
 from finders.podnamefinder import PodNameFinder
 from services.PodDispatcher import PodDispatcher
 from services.poddbservice import PodDBService
+from services.podgqlservice import PodGQLService
 from utils import checks
 
 
@@ -218,7 +218,7 @@ class Pods(commands.Cog, name="Pods"):
     async def add_mentor(self, ctx: commands.Context, mentor: discord.Member, pod_name=None):
         """Gives additional permissions to a particular discord member"""
         # If the pod name is not given, use the current channels name as the argument
-        pod = PodConverter.get_pod(ctx.channel, pod_name)
+        pod = await PodConverter.get_pod(ctx.channel, pod_name)
         await self.add_mentor_helper(ctx.bot, mentor, None, pod)
 
     @staticmethod
@@ -247,7 +247,7 @@ class Pods(commands.Cog, name="Pods"):
         await current_channel.send("Pods are currently being merged... give me one second...")
 
         await PodDispatcher.merge_pods(self.bot, pod_to_be_merged, pod_being_merged_into,
-                                       pod_to_be_merged, pod_being_merged_into)
+                                       pod_to_be_merged_channel, pod_being_merged_into_channel)
 
         await current_channel.send(f"Done! Pod {pod_from} has been successfully merged into {pod_to}. \n"
                                    f"If there were any teams, they have been merged as well.")
@@ -271,13 +271,13 @@ class Pods(commands.Cog, name="Pods"):
     @checks.requires_staff_role()
     async def remove_all_pods(self, ctx: commands.Context):
         """Removes all Pods from Alembic and deletes all text channels from category"""
-        all_pods = PodService.get_all_pods()
+        all_pods = PodDBService.get_all_pods()
         category = discord.utils.get(ctx.guild.categories, id=self.category)
         if len(all_pods) == 0:
             await ctx.send("There are no pods to remove.")
             return
 
-        await ctx.send("I am in the process of removing pods, give me a couple of seconds... "
+        await ctx.send("I am in the process of removing pods, give me a couple of seconds... \n"
                        "I will let you know when I am done.")
 
         await PodDispatcher.remove_all_pods(category)
@@ -301,23 +301,11 @@ class Pods(commands.Cog, name="Pods"):
             pod_channel = await self.bot.fetch_channel(pod.tc_id)
             await pod_channel.send(" ".join(message[:]))
 
-    @commands.command(name='teams')
-    @checks.requires_staff_role()
-    async def teams(self, ctx: commands.Context, user: discord.User):
-        """Displays PODS in CHANNEL"""
-        user_gql = str(await GQLService.get_showcase_user_from_discord_id(str(user.id)))
-        teams = await GQLService.get_showcase_team_by_showcase_user(user_gql)
-        current_channel: discord.DMChannel = ctx.channel
-        teams_message = "\n"
-        for team in teams:
-            teams_message += team['name']
-        await current_channel.send("The team(s) that " + user.display_name + " is in are" + teams_message)
-
     @commands.command(name='get_all_teams')
     @checks.requires_staff_role()
     async def get_all_teams(self, ctx: commands.Context):
         """Displays PODS in CHANNEL"""
-        all_teams = await GQLService.get_all_showcase_teams()
+        all_teams = await PodGQLService.get_all_showcase_teams()
         current_channel: discord.DMChannel = ctx.channel
         await current_channel.send("The current created team(s) in showcase are: ")
         teams_message = ""

@@ -1,3 +1,5 @@
+from typing import Union
+
 import discord
 
 from services.poddbservice import PodDBService
@@ -22,7 +24,8 @@ class TeamConverter:
         return teams
 
     @staticmethod
-    async def get_teams(current_channel: discord.TextChannel, pod_name_or_discord_user: Union[str, discord.Member]=None):
+    async def get_teams(current_channel: discord.TextChannel,
+                        pod_name_or_discord_user: Union[str, discord.Member] = None):
         if pod_name_or_discord_user is None:
             pod = PodDBService.get_pod_by_channel_id(current_channel.id)
             return pod.teams
