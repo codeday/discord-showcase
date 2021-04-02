@@ -60,7 +60,8 @@ class PodGQLService:
     async def subscribe_ws(query, variable_values=None, with_fragments=True):
         transport = WebsocketsTransport(
             url='ws://graph.codeday.org/subscriptions')
-        session = Client(transport=transport, fetch_schema_from_transport=True)
+        session = Client(transport=transport)
+        # sometimes, may need to add fetch_schema_from_transport=True to above line
         async for result in session.subscribe_async(PodGQLService.make_query(query, with_fragments=with_fragments),
                                                     variable_values=variable_values):
             yield result
@@ -70,7 +71,7 @@ class PodGQLService:
         query = """
             query getAllShowcaseTeamsWithoutPods($eventGroup: String!) {
               showcase {
-                projects(where: {eventGroup: $eventGroup}) {
+                projects(where: {eventGroup: $eventGroup} take: 50) {
                     ...ProjectInformation
                 }
               }
