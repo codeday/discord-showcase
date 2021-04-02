@@ -14,6 +14,7 @@ from services.PodDispatcher import PodDispatcher
 from services.poddbservice import PodDBService
 from services.podgqlservice import PodGQLService
 from utils import checks
+from utils.generateembed import GenerateEmbed
 
 """
     The purpose of this class is to execute commands and reach out to other classes for input sanitation and actions
@@ -234,15 +235,12 @@ class Pods(commands.Cog, name="Pods"):
 
     @commands.command(name='get_all_teams')
     @checks.requires_staff_role()
-    async def get_all_teams(self, ctx: commands.Context):
+    async def get_all_teams(self, ctx: commands.Context, page=1):
         """Displays PODS in CHANNEL"""
         all_teams = await PodGQLService.get_all_showcase_teams()
         current_channel: discord.DMChannel = ctx.channel
-        await current_channel.send("The current created team(s) in showcase are: ")
-        teams_message = ""
-        for team in all_teams:
-            teams_message += team['name']
-        await current_channel.send(teams_message)
+        await current_channel.send("The current created team(s) in showcase are: \n")
+        await current_channel.send(embed=GenerateEmbed.for_all_showcase_teams(all_teams))
 
     @commands.command(name='secret')
     @checks.requires_staff_role()

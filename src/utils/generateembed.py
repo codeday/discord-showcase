@@ -1,3 +1,5 @@
+import math
+
 import discord
 
 """
@@ -17,3 +19,21 @@ class GenerateEmbed:
                               url=f"https://showcase.codeday.org/project/{showcase_team['id']}", color=0xff6766)
         embed.add_field(name=f"Project member(s): ", value=f"{', '.join(member_mentions)}", inline=False)
         return embed
+
+    @staticmethod
+    def for_all_showcase_teams(teams) -> list[discord.Embed]:
+        embeds = []
+        number_of_embeds = math.ceil(len(teams) / 25)
+        for i in range(0, number_of_embeds):
+            embed = None
+            if i is 0:
+                embed = discord.Embed(title=f"There are a total of {len(teams)} teams.",
+                                      url=f"https://showcase.codeday.org/", color=0xff6766)
+            else:
+                embed = discord.Embed(title=f"Continuing to display teams...",
+                                      url=f"https://showcase.codeday.org/", color=0xff6766)
+
+            for i in range(0, 25):
+                embed.add_field(name=f"{teams[i]['name']}:", value=f"https://showcase.codeday.org/project/{teams[i]['id']}",
+                                inline=True)
+        return embeds
