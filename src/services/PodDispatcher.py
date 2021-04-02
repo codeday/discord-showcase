@@ -44,7 +44,7 @@ class PodDispatcher:
                 while len(pod_from.teams) > 0:
                     team = pod_from.teams[0]
                     await PodDispatcher.assign_pod(pod_to, team)
-                    await to_channel.send(embed=GenerateEmbed.generate_embed(team))
+                    await to_channel.send(embed=GenerateEmbed.for_single_showcase_team(team))
                     await SetPermissions.for_channel_with_showcase_team(bot, to_channel, team)
                     await PodGQLService.unset_team_metadata(team.showcase_id)
                     await PodGQLService.record_pod_on_team_metadata(team.showcase_id, str(pod_to.id))

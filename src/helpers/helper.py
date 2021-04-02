@@ -35,7 +35,7 @@ class Helper:
 
             tc = await bot.fetch_channel(int(current_pod.tc_id))
 
-            await tc.send(embed=GenerateEmbed.generate_embed(showcase_team))
+            await tc.send(embed=GenerateEmbed.for_single_showcase_team(showcase_team))
             await SetPermissions.for_channel_with_showcase_team(bot, tc, showcase_team)
 
     @staticmethod

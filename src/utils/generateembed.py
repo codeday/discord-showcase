@@ -11,7 +11,7 @@ import discord
 class GenerateEmbed:
 
     @staticmethod
-    def generate_embed(showcase_team) -> discord.Embed:
+    def for_single_showcase_team(showcase_team) -> discord.Embed:
         member_mentions = []
         for showcase_member in showcase_team["members"]:
             member_mentions.append(f"<@{str(showcase_member['account']['discordId'])}>")
@@ -28,16 +28,19 @@ class GenerateEmbed:
         for i in range(0, number_of_embeds):
             embed = None
             if i == 0:
-                embed = discord.Embed(title=f"There are a total of {len(teams)} teams.",
+                embed = discord.Embed(title=f"There are a total of {len(teams)} teams. Panel {i+1} out of {number_of_embeds}",
                                       url=f"https://showcase.codeday.org/", color=0xff6766)
             else:
-                embed = discord.Embed(title=f"Continuing to display teams...",
+                embed = discord.Embed(title=f"Continuing to display teams... Panel {i+1} out of {number_of_embeds}",
                                       url=f"https://showcase.codeday.org/", color=0xff6766)
 
             for i in range(count, count+25):
-                if teams[i] is not None:
-                    embed.add_field(name=f"{teams[i]['name']}:", value=f"https://showcase.codeday.org/project/{teams[i]['id']}",
-                                    inline=True)
+                try:
+                    if teams[i] is not None:
+                        embed.add_field(name=f"{teams[i]['name']}:", value=f"https://showcase.codeday.org/project/{teams[i]['id']}",
+                                        inline=True)
+                except IndexError:
+                    print("Teams out of bound when generating embeds")
                 count += 1
             embeds.append(embed)
         return embeds
