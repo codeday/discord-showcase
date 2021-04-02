@@ -3,7 +3,7 @@ from os import getenv
 import discord
 
 from services.poddbservice import PodDBService
-from utils.exceptions import NoPodNamesAvailable, NoMentorsAvailable
+from utils.exceptions import NoMentorsAvailable
 
 """
     The purpose of this class will be to find an appropriate mentor that has not been used yet.

@@ -1,5 +1,9 @@
 import discord
 
+"""
+    The purpose of this class is to set permissions for a particular showcase team, more information on discord
+    permissions and setting permissions for a text channel are below.
+"""
 
 # For permissions attributes and other information, use the following links:
 # https://discordpy.readthedocs.io/en/latest/api.html#discord.Permissions

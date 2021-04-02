@@ -7,6 +7,10 @@ from os import getenv
 
 from env import EnvironmentVariables
 
+"""
+    The purpose of this class is to query data from GQL, for more information see below information.
+    If you would like to learn how to write custom queries go to https://graph.codeday.org/
+"""
 
 class PodGQLService:
 

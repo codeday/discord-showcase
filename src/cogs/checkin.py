@@ -7,6 +7,9 @@ from discord.ext import commands
 from db.models import session_creator
 from utils import checks
 
+"""
+    The purpose of this class is to allow administrators the ability to run commands to checkin to all or specific pods.
+"""
 
 def generate_message(team_name):
     title_options = [

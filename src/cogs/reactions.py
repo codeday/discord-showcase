@@ -4,6 +4,11 @@ from discord.ext import commands
 from db.models import session_creator
 from services.podgqlservice import PodGQLService
 
+"""
+    The purpose of this class is to handle reactions when users inside of a pod react to one of the check-in messages.
+    These check-in messages are then sent to grafana via a GQL mutation in the form of an integer based on how well
+    every team/user is doing on their projects.
+"""
 
 class Reactions(commands.Cog, name="Reactions"):
 

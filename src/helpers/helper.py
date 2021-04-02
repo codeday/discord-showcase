@@ -8,6 +8,12 @@ from services.podgqlservice import PodGQLService
 from utils.generateembed import GenerateEmbed
 from utils.setpermissions import SetPermissions
 
+"""
+    The purpose of this class will be to help out certain classes such as pods.py and PodDispatcher, these are needed
+    because it allows modularization and allows for other areas of code (such as s~merge_pods) to assign pods other 
+    than when executing s~assign_pods. 
+"""
+
 
 class Helper:
 

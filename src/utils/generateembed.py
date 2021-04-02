@@ -1,10 +1,15 @@
 import discord
 
+"""
+    The purpose of this class is to generate embeds such as for when a project gets added to a pod or when a user joins
+    or leaves a particular pod.
+"""
+
 
 class GenerateEmbed:
 
     @staticmethod
-    def generate_embed(showcase_team):
+    def generate_embed(showcase_team) -> discord.Embed:
         member_mentions = []
         for showcase_member in showcase_team["members"]:
             member_mentions.append(f"<@{str(showcase_member['account']['discordId'])}>")

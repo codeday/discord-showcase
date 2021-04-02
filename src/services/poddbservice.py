@@ -5,15 +5,18 @@ from sqlalchemy.exc import IntegrityError
 from db.models import session_creator, Pod, Team
 from utils.exceptions import PodNameNotFound, PodTCNotFound, PodIDNotFound, PodWithMentorIDNotFound
 
+"""
+    The purpose of this class is to query data from the Alembic database, for more information see below information.
+    To see the Pod and Team data structure, go to the db/models.py file
+"""
+
 # The best way to handle session with a cmd program (discord bot) is to have a global session variable.
 # Information on why that is can be found here: https://docs.sqlalchemy.org/en/13/orm/session_basics.html
 session = session_creator()
 
-"""To see the Pod and Team data structure, go to the db/models.py file"""
-
 
 class PodDBService:
-    """Pod Getter Methods, if none are found, an exception is thrown."""
+    """Pod Getter Methods Below, if none are found, an exception is thrown."""
 
     @staticmethod
     def get_pod_by_name(name, check_for_none=True) -> Optional[Pod]:
@@ -73,7 +76,9 @@ class PodDBService:
             session.commit()
         return team
 
-    """Pod mutator methods, these change something about the database"""
+    """
+        Pod mutator methods below, these change something about the database
+    """
 
     @staticmethod
     def create_pod(name, tc_id, mentor) -> bool:

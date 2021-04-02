@@ -6,6 +6,10 @@ from services.poddbservice import PodDBService
 from services.podgqlservice import PodGQLService
 from utils.exceptions import TeamIDNotFound, NoTeamsWithoutPods, TeamNotFound
 
+"""
+    The purpose of this class will be to sanitize input and return an appropriate team object from GraphQL if found.
+    More information on GQL can be found in PodGQLService, to write custom queries go to https://graph.codeday.org/
+"""
 
 class TeamConverter:
 

@@ -7,6 +7,11 @@ from utils.exceptions import PodMergeFailed
 from utils.generateembed import GenerateEmbed
 from utils.setpermissions import SetPermissions
 
+"""
+    The purpose of this class is to handle the key actions for the commands in pods.py
+    Commands from pods.py supply arguments that can only be found with the commands context and are then passed here
+"""
+
 
 class PodDispatcher:
 

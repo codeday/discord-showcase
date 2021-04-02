@@ -5,6 +5,11 @@ from helpers.helper import Helper
 from services.podgqlservice import PodGQLService
 from utils.subscriptions import subscribe
 
+"""
+    The purpose of this class is to listen for any changes by "subscribing" to GQL events. When an event is triggered,
+    the code in each function is also executed.
+"""
+
 
 class ListenCog(commands.Cog, name="Listen"):
     """Listen to showcase api for team updates"""

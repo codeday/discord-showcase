@@ -1,5 +1,8 @@
 from random import shuffle
 
+"""
+    The purpose of this class is to provide pod names for the bot to use
+"""
 
 class PodNames:
     # The list below shows all possible names that a pod can have.

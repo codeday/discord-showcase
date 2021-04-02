@@ -15,9 +15,12 @@ from services.poddbservice import PodDBService
 from services.podgqlservice import PodGQLService
 from utils import checks
 
+"""
+    The purpose of this class is to execute commands and reach out to other classes for input sanitation and actions
+"""
+
 
 class Pods(commands.Cog, name="Pods"):
-    """Contains information pertaining to Pods"""
 
     def __init__(self, bot):
         self.bot: discord.ext.commands.Bot = bot
