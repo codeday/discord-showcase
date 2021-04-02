@@ -16,10 +16,10 @@ class PodDBService:
     """Pod Getter Methods, if none are found, an exception is thrown."""
 
     @staticmethod
-    def get_pod_by_name(name) -> Optional[Pod]:
+    def get_pod_by_name(name, check_for_none=True) -> Optional[Pod]:
         """Returns the pod with the given name, or none if it doesn't exist"""
         pod = session.query(Pod).filter(Pod.name == name).first()
-        if pod is None:
+        if check_for_none and pod is None:
             raise PodNameNotFound(name)
         return pod
 
@@ -40,10 +40,10 @@ class PodDBService:
         return pod
 
     @staticmethod
-    def get_pod_by_mentor_id(mentor_id) -> Optional[Pod]:
+    def get_pod_by_mentor_id(mentor_id, check_for_none=True) -> Optional[Pod]:
         """Returns the pod with the given mentor, or none if it doesn't exist"""
         pod = session.query(Pod).filter(Pod.mentor == mentor_id).first()
-        if pod is None:
+        if check_for_none and pod is None:
             raise PodWithMentorIDNotFound(mentor_id)
         return pod
 

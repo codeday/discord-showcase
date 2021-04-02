@@ -57,13 +57,15 @@ class Pods(commands.Cog, name="Pods"):
         """Creates all PODS for all TEAMS"""
         # Then, create the actual pods by calling the singular create_pod function
         # We subtract one so that there is an extra mentor left, who is designated to the pod called overflow
+        guild: discord.Guild = ctx.guild
+        role: discord.Role = guild.get_role(EnvironmentVariables.MENTOR_ROLE)
         for x in range(0, int(number_of_mentors) - 1):
             await self.create_pod(ctx,
                                   PodNameFinder.find_a_suitable_pod_name(),
-                                  MentorFinder.find_a_suitable_mentor(ctx))
+                                  MentorFinder.find_a_suitable_mentor(role))
         await self.create_pod(ctx,
                               "Overflow",
-                              MentorFinder.find_a_suitable_mentor(ctx))
+                              MentorFinder.find_a_suitable_mentor(role))
 
     @commands.command(name='assign_pod')
     @checks.requires_staff_role()
