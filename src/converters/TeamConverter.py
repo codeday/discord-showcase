@@ -11,6 +11,7 @@ from utils.exceptions import TeamIDNotFound, NoTeamsWithoutPods, TeamNotFound
     More information on GQL can be found in PodGQLService, to write custom queries go to https://graph.codeday.org/
 """
 
+
 class TeamConverter:
 
     @staticmethod

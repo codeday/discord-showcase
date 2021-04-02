@@ -71,7 +71,7 @@ class PodGQLService:
         query = """
             query getAllShowcaseTeamsWithoutPods($eventGroup: String!) {
               showcase {
-                projects(where: {eventGroup: $eventGroup} take: 50) {
+                projects(where: {eventGroup: $eventGroup} take: 75) {
                     ...ProjectInformation
                 }
               }

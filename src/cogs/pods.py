@@ -240,7 +240,8 @@ class Pods(commands.Cog, name="Pods"):
         all_teams = await PodGQLService.get_all_showcase_teams()
         current_channel: discord.DMChannel = ctx.channel
         await current_channel.send("The current created team(s) in showcase are: \n")
-        await current_channel.send(embed=GenerateEmbed.for_all_showcase_teams(all_teams))
+        for embed in GenerateEmbed.for_all_showcase_teams(all_teams):
+            await current_channel.send(embed=embed)
 
     @commands.command(name='secret')
     @checks.requires_staff_role()
