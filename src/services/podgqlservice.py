@@ -47,11 +47,11 @@ class PodGQLService:
         return gql(query + "\n" + fragments)
 
     @staticmethod
-    async def query_http(query, variable_values=None, with_fragments=True):
+    async def query_http(query, variable_values=None, with_fragments=True, execute_timeout=10):
         transport = AIOHTTPTransport(
             url="https://graph.codeday.org/",
             headers={"X-Showcase-Authorization": f"Bearer {PodGQLService.make_token()}"})
-        client = Client(transport=transport, fetch_schema_from_transport=True)
+        client = Client(transport=transport, fetch_schema_from_transport=True, execute_timeout=execute_timeout)
         return await client.execute_async(PodGQLService.make_query(query,
                                                                    with_fragments=with_fragments),
                                           variable_values=variable_values)
@@ -69,9 +69,9 @@ class PodGQLService:
     @staticmethod
     async def get_all_showcase_teams():
         query = """
-            query getAllShowcaseTeamsWithoutPods($eventGroup: String!) {
+            query getAllShowcaseTeamsPods($eventGroup: String!) {
               showcase {
-                projects(where: {eventGroup: $eventGroup} take: 75) {
+                projects(where: {eventGroup: $eventGroup} take: 1000) {
                     ...ProjectInformation
                 }
               }
@@ -80,7 +80,7 @@ class PodGQLService:
 
         params = {"eventGroup": EnvironmentVariables.EVENT_ID}
 
-        result = await PodGQLService.query_http(query, variable_values=params)
+        result = await PodGQLService.query_http(query, variable_values=params, execute_timeout=20)
         return result['showcase']['projects']
 
     @staticmethod
