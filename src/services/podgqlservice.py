@@ -5,7 +5,7 @@ import time
 from jwt import encode
 from os import getenv
 
-event_id = str(getenv("EVENT_ID", "virtual-codeday-winter-2021"))
+from env import EnvironmentVariables
 
 
 class PodGQLService:
@@ -73,14 +73,14 @@ class PodGQLService:
             }
         """
 
-        params = {"eventGroup": event_id}
+        params = {"eventGroup": EnvironmentVariables.EVENT_ID}
 
         result = await PodGQLService.query_http(query, variable_values=params)
         return result['showcase']['projects']
 
     @staticmethod
     async def get_all_showcase_teams_without_pods():
-        print(event_id)
+        print(EnvironmentVariables.EVENT_ID)
         query = """
             query getAllShowcaseTeamsWithoutPods($eventGroup: String!) {
               showcase {
@@ -91,7 +91,7 @@ class PodGQLService:
             }
         """
 
-        params = {"eventGroup": event_id}
+        params = {"eventGroup": EnvironmentVariables.EVENT_ID}
 
         result = await PodGQLService.query_http(query, variable_values=params)
         return [p for p in result["showcase"]["projects"] if (not ("pod" in p) or p["pod"] is None)]
@@ -126,7 +126,7 @@ class PodGQLService:
             }
         """
 
-        params = {"eventGroup": event_id, "username": username}
+        params = {"eventGroup": EnvironmentVariables.EVENT_ID, "username": username}
 
         # Execute the query on the transport
         result = await PodGQLService.query_http(query, variable_values=params)

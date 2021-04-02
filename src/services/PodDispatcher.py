@@ -50,8 +50,6 @@ class PodDispatcher:
             return
         raise PodMergeFailed(pod_from, pod_to)
 
-
-
     @staticmethod
     def create_pod(pod_name, text_channel_id, mentor_id):
         PodDBService.create_pod(str(pod_name).capitalize(), text_channel_id, mentor_id)

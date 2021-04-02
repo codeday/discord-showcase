@@ -1,4 +1,6 @@
 from random import shuffle
+
+
 class PodNames:
     # The list below shows all possible names that a pod can have.
     available_names = ["Urchin", "Anemone", "Jellyfish", "Oyster", "Clam", "Shell", "Octopus", "Squid", "Crab",

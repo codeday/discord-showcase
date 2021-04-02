@@ -1,6 +1,10 @@
 import discord
 
 
+# For permissions attributes and other information, use the following links:
+# https://discordpy.readthedocs.io/en/latest/api.html#discord.Permissions
+# https://discordpy.readthedocs.io/en/latest/api.html#discord.TextChannel.set_permissions
+
 class SetPermissions:
 
     @staticmethod

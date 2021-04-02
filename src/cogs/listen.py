@@ -1,6 +1,7 @@
 from discord.ext import commands
 
 from cogs.pods import Pods
+from helpers.helper import Helper
 from services.podgqlservice import PodGQLService
 from utils.subscriptions import subscribe
 
@@ -23,7 +24,7 @@ class ListenCog(commands.Cog, name="Listen"):
 
     @subscribe(PodGQLService.team_created_listener)
     async def on_project_created(self, project):
-        await Pods.assign_pods_helper(self.bot)
+        await Helper.assign_pods_helper(self.bot)
 
     @subscribe(PodGQLService.member_added_listener)
     async def on_project_member_added(self, member_with_project):

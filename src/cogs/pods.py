@@ -4,9 +4,9 @@ import discord
 
 from converters.PodConverter import PodConverter
 from discord.ext import commands
-from os import getenv
 
 from converters.TeamConverter import TeamConverter
+from env import EnvironmentVariables
 from finders.mentorfinder import MentorFinder
 from finders.podnamefinder import PodNameFinder
 from helpers.helper import Helper
@@ -14,11 +14,6 @@ from services.PodDispatcher import PodDispatcher
 from services.poddbservice import PodDBService
 from services.podgqlservice import PodGQLService
 from utils import checks
-from utils.generateembed import GenerateEmbed
-from utils.setpermissions import SetPermissions
-
-# How many teams should be in a singular pod? Change that value here. Default is 5.
-teams_per_pod = int(getenv("TEAMS_PER_POD", 5))
 
 
 class Pods(commands.Cog, name="Pods"):
@@ -26,19 +21,6 @@ class Pods(commands.Cog, name="Pods"):
 
     def __init__(self, bot):
         self.bot: discord.ext.commands.Bot = bot
-
-        # The role in which the bot will give all permissions to the pod channels
-        self.staff_role = int(getenv("ROLE_STAFF", 689960285926195220))
-
-        # The role in which the bot will pick a mentor from for each text channel
-        self.mentor_role = int(getenv("ROLE_MENTOR", 782363834836975646))
-
-        # The category in which the pods will reside
-        self.category = int(getenv("CATEGORY", 783229579732320257))
-
-    # For permissions attributes and other information, use the following links:
-    # https://discordpy.readthedocs.io/en/latest/api.html#discord.Permissions
-    # https://discordpy.readthedocs.io/en/latest/api.html#discord.TextChannel.set_permissions
 
     @commands.command(name='create_pod')
     @checks.requires_staff_role()
@@ -49,13 +31,14 @@ class Pods(commands.Cog, name="Pods"):
         guild: discord.Guild = ctx.guild
         overwrites = {
             guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            guild.get_role(self.staff_role): discord.PermissionOverwrite(**dict(discord.Permissions.text())),
+            guild.get_role(EnvironmentVariables.STAFF_ROLE): discord.PermissionOverwrite(
+                **dict(discord.Permissions.text())),
             guild.me: discord.PermissionOverwrite(read_messages=True, read_message_history=True),
         }
 
         tc = await guild.create_text_channel("pod " + pod_name, overwrites=overwrites,
                                              category=guild.get_channel(
-                                                 self.category),
+                                                 EnvironmentVariables.CATEGORY),
                                              reason=None)
         print(mentor)
         await tc.set_permissions(mentor, overwrite=discord.PermissionOverwrite(**dict(discord.Permissions.text())))
@@ -86,13 +69,13 @@ class Pods(commands.Cog, name="Pods"):
     @checks.requires_staff_role()
     async def assign_pod(self, ctx: commands.Context, team_id, pod_name):
         """Assigns a TEAM to a particular POD"""
-        await self.assign_pod_helper(self.bot, team_id, pod_name)
+        await Helper.assign_pod_helper(self.bot, team_id, pod_name)
 
     @commands.command(name='assign_pods')
     @checks.requires_staff_role()
     async def assign_pods(self, ctx: commands.Context):
         """Assigns remaining TEAMS to PODS"""
-        await self.assign_pods_helper(self.bot)
+        await Helper.assign_pods_helper(self.bot)
 
     @staticmethod
     async def add_or_remove_user_to_pod_tc(bot: discord.ext.commands.Bot, member_with_project, should_be_removed):
@@ -215,7 +198,7 @@ class Pods(commands.Cog, name="Pods"):
     async def remove_all_pods(self, ctx: commands.Context):
         """Removes all Pods from Alembic and deletes all text channels from category"""
         all_pods = PodDBService.get_all_pods()
-        category = discord.utils.get(ctx.guild.categories, id=self.category)
+        category = discord.utils.get(ctx.guild.categories, id=EnvironmentVariables.CATEGORY)
         if len(all_pods) == 0:
             await ctx.send("There are no pods to remove.")
             return

@@ -1,9 +1,10 @@
 import discord
 
-from cogs.pods import teams_per_pod
 from converters.PodConverter import PodConverter
 from converters.TeamConverter import TeamConverter
-from services.PodDispatcher import PodDispatcher
+from env import EnvironmentVariables
+from services.poddbservice import PodDBService
+from services.podgqlservice import PodGQLService
 from utils.generateembed import GenerateEmbed
 from utils.setpermissions import SetPermissions
 
@@ -21,12 +22,15 @@ class Helper:
         showcase_team = await TeamConverter.get_showcase_team_by_id(team_id)
         print(showcase_team)
 
-        await PodDispatcher.assign_pod(current_pod, showcase_team)
+        if current_pod is not None and showcase_team is not None:
+            PodDBService.add_team_to_pod(current_pod, showcase_team["id"])
+            await PodGQLService.record_pod_on_team_metadata(showcase_team["id"], str(current_pod.id))
+            await PodGQLService.record_pod_name_on_team_metadata(showcase_team["id"], str(current_pod.name))
 
-        tc = await bot.fetch_channel(int(current_pod.tc_id))
+            tc = await bot.fetch_channel(int(current_pod.tc_id))
 
-        await tc.send(embed=GenerateEmbed.generate_embed(showcase_team))
-        await SetPermissions.for_channel_with_showcase_team(bot, tc, showcase_team)
+            await tc.send(embed=GenerateEmbed.generate_embed(showcase_team))
+            await SetPermissions.for_channel_with_showcase_team(bot, tc, showcase_team)
 
     @staticmethod
     async def assign_pods_helper(bot: discord.ext.commands.Bot):
@@ -34,8 +38,8 @@ class Helper:
 
         for team in all_teams_without_pods:
             if len(team["members"]) >= 1:
-                smallest_pod = PodDispatcher.get_smallest_pod()
-                if len(smallest_pod.teams) < teams_per_pod:
+                smallest_pod = PodDBService.get_smallest_pod()
+                if len(smallest_pod.teams) < EnvironmentVariables.TEAMS_PER_POD:
                     await Helper.assign_pod_helper(bot, team["id"], smallest_pod.name)
                 else:
                     await Helper.assign_pod_helper(bot, team["id"], "overflow")
