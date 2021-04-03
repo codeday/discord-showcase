@@ -119,9 +119,9 @@ class Pods(commands.Cog, name="Pods"):
         for team in teams:
             await current_channel.send(embed=GenerateEmbed.for_single_showcase_team(team, False))
 
-    @commands.command(name='list_pods')
+    @commands.command(name='pods', aliases=['list_pods', 'list-pods, list_all_pods', 'listpods'])
     @checks.requires_staff_role()
-    async def list_pods(self, ctx: commands.Context):
+    async def pods(self, ctx: commands.Context):
         """Displays ALL PODS in CURRENT CHANNEL"""
         current_channel: discord.DMChannel = ctx.channel
         all_pods = PodDBService.get_all_pods()
