@@ -27,10 +27,10 @@ class PodDBService:
         return pod
 
     @staticmethod
-    def get_pod_by_channel_id(tc_id) -> Optional[Pod]:
+    def get_pod_by_channel_id(tc_id, check_for_none=True) -> Optional[Pod]:
         """Returns the pod with the given text channel id, or none if it doesn't exist"""
         pod = session.query(Pod).filter(Pod.tc_id == tc_id).first()
-        if pod is None:
+        if check_for_none and pod is None:
             raise PodTCNotFound(tc_id)
         return pod
 

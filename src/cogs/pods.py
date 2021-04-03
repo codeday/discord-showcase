@@ -133,15 +133,9 @@ class Pods(commands.Cog, name="Pods"):
                 "There are no projects in your pod yet. Project(s) are still being created by attendee's.")
             return
 
-        await current_channel.send("I found a couple of project(s), here they are!")
+        await current_channel.send("I found a couple of project(s), here they are:")
         for team in teams:
-            member_mentions = []
-            for showcase_member in team["members"]:
-                member_mentions.append(f"<@{str(showcase_member['account']['discordId'])}>")
-            embed = discord.Embed(title=f"Project {team['name']}",
-                                  url=f"https://showcase.codeday.org/project/{team.showcase_id}", color=0xff6766)
-            embed.add_field(name=f"Project member(s): ", value=f"{', '.join(member_mentions)}", inline=False)
-            await current_channel.send(embed=embed)
+            await current_channel.send(embed=GenerateEmbed.for_single_showcase_team(team))
 
     @commands.command(name='list_pods')
     @checks.requires_staff_role()

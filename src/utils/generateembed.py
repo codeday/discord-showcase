@@ -28,7 +28,7 @@ class GenerateEmbed:
         for i in range(0, number_of_embeds):
             embed = None
             if i == 0:
-                embed = discord.Embed(title=f"There are a total of {len(teams)} teams. Panel {i+1} out of {number_of_embeds}",
+                embed = discord.Embed(title=f"There are a total of {len(teams)} teams.",
                                       url=f"https://showcase.codeday.org/", color=0xff6766)
             else:
                 embed = discord.Embed(title=f"Continuing to display teams... Panel {i+1} out of {number_of_embeds}",

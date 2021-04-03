@@ -30,15 +30,21 @@ class TeamConverter:
 
     @staticmethod
     async def get_teams(current_channel: discord.TextChannel,
-                        pod_name_or_discord_user: Union[str, discord.Member] = None):
+                        pod_name_or_discord_user: Union[str, discord.User] = None):
+        print(pod_name_or_discord_user)
         if pod_name_or_discord_user is None:
+            print("is none")
             pod = PodDBService.get_pod_by_channel_id(current_channel.id)
             return pod.teams
-        elif isinstance(pod_name_or_discord_user, discord.Member):
-            user = await PodGQLService.get_showcase_user_from_discord_id(str(pod_name_or_discord_user.id))
-            teams = await PodGQLService.get_showcase_team_by_showcase_user(user)
+        elif pod_name_or_discord_user[0] == "<":
+            filter_out = "<!@>"
+            for char in filter_out:
+                pod_name_or_discord_user = pod_name_or_discord_user.replace(char, '')
+            user = await PodGQLService.get_showcase_user_from_discord_id(str(pod_name_or_discord_user))
+            teams = await PodGQLService.get_showcase_team_by_showcase_user(user['username'])
             return teams
         elif isinstance(pod_name_or_discord_user, str):
+            print("is string")
             pod = PodDBService.get_pod_by_name(pod_name_or_discord_user)
             return pod.teams
         await current_channel.send("Team(s) were not able to be found by the text channel or by name.")
