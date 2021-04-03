@@ -43,9 +43,10 @@ class PodDispatcher:
                                       "The projects joining this pod are: ")
                 while len(pod_from.teams) > 0:
                     team = pod_from.teams[0]
-                    await PodDispatcher.assign_pod(pod_to, team)
-                    await to_channel.send(embed=GenerateEmbed.for_single_showcase_team(team))
-                    await SetPermissions.for_channel_with_showcase_team(bot, to_channel, team)
+                    team_from_showcase = await PodGQLService.get_showcase_team_by_id(team.showcase_id)
+                    await PodDispatcher.assign_pod(pod_to, team_from_showcase)
+                    await to_channel.send(embed=GenerateEmbed.for_single_showcase_team(team_from_showcase))
+                    await SetPermissions.for_channel_with_showcase_team(bot, to_channel, team_from_showcase)
                     await PodGQLService.unset_team_metadata(team.showcase_id)
                     await PodGQLService.record_pod_on_team_metadata(team.showcase_id, str(pod_to.id))
                     await PodGQLService.record_pod_name_on_team_metadata(team.showcase_id, str(pod_to.name))
@@ -62,9 +63,9 @@ class PodDispatcher:
     @staticmethod
     async def assign_pod(pod, team):
         if pod is not None and team is not None:
-            PodDBService.add_team_to_pod(pod, team["id"])
-            await PodGQLService.record_pod_on_team_metadata(team["id"], str(pod.id))
-            await PodGQLService.record_pod_name_on_team_metadata(team["id"], str(pod.name))
+            PodDBService.add_team_to_pod(pod, team['id'])
+            await PodGQLService.record_pod_on_team_metadata(team['id'], str(pod.id))
+            await PodGQLService.record_pod_name_on_team_metadata(team['id'], str(pod.name))
 
     @staticmethod
     def get_smallest_pod():
