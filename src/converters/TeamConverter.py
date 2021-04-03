@@ -34,18 +34,37 @@ class TeamConverter:
         print(pod_name_or_discord_user)
         if pod_name_or_discord_user is None:
             print("is none")
-            pod = PodDBService.get_pod_by_channel_id(current_channel.id)
-            return pod.teams
+            teams = []
+            pod = PodDBService.get_pod_by_channel_id(str(current_channel.id), False)
+            for team in pod.teams:
+                showcase_team = await TeamConverter.get_showcase_team_by_id(team.showcase_id)
+                teams.append(showcase_team)
+            if len(teams) == 0 or teams is None:
+                await current_channel.send(
+                    "There are no projects in your pod yet. Project(s) are still being created by attendee's.")
+                raise TeamNotFound()
+            return teams
         elif pod_name_or_discord_user[0] == "<":
             filter_out = "<!@>"
             for char in filter_out:
                 pod_name_or_discord_user = pod_name_or_discord_user.replace(char, '')
             user = await PodGQLService.get_showcase_user_from_discord_id(str(pod_name_or_discord_user))
             teams = await PodGQLService.get_showcase_team_by_showcase_user(user['username'])
+            if len(teams) == 0 or teams is None:
+                await current_channel.send(f"<@{pod_name_or_discord_user}> does not belong to any projects.")
+                raise TeamNotFound()
             return teams
         elif isinstance(pod_name_or_discord_user, str):
             print("is string")
+            teams = []
             pod = PodDBService.get_pod_by_name(pod_name_or_discord_user)
-            return pod.teams
+            for team in pod.teams:
+                showcase_team = await TeamConverter.get_showcase_team_by_id(team.showcase_id)
+                teams.append(showcase_team)
+            if len(teams) == 0 or teams is None:
+                await current_channel.send(
+                    "There are no projects in your pod yet. Project(s) are still being created by attendee's.")
+                raise TeamNotFound()
+            return teams
         await current_channel.send("Team(s) were not able to be found by the text channel or by name.")
         raise TeamNotFound()

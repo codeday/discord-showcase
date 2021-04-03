@@ -128,14 +128,9 @@ class Pods(commands.Cog, name="Pods"):
         current_channel: discord.TextChannel = ctx.channel
         teams = await TeamConverter.get_teams(current_channel, pod_name_or_discord_user)
 
-        if len(teams) == 0:
-            await current_channel.send(
-                "There are no projects in your pod yet. Project(s) are still being created by attendee's.")
-            return
-
         await current_channel.send("I found a couple of project(s), here they are:")
         for team in teams:
-            await current_channel.send(embed=GenerateEmbed.for_single_showcase_team(team))
+            await current_channel.send(embed=GenerateEmbed.for_single_showcase_team(team, False))
 
     @commands.command(name='list_pods')
     @checks.requires_staff_role()

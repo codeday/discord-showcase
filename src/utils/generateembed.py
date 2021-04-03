@@ -11,12 +11,17 @@ import discord
 class GenerateEmbed:
 
     @staticmethod
-    def for_single_showcase_team(showcase_team) -> discord.Embed:
+    def for_single_showcase_team(showcase_team, join_message=True) -> discord.Embed:
         member_mentions = []
         for showcase_member in showcase_team["members"]:
             member_mentions.append(f"<@{str(showcase_member['account']['discordId'])}>")
-        embed = discord.Embed(title=f"Project {showcase_team['name']} has joined the pod!",
-                              url=f"https://showcase.codeday.org/project/{showcase_team['id']}", color=0xff6766)
+        embed = None
+        if join_message:
+            embed = discord.Embed(title=f"Project {showcase_team['name']} has joined the pod!",
+                                  url=f"https://showcase.codeday.org/project/{showcase_team['id']}", color=0xff6766)
+        else:
+            embed = discord.Embed(title=f"Project {showcase_team['name']}",
+                                  url=f"https://showcase.codeday.org/project/{showcase_team['id']}", color=0xff6766)
         embed.add_field(name=f"Project member(s): ", value=f"{', '.join(member_mentions)}", inline=False)
         return embed
 
