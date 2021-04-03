@@ -5,6 +5,7 @@ import discord
     permissions and setting permissions for a text channel are below.
 """
 
+
 # For permissions attributes and other information, use the following links:
 # https://discordpy.readthedocs.io/en/latest/api.html#discord.Permissions
 # https://discordpy.readthedocs.io/en/latest/api.html#discord.TextChannel.set_permissions
@@ -24,3 +25,11 @@ class SetPermissions:
                                                    external_emojis=True, add_reactions=True)
             except discord.errors.NotFound:
                 print("A user was not found within the server")
+
+    @staticmethod
+    async def for_channel_with_discord_member(text_channel: discord.TextChannel, member: discord.Member,
+                                              remove: bool):
+        remove = not remove
+        await text_channel.set_permissions(member, read_messages=remove, read_message_history=remove,
+                                           send_messages=remove, embed_links=remove, attach_files=remove,
+                                           external_emojis=remove, add_reactions=remove)

@@ -15,6 +15,7 @@ from services.poddbservice import PodDBService
 from services.podgqlservice import PodGQLService
 from utils import checks
 from utils.generateembed import GenerateEmbed
+from utils.setpermissions import SetPermissions
 
 """
     The purpose of this class is to execute commands and reach out to other classes for input sanitation and actions
@@ -98,28 +99,14 @@ class Pods(commands.Cog, name="Pods"):
 
         # Occurs when a user left a showcase team and is now being removed from the pod text channel
         if should_be_removed:
-            await tc.set_permissions(member, read_messages=False, read_message_history=False,
-                                     send_messages=False, embed_links=False, attach_files=False,
-                                     external_emojis=False, add_reactions=False)
-            embed = discord.Embed(
-                title=f"{member_with_project['username']} left project {showcase_team['name']}",
-                url=f"https://showcase.codeday.org/project/{showcase_team['id']}",
-                color=0xff6766)
-            embed.add_field(name="Member: ", value=f"<@{member_with_project['account']['discordId']}>",
-                            inline=False)
-            await tc.send(embed=embed)
+            await SetPermissions.for_channel_with_discord_member(tc, member, remove=True)
+            await tc.send(embed=GenerateEmbed.user_joins_or_leaves_showcase_team(member_with_project, showcase_team,
+                                                                                 status="leaving"))
         # Occurs when a user joins a showcase team and is now being added to the pod text channel
         else:
-            await tc.set_permissions(member, read_messages=True, read_message_history=True,
-                                     send_messages=True, embed_links=True, attach_files=True,
-                                     external_emojis=True, add_reactions=True)
-            embed = discord.Embed(
-                title=f"{member_with_project['username']} joined project {showcase_team['name']}",
-                url=f"https://showcase.codeday.org/project/{showcase_team['id']}",
-                color=0xff6766)
-            embed.add_field(name="Member: ", value=f"<@{member_with_project['account']['discordId']}>",
-                            inline=False)
-            await tc.send(embed=embed)
+            await SetPermissions.for_channel_with_discord_member(tc, member, remove=False)
+            await tc.send(embed=GenerateEmbed.user_joins_or_leaves_showcase_team(member_with_project, showcase_team,
+                                                                                 status="joining"))
 
     @commands.command(name='teams', aliases=['list-teams', 'list_teams', 'listteams'])
     @checks.requires_mentor_role()

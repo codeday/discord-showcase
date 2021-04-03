@@ -26,6 +26,26 @@ class GenerateEmbed:
         return embed
 
     @staticmethod
+    def user_joins_or_leaves_showcase_team(showcase_user, showcase_team, status="joining") -> discord.Embed:
+        embed = None
+        if status == "joining":
+            embed = discord.Embed(
+                title=f"{showcase_user['username']} left project {showcase_team['name']}",
+                url=f"https://showcase.codeday.org/project/{showcase_team['id']}",
+                color=0xff6766)
+            embed.add_field(name="Member: ", value=f"<@{showcase_user['account']['discordId']}>",
+                            inline=False)
+        else:
+            embed = discord.Embed(
+                title=f"{showcase_user['username']} left project {showcase_team['name']}",
+                url=f"https://showcase.codeday.org/project/{showcase_team['id']}",
+                color=0xff6766)
+            embed.add_field(name="Member: ", value=f"<@{showcase_user['account']['discordId']}>",
+                            inline=False)
+        return embed
+
+
+    @staticmethod
     def for_all_showcase_teams(teams) -> list[discord.Embed]:
         embeds = []
         number_of_embeds = math.ceil(len(teams) / 25)
