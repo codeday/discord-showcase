@@ -11,6 +11,7 @@ from raygun4py import raygunprovider
 
 from services.poddbservice import session
 
+
 def handle_exception(exc_type, exc_value, exc_traceback):
     cl = raygunprovider.RaygunSender(os.getenv("RAYGUN_TOKEN"))
     cl.send_exception(exc_info=(exc_type, exc_value, exc_traceback))

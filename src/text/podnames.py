@@ -4,6 +4,12 @@ from random import shuffle
     The purpose of this class is to provide pod names for the bot to use
 """
 
+
+def capitalize_list(elements: list[str]):
+    for e in elements:
+        e.capitalize()
+
+
 class PodNames:
     # The list below shows all possible names that a pod can have.
     available_names = ["Urchin", "Anemone", "Jellyfish", "Oyster", "Clam", "Shell", "Octopus", "Squid", "Crab",
@@ -37,6 +43,7 @@ class PodNames:
                        "Tuna", "Turbot", "Walleye", "Weever", "Whipray", "Hake", "Wirrah",
                        "Wobbegong", "Wrasse"]
     shuffle(available_names)
+    capitalize_list(available_names)
 
     # Name Archive: Elements
     # available_names = ["Hydrogen", "Helium", "Lithium", "Beryllium", "Boron", "Carbon", "Nitrogen",
