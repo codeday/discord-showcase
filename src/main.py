@@ -11,7 +11,6 @@ from raygun4py import raygunprovider
 
 from services.poddbservice import session
 
-
 def handle_exception(exc_type, exc_value, exc_traceback):
     cl = raygunprovider.RaygunSender(os.getenv("RAYGUN_TOKEN"))
     cl.send_exception(exc_info=(exc_type, exc_value, exc_traceback))
@@ -20,7 +19,7 @@ def handle_exception(exc_type, exc_value, exc_traceback):
 sys.excepthook = handle_exception
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')
-intents = discord.Intents(messages=True, guilds=True, members=True, reactions=True, emoji=True, webhooks=True)
+intents = discord.Intents(messages=True, guilds=True, members=True, reactions=True, emojis=True, webhooks=True)
 bot = commands.Bot(
     command_prefix='s~',
     intents=intents,
@@ -48,6 +47,7 @@ for cog in initial_cogs:
 @bot.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
+    await bot.change_presence(activity=discord.Game("with pods"))
     atexit.register(exit_handler)
 
 
@@ -57,5 +57,4 @@ def exit_handler():
     session.close()
 
 
-bot.change_presence(activity=discord.Game("with pods"))
 bot.run(BOT_TOKEN, bot=True, reconnect=True)
