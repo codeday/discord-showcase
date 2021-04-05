@@ -11,6 +11,7 @@ from services.podgqlservice import PodGQLService
     every team/user is doing on their projects.
 """
 
+
 class Reactions(commands.Cog, name="Reactions"):
 
     def __init__(self, bot):
@@ -31,10 +32,11 @@ class Reactions(commands.Cog, name="Reactions"):
                 if user_who_posted_message == self.bot.user.id:
                     if payload.member.id != self.bot.user.id:
                         showcase_user = await PodGQLService.get_showcase_user_from_discord_id(str(payload.member.id))
-                        team_that_reacted = await PodGQLService.get_showcase_team_by_showcase_user(showcase_user['username'])
+                        team_that_reacted = await PodGQLService.get_showcase_team_by_showcase_user(
+                            showcase_user['username'])
                         for team in team_that_reacted:
                             await PodGQLService.send_team_reacted(str(team['id']), str(showcase_user['username']),
-                                                               self.emoji_to_value(str(payload.emoji)))
+                                                                  self.emoji_to_value(str(payload.emoji)))
             session.commit()
             session.close()
 
