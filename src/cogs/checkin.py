@@ -5,11 +5,13 @@ import discord
 from discord.ext import commands
 
 from db.models import session_creator
+from services.poddbservice import PodDBService
 from utils import checks
 
 """
     The purpose of this class is to allow administrators the ability to run commands to checkin to all or specific pods.
 """
+
 
 def generate_message(team_name):
     title_options = [
@@ -37,7 +39,7 @@ class CheckinCommands(commands.Cog, name="Checkin"):
     async def checkin(self, ctx: commands.Context, pod_name):
         """Checks in on a specific pod"""
         guild: discord.Guild = ctx.guild
-        pod = PodService.get_pod_by_name(str(pod_name).capitalize())
+        pod = PodDBService.get_pod_by_name(pod_name)
         if pod is not None:
             channel: discord.DMChannel = guild.get_channel(int(pod.tc_id))
             await channel.send("Hello! This is your friendly Showcase bot!")
@@ -48,14 +50,13 @@ class CheckinCommands(commands.Cog, name="Checkin"):
             await message.add_reaction("😐")
             await message.add_reaction("☹")
 
-
     @commands.command(name='checkin_all')
     @checks.requires_staff_role()
     async def checkin_all(self, ctx: commands.Context):
         """checks in on all teams"""
         session = session_creator()
         guild: discord.Guild = ctx.guild
-        for pod in PodService.get_all_pods(session):
+        for pod in PodDBService.get_all_pods():
             channel: discord.DMChannel = guild.get_channel(int(pod.tc_id))
             message = await channel.send("Hello @everyone, can you quickly react to this message to let us know how "
                                          "you're feeling about your project right now:")

@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 
 from db.models import session_creator
+from services.poddbservice import PodDBService
 from services.podgqlservice import PodGQLService
 
 """
@@ -20,7 +21,7 @@ class Reactions(commands.Cog, name="Reactions"):
         if self.emoji_is_valid(str(payload.emoji)):
             session = session_creator()
 
-            pod = PodService.get_pod_by_channel_id(
+            pod = PodDBService.get_pod_by_channel_id(
                 str(payload.channel_id), session)
             if pod is not None:
                 guild: discord.Guild = payload.member.guild
@@ -29,10 +30,10 @@ class Reactions(commands.Cog, name="Reactions"):
                 user_who_posted_message = message.author.id
                 if user_who_posted_message == self.bot.user.id:
                     if payload.member.id != self.bot.user.id:
-                        showcase_user = await GQLService.get_showcase_user_from_discord_id(str(payload.member.id))
-                        team_that_reacted = await GQLService.get_showcase_team_by_showcase_user(showcase_user['username'])
+                        showcase_user = await PodGQLService.get_showcase_user_from_discord_id(str(payload.member.id))
+                        team_that_reacted = await PodGQLService.get_showcase_team_by_showcase_user(showcase_user['username'])
                         for team in team_that_reacted:
-                            await GQLService.send_team_reacted(str(team['id']), str(showcase_user['username']),
+                            await PodGQLService.send_team_reacted(str(team['id']), str(showcase_user['username']),
                                                                self.emoji_to_value(str(payload.emoji)))
             session.commit()
             session.close()
