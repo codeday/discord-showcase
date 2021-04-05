@@ -20,10 +20,8 @@ class Reactions(commands.Cog, name="Reactions"):
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
         if self.emoji_is_valid(str(payload.emoji)):
-            session = session_creator()
 
-            pod = PodDBService.get_pod_by_channel_id(
-                str(payload.channel_id), session)
+            pod = PodDBService.get_pod_by_channel_id(payload.channel_id)
             if pod is not None:
                 guild: discord.Guild = payload.member.guild
                 channel: discord.DMChannel = guild.get_channel(int(payload.channel_id))
@@ -37,8 +35,6 @@ class Reactions(commands.Cog, name="Reactions"):
                         for team in team_that_reacted:
                             await PodGQLService.send_team_reacted(str(team['id']), str(showcase_user['username']),
                                                                   self.emoji_to_value(str(payload.emoji)))
-            session.commit()
-            session.close()
 
     def emoji_is_valid(self, emoji):
         return emoji == "😀" or emoji == "😐" or emoji == "☹"
