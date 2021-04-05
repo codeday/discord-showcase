@@ -5,13 +5,9 @@ from random import shuffle
 """
 
 
-def capitalize_list(elements: list[str]):
-    [name.capitalize() for name in elements]
-
-
 class PodNames:
     # The list below shows all possible names that a pod can have.
-    available_names = ["Urchin", "Anemone", "Jellyfish", "Oyster", "Clam", "Shell", "Octopus", "Squid", "Crab",
+    available_names = [name.capitalize() for name in ["Urchin", "Anemone", "Jellyfish", "Oyster", "Clam", "Shell", "Octopus", "Squid", "Crab",
                        "Shrimp", "Lobster", "Isopod",
                        "Metis", "Adrastea", "Amalthea", "Thebe", "Io", "Europa", "Ganymede", "Callisto", "Themisto",
                        "Leda", "Himalia", "Lysithea", "Elara", "Dia", "Carpo", "Euporie", "Thelxinoe", "Euanthe",
@@ -40,9 +36,8 @@ class PodNames:
                        "Sprat", "Squid", "Stickleback", "Stockfish", "Sturgeon", "Sunfish", "Sunny", "Swordfish",
                        "Talapia", "Talma", "Tarpon", "Tench", "Tetra", "Trimac", "Trout", "Trumpeter", "Tub", "Gurnard",
                        "Tuna", "Turbot", "Walleye", "Weever", "Whipray", "Hake", "Wirrah",
-                       "Wobbegong", "Wrasse"]
+                       "Wobbegong", "Wrasse"]]
     shuffle(available_names)
-    capitalize_list(available_names)
 
     # Name Archive: Elements
     # available_names = ["Hydrogen", "Helium", "Lithium", "Beryllium", "Boron", "Carbon", "Nitrogen",
