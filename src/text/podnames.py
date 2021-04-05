@@ -6,8 +6,8 @@ from random import shuffle
 
 
 def capitalize_list(elements: list[str]):
-    for e in elements:
-        e.capitalize()
+    for i in range(0, len(elements)):
+        elements[i].capitalize()
 
 
 class PodNames:
