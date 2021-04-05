@@ -54,7 +54,6 @@ class CheckinCommands(commands.Cog, name="Checkin"):
     @checks.requires_staff_role()
     async def checkin_all(self, ctx: commands.Context):
         """checks in on all teams"""
-        session = session_creator()
         guild: discord.Guild = ctx.guild
         for pod in PodDBService.get_all_pods():
             channel: discord.DMChannel = guild.get_channel(int(pod.tc_id))
@@ -63,8 +62,6 @@ class CheckinCommands(commands.Cog, name="Checkin"):
             await message.add_reaction("😀")
             await message.add_reaction("😐")
             await message.add_reaction("☹")
-        session.commit()
-        session.close()
 
 
 def setup(bot):
