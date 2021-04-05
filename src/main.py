@@ -20,8 +20,14 @@ def handle_exception(exc_type, exc_value, exc_traceback):
 sys.excepthook = handle_exception
 
 BOT_TOKEN = os.getenv('BOT_TOKEN')
-intents = discord.Intents(messages=True, guilds=True, members=True, reactions=True)
-bot = commands.Bot(command_prefix='s~', intents=intents)
+intents = discord.Intents(messages=True, guilds=True, members=True, reactions=True, emoji=True, webhooks=True)
+bot = commands.Bot(
+    command_prefix='s~',
+    intents=intents,
+    command_not_found="Beep Boop... That command doesn't exist in my database",
+    allowed_mentions=discord.AllowedMentions(
+        everyone=False, users=False, roles=False)
+)
 
 initial_cogs = [
     'cogs.listen',
@@ -44,10 +50,12 @@ async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
     atexit.register(exit_handler)
 
+
 def exit_handler():
     print('The application is ending!')
     session.commit()
     session.close()
 
 
+bot.change_presence(activity=discord.Game("with pods"))
 bot.run(BOT_TOKEN, bot=True, reconnect=True)
