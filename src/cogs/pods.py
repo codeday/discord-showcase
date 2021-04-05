@@ -29,7 +29,7 @@ class Pods(commands.Cog, name="Pods"):
 
     @commands.command(name='create_pod')
     @checks.requires_staff_role()
-    async def create_pod(self, ctx: commands.Context, pod_name, mentor: discord.Member):
+    async def create_pod(self, ctx: commands.Context, pod_name: str, mentor: discord.Member):
         """Creates a POD for a team"""
 
         """Create a text channel"""
@@ -58,13 +58,13 @@ class Pods(commands.Cog, name="Pods"):
 
     @commands.command(name='create_pods')
     @checks.requires_staff_role()
-    async def create_pods(self, ctx: commands.Context, number_of_mentors):
+    async def create_pods(self, ctx: commands.Context, number_of_mentors: int):
         """Creates all PODS for all TEAMS"""
         # Then, create the actual pods by calling the singular create_pod function
         # We subtract one so that there is an extra mentor left, who is designated to the pod called overflow
         guild: discord.Guild = ctx.guild
         role: discord.Role = guild.get_role(EnvironmentVariables.MENTOR_ROLE)
-        for x in range(0, int(number_of_mentors) - 1):
+        for x in range(0, number_of_mentors - 1):
             await self.create_pod(ctx,
                                   PodNameFinder.find_a_suitable_pod_name(),
                                   MentorFinder.find_a_suitable_mentor(role))
@@ -74,7 +74,7 @@ class Pods(commands.Cog, name="Pods"):
 
     @commands.command(name='assign_pod')
     @checks.requires_staff_role()
-    async def assign_pod(self, ctx: commands.Context, team_id, pod_name):
+    async def assign_pod(self, ctx: commands.Context, team_id, pod_name: str):
         """Assigns a TEAM to a particular POD"""
         await Helper.assign_pod_helper(self.bot, team_id, pod_name)
 
@@ -85,7 +85,7 @@ class Pods(commands.Cog, name="Pods"):
         await Helper.assign_pods_helper(self.bot)
 
     @staticmethod
-    async def add_or_remove_user_to_pod_tc(bot: discord.ext.commands.Bot, member_with_project, should_be_removed):
+    async def add_or_remove_user_to_pod_tc(bot: discord.ext.commands.Bot, member_with_project, should_be_removed: bool):
         """Add/remove users to a pod text channel, occurs when someone joins or leaves a team in showcase"""
         print(member_with_project)
         discord_id = member_with_project["account"]["discordId"]
@@ -136,7 +136,7 @@ class Pods(commands.Cog, name="Pods"):
 
     @commands.command("add_mentor")
     @checks.requires_staff_role()
-    async def add_mentor(self, ctx: commands.Context, mentor: discord.Member, pod_name=None):
+    async def add_mentor(self, ctx: commands.Context, mentor: discord.Member, pod_name: str = None):
         """Gives additional permissions to a particular discord member"""
         # If the pod name is not given, use the current channels name as the argument
         pod = await PodConverter.get_pod(ctx.channel, pod_name)
@@ -144,7 +144,7 @@ class Pods(commands.Cog, name="Pods"):
 
     @commands.command(name="merge_pods")
     @checks.requires_staff_role()
-    async def merge_pods(self, ctx: commands.Context, pod_from, pod_to):
+    async def merge_pods(self, ctx: commands.Context, pod_from: str, pod_to: str):
         """Merges one PDO into another POD"""
         pod_to_be_merged = PodConverter.get_pod_by_name(pod_from)
         pod_being_merged_into = PodConverter.get_pod_by_name(pod_to)
@@ -157,19 +157,20 @@ class Pods(commands.Cog, name="Pods"):
         await PodDispatcher.merge_pods(self.bot, pod_to_be_merged, pod_being_merged_into,
                                        pod_to_be_merged_channel, pod_being_merged_into_channel)
 
-        await current_channel.send(f"Done! Pod {pod_from} has been successfully merged into {pod_to}. \n"
+        await current_channel.send(f"Done! Pod {pod_from.capitalize()} has been successfully merged into Pod "
+                                   f"{pod_to.capitalize()}. \n"
                                    f"If there were any teams, they have been merged as well.")
 
     @commands.command(name="test")
     @checks.requires_staff_role()
-    async def test(self, ctx: commands.Context, pod_name=None):
+    async def test(self, ctx: commands.Context, pod_name: str = None):
         current_channel: discord.TextChannel = ctx.channel
         pod = await PodConverter.get_pod(current_channel, pod_name)
         await ctx.send(f'Pod was found. ID is {pod.id}')
 
     @commands.command(name='remove_pod')
     @checks.requires_staff_role()
-    async def remove_pod(self, ctx: commands.Context, pod_name=None):
+    async def remove_pod(self, ctx: commands.Context, pod_name: str = None):
         current_channel: discord.TextChannel = ctx.channel
         pod = await PodConverter.get_pod(current_channel, pod_name)
         channel_to_remove = await self.bot.fetch_channel(pod.tc_id)
@@ -194,7 +195,7 @@ class Pods(commands.Cog, name="Pods"):
 
     @commands.command(name='send_message')
     @checks.requires_staff_role()
-    async def send_message(self, ctx: commands.Context, pod_name, *message):
+    async def send_message(self, ctx: commands.Context, pod_name: str, *message):
         """Sends a message to a single pod using the bot account"""
         pod = PodConverter.get_pod_by_name(pod_name)
         pod_channel = await self.bot.fetch_channel(pod.tc_id)
@@ -211,7 +212,7 @@ class Pods(commands.Cog, name="Pods"):
 
     @commands.command(name='get_all_teams')
     @checks.requires_staff_role()
-    async def get_all_teams(self, ctx: commands.Context, page=1):
+    async def get_all_teams(self, ctx: commands.Context):
         """Displays PODS in CHANNEL"""
         all_teams = await PodGQLService.get_all_showcase_teams()
         current_channel: discord.DMChannel = ctx.channel
