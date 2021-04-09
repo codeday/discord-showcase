@@ -33,7 +33,8 @@ initial_cogs = [
     'cogs.listen',
     'cogs.checkin',
     'cogs.pods',
-    'cogs.reactions'
+    'cogs.reactions',
+    'cogs.test',
 ]
 
 for cog in initial_cogs:

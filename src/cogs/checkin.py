@@ -4,7 +4,6 @@ from random import choice
 import discord
 from discord.ext import commands
 
-from db.models import session_creator
 from services.poddbservice import PodDBService
 from utils import checks
 

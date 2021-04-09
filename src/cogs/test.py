@@ -7,19 +7,18 @@ from finders.mentorfinder import MentorFinder
 from utils import checks
 
 
-class Test(commands.Cog, name="Pods"):
+class Test(commands.Cog, name="Test"):
 
     def __init__(self, bot: discord.ext.commands.Bot):
         self.bot: discord.ext.commands.Bot = bot
-        self.channel = bot.fetch_channel(EnvironmentVariables.DEBUG_CHANNEL)
 
     @commands.command(name='test_all')
     @checks.requires_staff_role()
-    def test_all(self, ctx: commands.Context):
-        self.test_pods()
-        self.test_checkin()
-        self.test_reactions()
-        self.test_listeners()
+    async def test_all(self, ctx: commands.Context):
+        await self.test_pods()
+        await self.test_checkin()
+        await self.test_reactions()
+        await self.test_listeners()
 
     @commands.command(name='test_pods')
     @checks.requires_staff_role()
@@ -29,6 +28,7 @@ class Test(commands.Cog, name="Pods"):
         role: discord.Role = guild.get_role(EnvironmentVariables.MENTOR_ROLE)
         current_channel: discord.TextChannel = ctx.channel
         test_member: discord.Member = guild.get_member(111572782336208896)  # test member is Jacob Cuomo
+        await Pods.remove_all_pods(, ctx)
 
         # Create two separate pods with the singular create_pod command
         await Pods.create_pod(ctx, "DEBUG", MentorFinder.find_a_suitable_mentor(role))
@@ -73,17 +73,17 @@ class Test(commands.Cog, name="Pods"):
 
     @commands.command(name='test_checkin')
     @checks.requires_staff_role()
-    def test_checkin(self, ctx: commands.Context):
+    async def test_checkin(self, ctx: commands.Context):
         pass
 
     @commands.command(name='test_reactions')
     @checks.requires_staff_role()
-    def test_reactions(self, ctx: commands.Context):
+    async def test_reactions(self, ctx: commands.Context):
         pass
 
     @commands.command(name='test_listeners')
     @checks.requires_staff_role()
-    def test_listeners(self, ctx: commands.Context):
+    async def test_listeners(self, ctx: commands.Context):
         pass
 
 
