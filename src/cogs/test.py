@@ -5,6 +5,7 @@ from cogs.pods import Pods
 from env import EnvironmentVariables
 from finders.mentorfinder import MentorFinder
 from utils import checks
+from utils.confirmation import confirm
 
 
 class Test(commands.Cog, name="Test"):
@@ -28,48 +29,68 @@ class Test(commands.Cog, name="Test"):
         role: discord.Role = guild.get_role(EnvironmentVariables.MENTOR_ROLE)
         current_channel: discord.TextChannel = ctx.channel
         test_member: discord.Member = guild.get_member(111572782336208896)  # test member is Jacob Cuomo
-        await Pods.remove_all_pods(, ctx)
+
+        if len(role.members) < 5:
+            await current_channel.send(f"There are not enough mentors to run the testing command. There needs to be at "
+                                       f"least 5. Add more and try again.")
+            return
+
+        if not await confirm(
+                confirmation="Are you sure you want to run this command? It executes over 20 commands, including "
+                             "removing "
+                             "all pods and takes some time to complete. ",
+                ctx=ctx,
+                bot=self.bot,
+                abort_msg="You have decided to stop the command.",
+                success_msg="Running the test_pods command now...",
+                delete_msgs=False
+        ):
+            return
+
+        pod_instance = Pods
+
+        await Pods.remove_all_pods(pod_instance, ctx)
 
         # Create two separate pods with the singular create_pod command
-        await Pods.create_pod(ctx, "DEBUG", MentorFinder.find_a_suitable_mentor(role))
-        await Pods.create_pod(ctx, "DEBUG-2", MentorFinder.find_a_suitable_mentor(role))
+        await Pods.create_pod(pod_instance, ctx, "DEBUG", MentorFinder.find_a_suitable_mentor(role))
+        await Pods.create_pod(pod_instance, ctx, "DEBUG-2", MentorFinder.find_a_suitable_mentor(role))
 
         # Create three separate pods with the plural create_pods command
-        await Pods.create_pods(ctx, 3)
+        await Pods.create_pods(pod_instance, ctx, 3)
 
         # Assign all created pods up and to this point
-        await Pods.assign_pods(ctx)
+        await Pods.assign_pods(pod_instance, ctx)
 
         # List teams in a given pod, this command can find teams from current channel, a name, or user
-        await Pods.teams(ctx, "DEBUG")
-        await Pods.teams(ctx, "DEBUG-2")
-        await Pods.teams(ctx, test_member)
+        await Pods.teams(pod_instance, ctx, "DEBUG")
+        await Pods.teams(pod_instance, ctx, "DEBUG-2")
+        await Pods.teams(pod_instance, ctx, test_member)
         if "pod" in current_channel.name:
-            await Pods.teams(ctx)
+            await Pods.teams(pod_instance, ctx)
 
         # Lists all pods in current channel
-        await Pods.pods(ctx)
+        await Pods.pods(pod_instance, ctx)
 
         # Adds a mentor to a given pod name
-        await Pods.add_mentor(ctx, test_member, "DEBUG")
-        await Pods.add_mentor(ctx, test_member, "DEBUG-2")
+        await Pods.add_mentor(pod_instance, ctx, test_member, "DEBUG")
+        await Pods.add_mentor(pod_instance, ctx, test_member, "DEBUG-2")
 
         # Merges two pods together, including any teams within them
-        await Pods.merge_pods("DEBUG-2", "DEBUG")
+        await Pods.merge_pods(pod_instance, "DEBUG-2", "DEBUG")
 
         # Finds a pod and returns their alembic ID
-        await Pods.test(ctx, "DEBUG")
+        await Pods.test(pod_instance, ctx, "DEBUG")
 
         # Send a message to a pod or all pods
-        await Pods.send_message("DEBUG", "THIS IS JUST A DRILL, DO NOT PANIC!")
-        await Pods.send_message_all("THIS IS JUST A DRILL, DO NOT PANIC!")
+        await Pods.send_message(pod_instance, ctx, "DEBUG", "THIS IS JUST A DRILL, DO NOT PANIC!")
+        await Pods.send_message_all(pod_instance, ctx, "THIS IS JUST A DRILL, DO NOT PANIC!")
 
         # Lists all teams ever created
-        await Pods.get_all_teams
+        await Pods.get_all_teams(pod_instance, ctx)
 
         # Remove Pod and Remove All Pods
-        await Pods.remove_pod("DEBUG")
-        await Pods.remove_all_pods(ctx)
+        await Pods.remove_pod(pod_instance, ctx, "DEBUG")
+        await Pods.remove_all_pods(pod_instance, ctx)
 
     @commands.command(name='test_checkin')
     @checks.requires_staff_role()
