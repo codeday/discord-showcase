@@ -19,9 +19,9 @@ class PodDBService:
     """Pod Getter Methods Below, if none are found, an exception is thrown."""
 
     @staticmethod
-    def get_pod_by_name(name, check_for_none=True) -> Optional[Pod]:
+    def get_pod_by_name(name: str, check_for_none=True) -> Optional[Pod]:
         """Returns the pod with the given name, or none if it doesn't exist"""
-        pod = session.query(Pod).filter(Pod.name == name).first()
+        pod = session.query(Pod).filter(Pod.name == name.lower().capitalize()).first()
         if check_for_none and pod is None:
             raise PodNameNotFound(name)
         return pod
