@@ -65,10 +65,10 @@ class Pods(commands.Cog, name="Pods"):
         guild: discord.Guild = ctx.guild
         role: discord.Role = guild.get_role(EnvironmentVariables.MENTOR_ROLE)
         for x in range(0, number_of_mentors - 1):
-            await self.create_pod(ctx,
+            await self.create_pod(self, ctx,
                                   PodNameFinder.find_a_suitable_pod_name(),
                                   MentorFinder.find_a_suitable_mentor(role))
-        await self.create_pod(ctx,
+        await self.create_pod(self, ctx,
                               "Overflow",
                               MentorFinder.find_a_suitable_mentor(role))
 
@@ -76,7 +76,7 @@ class Pods(commands.Cog, name="Pods"):
     @checks.requires_staff_role()
     async def assign_pods(self, ctx: commands.Context):
         """Assigns remaining TEAMS to PODS"""
-        await Helper.assign_pods_helper(self.bot)
+        await Helper.assign_pods_helper(ctx.bot)
 
     @commands.command(name='teams', aliases=['list-teams', 'list_teams', 'listteams'])
     @checks.requires_mentor_role()
@@ -118,13 +118,13 @@ class Pods(commands.Cog, name="Pods"):
         """Merges one PDO into another POD"""
         pod_to_be_merged = PodConverter.get_pod_by_name(pod_from)
         pod_being_merged_into = PodConverter.get_pod_by_name(pod_to)
-        pod_to_be_merged_channel = await self.bot.fetch_channel(pod_to_be_merged.tc_id)
-        pod_being_merged_into_channel: discord.DMChannel = await self.bot.fetch_channel(pod_being_merged_into.tc_id)
+        pod_to_be_merged_channel = await ctx.bot.fetch_channel(pod_to_be_merged.tc_id)
+        pod_being_merged_into_channel: discord.DMChannel = await ctx.bot.fetch_channel(pod_being_merged_into.tc_id)
         current_channel: discord.DMChannel = ctx.channel
 
         await current_channel.send("Pods are currently being merged... give me one second...")
 
-        await PodDispatcher.merge_pods(self.bot, pod_to_be_merged, pod_being_merged_into,
+        await PodDispatcher.merge_pods(ctx.bot, pod_to_be_merged, pod_being_merged_into,
                                        pod_to_be_merged_channel, pod_being_merged_into_channel)
 
         await current_channel.send(f"Done! Pod {pod_from.capitalize()} has been successfully merged into Pod "
@@ -143,7 +143,7 @@ class Pods(commands.Cog, name="Pods"):
     async def remove_pod(self, ctx: commands.Context, pod_name: str = None):
         current_channel: discord.TextChannel = ctx.channel
         pod = await PodConverter.get_pod(current_channel, pod_name)
-        channel_to_remove = await self.bot.fetch_channel(pod.tc_id)
+        channel_to_remove = await ctx.bot.fetch_channel(pod.tc_id)
         await PodDispatcher.remove_pod(pod, channel_to_remove)
 
     @commands.command(name='remove_all_pods')
@@ -168,7 +168,7 @@ class Pods(commands.Cog, name="Pods"):
     async def send_message(self, ctx: commands.Context, pod_name: str, *message):
         """Sends a message to a single pod using the bot account"""
         pod = PodConverter.get_pod_by_name(pod_name)
-        pod_channel = await self.bot.fetch_channel(pod.tc_id)
+        pod_channel = await ctx.bot.fetch_channel(pod.tc_id)
         await pod_channel.send(" ".join(message[:]))
 
     @commands.command(name='send_message_all')
@@ -177,7 +177,7 @@ class Pods(commands.Cog, name="Pods"):
         """Sends a message to every pod using the bot account"""
         all_pods = PodDBService.get_all_pods()
         for pod in all_pods:
-            pod_channel = await self.bot.fetch_channel(pod.tc_id)
+            pod_channel = await ctx.bot.fetch_channel(pod.tc_id)
             await pod_channel.send(" ".join(message[:]))
 
     @commands.command(name='get_all_teams')
