@@ -2,7 +2,6 @@ from os import getenv
 
 
 class EnvironmentVariables:
-
     """
     TEAMS_PER_POD Environment Variable
     Description: Tells the bot how many teams should be in a singular pod
@@ -38,7 +37,9 @@ class EnvironmentVariables:
     """
     EVENT_ID = str(getenv("EVENT_ID", "virtual-codeday-winter-2021"))
 
-
-
-
-
+    """
+    DEBUG_CHANNEL Environment Variable
+    Description: Tells the bot where to push testing command output and errors(future update)
+    Default Value: 691780764261548133, error-log text channel in the CodeDay Test Server
+    """
+    DEBUG_CHANNEL = int(getenv("DEBUG_CHANNEL", 691780764261548133))

@@ -47,6 +47,7 @@ There are a couple of environment variables that need to be set when switching t
 | ROLE_MENTOR         | int   | The role in which the bot will pick a mentor from for each pod text channel |
 | CATEGORY            | int   | The category in which the pods will reside                                  |
 | EVENT_ID            | str   | The eventGroup from GQL for which CodeDay it is                             |
+| DEBUG_CHANNEL       | int   | The channel where potential error and testing output is displayed           |
 | DB_DB               | str   | available upon request                                                      |
 | DB_PASSWORD         | str   | available upon request                                                      |
 | DB_USERNAME         | str   | available upon request                                                      |
