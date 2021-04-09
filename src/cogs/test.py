@@ -14,12 +14,15 @@ class Test(commands.Cog, name="Pods"):
     @commands.command(name='test_all')
     @checks.requires_staff_role()
     def test_all(self, ctx: commands.Context):
-        pass
+        self.test_pods()
+        self.test_checkin()
+        self.test_reactions()
+        self.test_listeners()
 
     @commands.command(name='test_pods')
     @checks.requires_staff_role()
     def test_pods(self, ctx: commands.Context):
-        pass
+
 
     @commands.command(name='test_checkin')
     @checks.requires_staff_role()

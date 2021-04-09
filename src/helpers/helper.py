@@ -62,3 +62,27 @@ class Helper:
             "Hello <@" +
             str(mentor.id) +
             "> you have been added as a mentor to this pod! To see a list of teams, type s~teams")
+
+    @staticmethod
+    async def add_or_remove_user_to_pod_tc(bot: discord.ext.commands.Bot, member_with_project, should_be_removed: bool):
+        """Add/remove users to a pod text channel, occurs when someone joins or leaves a team in showcase"""
+        print(member_with_project)
+        discord_id = member_with_project["account"]["discordId"]
+        guild: discord.Guild = await bot.fetch_guild(689213562740277361)
+        showcase_team = await TeamConverter.get_showcase_team_by_id(member_with_project["project"]["id"])
+
+        pod = PodConverter.get_pod_by_id(showcase_team["pod"])
+
+        member: discord.Member = await guild.fetch_member(discord_id)
+        tc = await bot.fetch_channel(pod.tc_id)
+
+        # Occurs when a user left a showcase team and is now being removed from the pod text channel
+        if should_be_removed:
+            await SetPermissions.for_channel_with_discord_member(tc, member, remove=True)
+            await tc.send(embed=GenerateEmbed.user_joins_or_leaves_showcase_team(member_with_project, showcase_team,
+                                                                                 status="leaving"))
+        # Occurs when a user joins a showcase team and is now being added to the pod text channel
+        else:
+            await SetPermissions.for_channel_with_discord_member(tc, member, remove=False)
+            await tc.send(embed=GenerateEmbed.user_joins_or_leaves_showcase_team(member_with_project, showcase_team,
+                                                                                 status="joining"))
