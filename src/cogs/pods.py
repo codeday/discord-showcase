@@ -159,7 +159,7 @@ class Pods(commands.Cog, name="Pods"):
         await ctx.send("I am in the process of removing pods, give me a couple of seconds... \n"
                        "I will let you know when I am done.")
 
-        await PodDispatcher.remove_all_pods(category)
+        await PodDispatcher.remove_all_pods(all_pods, category)
 
         await ctx.send("All pods have been removed.")
 

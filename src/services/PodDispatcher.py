@@ -25,13 +25,14 @@ class PodDispatcher:
         return True
 
     @staticmethod
-    async def remove_all_pods(category) -> bool:
+    async def remove_all_pods(all_pods, category) -> bool:
+        for pod in all_pods:
+            for team in pod.teams:
+                await PodGQLService.unset_team_metadata(team.showcase_id)
+
         PodDBService.remove_all_pods()
         for channel in category.channels:
             await channel.delete()
-        all_teams = await PodGQLService.get_all_showcase_teams()
-        for team in all_teams:
-            await PodGQLService.unset_team_metadata(team["id"])
         return True
 
     @staticmethod
