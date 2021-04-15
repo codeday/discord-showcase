@@ -41,7 +41,7 @@ class Helper:
     @staticmethod
     async def assign_pods_helper(bot: discord.ext.commands.Bot):
         all_teams_without_pods = await TeamConverter.get_all_showcase_teams_without_pods()
-
+        print(all_teams_without_pods)
         for team in all_teams_without_pods:
             if len(team["members"]) >= 1:
                 smallest_pod = PodDBService.get_smallest_pod()

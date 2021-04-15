@@ -56,7 +56,7 @@ class TeamConverter:
                                                      output_channel=current_channel,
                                                      output=f"<@{pod_name_or_discord_user}> does not belong to any projects.")
             return teams
-        elif isinstance(pod_name_or_discord_user, str):  # pod name given
+        else:  # assume pod name given
             print("is string")
             teams = []
             pod = PodDBService.get_pod_by_name(pod_name_or_discord_user)
@@ -69,10 +69,8 @@ class TeamConverter:
                 teams.append(showcase_team)
             return teams
         await current_channel.send("Team(s) were not able to be found by the text channel or by name.")
-        raise TeamNotFound()
 
     @staticmethod
     async def check_if_teams_exist(teams, output_channel: discord.TextChannel, output: str):
         if len(teams) == 0 or teams is None:
             await output_channel.send(output)
-            raise TeamNotFound()

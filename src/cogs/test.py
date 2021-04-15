@@ -64,7 +64,7 @@ class Test(commands.Cog, name="Test"):
         # List teams in a given pod, this command can find teams from current channel, a name, or user
         await Pods.teams(pod_instance, ctx, "DEBUG")
         await Pods.teams(pod_instance, ctx, "DEBUG-2")
-        await Pods.teams(pod_instance, ctx, test_member)
+        await Pods.teams(pod_instance, ctx, test_member.mention)
         if "pod" in current_channel.name:
             await Pods.teams(pod_instance, ctx)
 
@@ -76,7 +76,7 @@ class Test(commands.Cog, name="Test"):
         await Pods.add_mentor(pod_instance, ctx, test_member, "DEBUG-2")
 
         # Merges two pods together, including any teams within them
-        await Pods.merge_pods(pod_instance, "DEBUG-2", "DEBUG")
+        await Pods.merge_pods(pod_instance, ctx, "DEBUG-2", "DEBUG")
 
         # Finds a pod and returns their alembic ID
         await Pods.test(pod_instance, ctx, "DEBUG")
