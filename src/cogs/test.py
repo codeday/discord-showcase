@@ -36,9 +36,9 @@ class Test(commands.Cog, name="Test"):
             return
 
         if not await confirm(
-                confirmation="Are you sure you want to run this command? It executes over 20 commands, including "
-                             "removing "
-                             "all pods and takes some time to complete. ",
+                confirmation="You are about to test all pod commands, are you sure you want to do this? It executes "
+                             "over 20 commands, including removing all pods and takes some time to complete."
+,
                 ctx=ctx,
                 bot=self.bot,
                 abort_msg="You have decided to stop the command.",
