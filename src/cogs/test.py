@@ -1,9 +1,11 @@
 import discord
 from discord.ext import commands
 
+from cogs.checkin import CheckinCommands
 from cogs.pods import Pods
 from env import EnvironmentVariables
 from finders.mentorfinder import MentorFinder
+from services.poddbservice import PodDBService
 from utils import checks
 from utils.confirmation import confirm
 
@@ -95,7 +97,22 @@ class Test(commands.Cog, name="Test"):
     @commands.command(name='test_checkin')
     @checks.requires_staff_role()
     async def test_checkin(self, ctx: commands.Context):
-        pass
+        guild: discord.Guild = ctx.guild
+        role: discord.Role = guild.get_role(EnvironmentVariables.MENTOR_ROLE)
+        current_channel: discord.TextChannel = ctx.channel
+        pods = PodDBService.get_all_pods()
+
+        pod_instance = Pods
+
+        await Pods.teams(pod_instance, ctx, "DEBUG")
+        await Pods.teams(pod_instance, ctx, "DEBUG-2")
+
+        check_in_instance = CheckinCommands
+
+        await CheckinCommands.checkin(check_in_instance, ctx, "DEBUG")
+        await CheckinCommands.checkin(check_in_instance, ctx, "debug-2")
+        
+        await CheckinCommands.checkin_all(check_in_instance, ctx)
 
     @commands.command(name='test_reactions')
     @checks.requires_staff_role()
