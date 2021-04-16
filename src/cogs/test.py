@@ -100,19 +100,21 @@ class Test(commands.Cog, name="Test"):
         guild: discord.Guild = ctx.guild
         role: discord.Role = guild.get_role(EnvironmentVariables.MENTOR_ROLE)
         current_channel: discord.TextChannel = ctx.channel
-        pods = PodDBService.get_all_pods()
 
         pod_instance = Pods
 
-        await Pods.teams(pod_instance, ctx, "DEBUG")
-        await Pods.teams(pod_instance, ctx, "DEBUG-2")
+        await Pods.create_pod(pod_instance, ctx, "DEBUG", MentorFinder.find_a_suitable_mentor(role))
+        await Pods.create_pod(pod_instance, ctx, "DEBUG-2", MentorFinder.find_a_suitable_mentor(role))
 
         check_in_instance = CheckinCommands
 
         await CheckinCommands.checkin(check_in_instance, ctx, "DEBUG")
-        await CheckinCommands.checkin(check_in_instance, ctx, "debug-2")
-        
+        await CheckinCommands.checkin(check_in_instance, ctx, "DEBUG-2")
+
         await CheckinCommands.checkin_all(check_in_instance, ctx)
+
+        await Pods.remove_pod(pod_instance, ctx, "DEBUG")
+        await Pods.remove_pod(pod_instance, ctx, "DEBUG-2")
 
     @commands.command(name='test_reactions')
     @checks.requires_staff_role()

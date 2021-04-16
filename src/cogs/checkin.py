@@ -1,4 +1,3 @@
-from os import getenv
 from random import choice
 
 import discord
@@ -15,7 +14,7 @@ from utils import checks
 def generate_message(team_name):
     title_options = [
         f"How's life {team_name}?",
-        "Hello, living organism! How do you do this fine [weather:city] day?",
+        "Hello, living organism! How do you do this fine day?",
         "Howdy do!?!",
     ]
     message_options = [
@@ -31,7 +30,6 @@ class CheckinCommands(commands.Cog, name="Checkin"):
 
     def __init__(self, bot):
         self.bot: discord.ext.commands.Bot = bot
-        self.category = int(getenv("CATEGORY", 783229579732320257))
 
     @commands.command(name='checkin')
     @checks.requires_staff_role()
@@ -39,15 +37,15 @@ class CheckinCommands(commands.Cog, name="Checkin"):
         """Checks in on a specific pod"""
         guild: discord.Guild = ctx.guild
         pod = PodDBService.get_pod_by_name(pod_name)
-        if pod is not None:
-            channel: discord.DMChannel = guild.get_channel(int(pod.tc_id))
-            await channel.send("Hello! This is your friendly Showcase bot!")
-            message = await channel.send("Please react " +
-                                         "to this message with one of the emojis below with " +
-                                         "how you are feeling about your project so far!")
-            await message.add_reaction("😀")
-            await message.add_reaction("😐")
-            await message.add_reaction("☹")
+        print(pod)
+
+        channel: discord.TextChannel = guild.get_channel(int(pod.tc_id))
+        print(channel.name, channel.id)
+        message = await channel.send("Hello @everyone, can you quickly react to this message to let us know how "
+                                     "you're feeling about your project right now:")
+        await message.add_reaction("😀")
+        await message.add_reaction("😐")
+        await message.add_reaction("☹")
 
     @commands.command(name='checkin_all')
     @checks.requires_staff_role()
