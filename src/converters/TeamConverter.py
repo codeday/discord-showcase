@@ -4,7 +4,7 @@ import discord
 
 from services.poddbservice import PodDBService
 from services.podgqlservice import PodGQLService
-from utils.exceptions import TeamIDNotFound, NoTeamsWithoutPods, TeamNotFound
+from utils.exceptions import TeamIDNotFound, NoTeamsWithoutPods, TeamNotFound, PodNotFound, PodNameNotFound
 
 """
     The purpose of this class will be to sanitize input and return an appropriate team object from GraphQL if found.
@@ -36,6 +36,9 @@ class TeamConverter:
             print("is none")
             teams = []
             pod = PodDBService.get_pod_by_channel_id(str(current_channel.id), False)
+            await TeamConverter.check_if_pod_exist(pod=pod,
+                                                   output_channel=current_channel,
+                                                   output="A pod was not able to be found by the current channel.")
             await TeamConverter.check_if_teams_exist(teams=pod.teams,
                                                      output_channel=current_channel,
                                                      output="There are no projects in your pod yet. Project(s) are still being created by attendee's.")
@@ -59,7 +62,11 @@ class TeamConverter:
         else:  # assume pod name given
             print("is string")
             teams = []
-            pod = PodDBService.get_pod_by_name(pod_name_or_discord_user)
+            pod = PodDBService.get_pod_by_name(pod_name_or_discord_user, False)
+            await TeamConverter.check_if_pod_exist(pod=pod,
+                                                   output_channel=current_channel,
+                                                   output=f"A pod was not able to be found for Pod "
+                                                          f"{pod_name_or_discord_user}")
             await TeamConverter.check_if_teams_exist(teams=pod.teams,
                                                      output_channel=current_channel,
                                                      output=f"There are no projects in Pod {pod.name} yet. Project(s) are "
@@ -68,9 +75,15 @@ class TeamConverter:
                 showcase_team = await TeamConverter.get_showcase_team_by_id(team.showcase_id)
                 teams.append(showcase_team)
             return teams
-        await current_channel.send("Team(s) were not able to be found by the text channel or by name.")
+
+    @staticmethod
+    async def check_if_pod_exist(pod, output_channel: discord.TextChannel, output: str):
+        if pod is None:
+            await output_channel.send(output)
+            raise PodNameNotFound(pod)
 
     @staticmethod
     async def check_if_teams_exist(teams, output_channel: discord.TextChannel, output: str):
         if len(teams) == 0 or teams is None:
             await output_channel.send(output)
+            raise TeamNotFound()

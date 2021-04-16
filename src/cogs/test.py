@@ -31,7 +31,7 @@ class Test(commands.Cog, name="Test"):
         test_member: discord.Member = guild.get_member(111572782336208896)  # test member is Jacob Cuomo
 
         if len(role.members) < 5:
-            await current_channel.send(f"There are not enough mentors to run the testing command. There needs to be at "
+            await current_channel.send(f"There are not enough mentors to test pod commands. There needs to be at "
                                        f"least 5. Add more and try again.")
             return
 

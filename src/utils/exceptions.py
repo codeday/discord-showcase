@@ -209,8 +209,8 @@ class TeamNotFound(Exception):
         message -- explanation of the error
     """
 
-    def __init__(self, message="Unable to find any teams, occurs in TeamConverter.py when no discord member, "
-                               "channel id, or pod name had any teams."):
+    def __init__(self, message="Informational, no action required - Unable to find any teams, occurs in "
+                               "TeamConverter.py when no discord member,channel id, or pod name had any teams."):
         self.message = message
         super().__init__(self.message)
 
