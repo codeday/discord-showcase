@@ -80,10 +80,8 @@ class TeamConverter:
     async def check_if_pod_exist(pod, output_channel: discord.TextChannel, output: str):
         if pod is None:
             await output_channel.send(output)
-            raise PodNameNotFound(pod)
 
     @staticmethod
     async def check_if_teams_exist(teams, output_channel: discord.TextChannel, output: str):
         if len(teams) == 0 or teams is None:
             await output_channel.send(output)
-            raise TeamNotFound()

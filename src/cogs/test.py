@@ -56,48 +56,55 @@ class Test(commands.Cog, name="Test"):
         ):
             return
 
-        await Pods.remove_all_pods(self, ctx)
+        pod_instance = Pods
+
+        await current_channel.send("I am now testing all the pod commands. Give me a second.")
+
+        await Pods.remove_all_pods(pod_instance, ctx)
 
         # Create two separate pods with the singular create_pod command
-        await Pods.create_pod(self, ctx, "DEBUG", MentorFinder.find_a_suitable_mentor(role))
-        await Pods.create_pod(self, ctx, "DEBUG-2", MentorFinder.find_a_suitable_mentor(role))
+        await Pods.create_pod(pod_instance, ctx, "DEBUG", MentorFinder.find_a_suitable_mentor(role))
+        await Pods.create_pod(pod_instance, ctx, "DEBUG-2", MentorFinder.find_a_suitable_mentor(role))
 
         # Create three separate pods with the plural create_pods command
-        await Pods.create_pods(self, ctx, 3)
+        await Pods.create_pods(pod_instance, ctx, 3)
 
         # Assign all created pods up and to this point
-        await Pods.assign_pods(self, ctx)
+        await Pods.assign_pods(pod_instance, ctx)
 
         # List teams in a given pod, this command can find teams from current channel, a name, or user
-        await Pods.teams(self, ctx, "DEBUG")
-        await Pods.teams(self, ctx, "DEBUG-2")
-        await Pods.teams(self, ctx, test_member.mention)
+        await Pods.teams(pod_instance, ctx, "DEBUG")
+        await Pods.teams(pod_instance, ctx, "DEBUG-2")
+        await Pods.teams(pod_instance, ctx, test_member.mention)
         if "pod" in current_channel.name:
-            await Pods.teams(self, ctx)
+            await Pods.teams(pod_instance, ctx)
 
         # Lists all pods in current channel
-        await Pods.pods(self, ctx)
+        await Pods.pods(pod_instance, ctx)
 
         # Adds a mentor to a given pod name
-        await Pods.add_mentor(self, ctx, test_member, "DEBUG")
-        await Pods.add_mentor(self, ctx, test_member, "DEBUG-2")
+        await Pods.add_mentor(pod_instance, ctx, test_member, "DEBUG")
+        await Pods.add_mentor(pod_instance, ctx, test_member, "DEBUG-2")
 
         # Merges two pods together, including any teams within them
-        await Pods.merge_pods(self, ctx, "DEBUG-2", "DEBUG")
+        await Pods.merge_pods(pod_instance, ctx, "DEBUG-2", "DEBUG")
 
         # Finds a pod and returns their alembic ID
-        await Pods.test(self, ctx, "DEBUG")
+        await Pods.test(pod_instance, ctx, "DEBUG")
 
         # Send a message to a pod or all pods
-        await Pods.send_message(self, ctx, "DEBUG", "THIS IS JUST A DRILL, DO NOT PANIC!")
-        await Pods.send_message_all(self, ctx, "THIS IS JUST A DRILL, DO NOT PANIC!")
+        await Pods.send_message(pod_instance, ctx, "DEBUG", "THIS IS JUST A DRILL, DO NOT PANIC!")
+        await Pods.send_message_all(pod_instance, ctx, "THIS IS JUST A DRILL, DO NOT PANIC!")
 
         # Lists all teams ever created
-        await Pods.get_all_teams(self, ctx)
+        await Pods.get_all_teams(pod_instance, ctx)
 
         # Remove Pod and Remove All Pods
-        await Pods.remove_pod(self, ctx, "DEBUG")
-        await Pods.remove_all_pods(self, ctx)
+        await Pods.remove_pod(pod_instance, ctx, "DEBUG")
+        await Pods.remove_all_pods(pod_instance, ctx)
+        
+        await current_channel.send("I am now done with testing all the pod commands.")
+
 
     @commands.command(name='test_checkin')
     @checks.requires_staff_role()
@@ -106,17 +113,21 @@ class Test(commands.Cog, name="Test"):
         role: discord.Role = guild.get_role(EnvironmentVariables.MENTOR_ROLE)
         current_channel: discord.TextChannel = ctx.channel
 
+        pod_instance = Pods
+
         await current_channel.send("I am now testing all the checkin commands. Give me a second.")
-        await Pods.create_pod(self, ctx, "DEBUG", MentorFinder.find_a_suitable_mentor(role))
-        await Pods.create_pod(self, ctx, "DEBUG-2", MentorFinder.find_a_suitable_mentor(role))
+        await Pods.create_pod(pod_instance, ctx, "DEBUG", MentorFinder.find_a_suitable_mentor(role))
+        await Pods.create_pod(pod_instance, ctx, "DEBUG-2", MentorFinder.find_a_suitable_mentor(role))
 
-        await CheckinCommands.checkin(self, ctx, "DEBUG")
-        await CheckinCommands.checkin(self, ctx, "DEBUG-2")
+        checkin_instance = CheckinCommands
 
-        await CheckinCommands.checkin_all(self, ctx)
+        await CheckinCommands.checkin(checkin_instance, ctx, "DEBUG")
+        await CheckinCommands.checkin(checkin_instance, ctx, "DEBUG-2")
 
-        await Pods.remove_pod(self, ctx, "DEBUG")
-        await Pods.remove_pod(self, ctx, "DEBUG-2")
+        await CheckinCommands.checkin_all(checkin_instance, ctx)
+
+        await Pods.remove_pod(pod_instance, ctx, "DEBUG")
+        await Pods.remove_pod(pod_instance, ctx, "DEBUG-2")
         await current_channel.send("I am now done with testing all checkin commands.")
 
     @commands.command(name='test_listeners')
@@ -127,6 +138,7 @@ class Test(commands.Cog, name="Test"):
         await current_channel.send("I am now testing all the listener functions. Give me a second.")
         await Helper.assign_pods_helper(ctx.bot)
         await current_channel.send("I am now done with testing all listener functions.")
+
 
 
 def setup(bot):
