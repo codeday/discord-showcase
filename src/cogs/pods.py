@@ -1,6 +1,7 @@
 from typing import Union
 
 import discord
+from disputils import BotEmbedPaginator
 
 from converters.PodConverter import PodConverter
 from discord.ext import commands
