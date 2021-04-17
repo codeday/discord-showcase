@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
 
-from db.models import session_creator
 from services.poddbservice import PodDBService
 from services.podgqlservice import PodGQLService
 
