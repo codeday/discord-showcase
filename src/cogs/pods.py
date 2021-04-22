@@ -85,7 +85,11 @@ class Pods(commands.Cog, name="Pods"):
         """Displays TEAMS of a POD in CURRENT CHANNEL"""
         current_channel: discord.TextChannel = ctx.channel
         teams = await TeamConverter.get_teams(current_channel, pod_name_or_discord_user)
+        if len(teams) == 0 or teams is None:
+            return
+
         is_pod = True if PodDBService.get_pod_by_name(pod_name_or_discord_user, False) is not None else False
+
         if is_pod:
             await current_channel.send(f"I found a couple of projects for Pod {pod_name_or_discord_user}")
         else:

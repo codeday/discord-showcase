@@ -23,13 +23,6 @@ class Test(commands.Cog, name="Test"):
     def __init__(self, bot: discord.ext.commands.Bot):
         self.bot: discord.ext.commands.Bot = bot
 
-    @commands.command(name='test_all')
-    @checks.requires_staff_role()
-    async def test_all(self, ctx: commands.Context):
-        await self.test_pods()
-        await self.test_checkin()
-        await self.test_listeners()
-
     @commands.command(name='test_pods')
     @checks.requires_staff_role()
     async def test_pods(self, ctx: commands.Context):
@@ -102,9 +95,8 @@ class Test(commands.Cog, name="Test"):
         # Remove Pod and Remove All Pods
         await Pods.remove_pod(pod_instance, ctx, "DEBUG")
         await Pods.remove_all_pods(pod_instance, ctx)
-        
-        await current_channel.send("I am now done with testing all the pod commands.")
 
+        await current_channel.send("I am now done with testing all the pod commands.")
 
     @commands.command(name='test_checkin')
     @checks.requires_staff_role()
@@ -138,7 +130,6 @@ class Test(commands.Cog, name="Test"):
         await current_channel.send("I am now testing all the listener functions. Give me a second.")
         await Helper.assign_pods_helper(ctx.bot)
         await current_channel.send("I am now done with testing all listener functions.")
-
 
 
 def setup(bot):

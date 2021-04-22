@@ -12,6 +12,7 @@ from env import EnvironmentVariables
     If you would like to learn how to write custom queries go to https://graph.codeday.org/
 """
 
+
 class PodGQLService:
 
     @staticmethod

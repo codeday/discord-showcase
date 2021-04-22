@@ -19,35 +19,27 @@ class PodDBService:
     """Pod Getter Methods Below, if none are found, an exception is thrown."""
 
     @staticmethod
-    def get_pod_by_name(name: str, check_for_none=True) -> Optional[Pod]:
+    def get_pod_by_name(name: str) -> Optional[Pod]:
         """Returns the pod with the given name, or none if it doesn't exist"""
         pod = session.query(Pod).filter(Pod.name == name.lower().capitalize()).first()
-        if check_for_none and pod is None:
-            raise PodNameNotFound(name)
         return pod
 
     @staticmethod
-    def get_pod_by_channel_id(tc_id, check_for_none=True) -> Optional[Pod]:
+    def get_pod_by_channel_id(tc_id) -> Optional[Pod]:
         """Returns the pod with the given text channel id, or none if it doesn't exist"""
         pod = session.query(Pod).filter(Pod.tc_id == tc_id).first()
-        if check_for_none and pod is None:
-            raise PodTCNotFound(tc_id)
         return pod
 
     @staticmethod
     def get_pod_by_id(_id) -> Optional[Pod]:
         """Returns the pod with the given id, or none if it doesn't exist"""
         pod = session.query(Pod).filter(Pod.id == id).first()
-        if pod is None:
-            raise PodIDNotFound(id)
         return pod
 
     @staticmethod
-    def get_pod_by_mentor_id(mentor_id, check_for_none=True) -> Optional[Pod]:
+    def get_pod_by_mentor_id(mentor_id) -> Optional[Pod]:
         """Returns the pod with the given mentor, or none if it doesn't exist"""
         pod = session.query(Pod).filter(Pod.mentor == mentor_id).first()
-        if check_for_none and pod is None:
-            raise PodWithMentorIDNotFound(mentor_id)
         return pod
 
     @staticmethod
