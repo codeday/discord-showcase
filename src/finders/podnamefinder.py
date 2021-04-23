@@ -12,6 +12,6 @@ class PodNameFinder:
     @staticmethod
     def find_a_suitable_pod_name() -> str:
         for pod_name in PodNames.available_names:
-            if PodDBService.get_pod_by_name(pod_name, False) is None:
+            if PodDBService.get_pod_by_name(pod_name) is None:
                 return pod_name
         raise NoPodNamesAvailable()

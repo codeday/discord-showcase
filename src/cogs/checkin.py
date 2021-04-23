@@ -3,6 +3,7 @@ from random import choice
 import discord
 from discord.ext import commands
 
+from converters.PodConverter import PodConverter
 from services.poddbservice import PodDBService
 from utils import checks
 
@@ -36,11 +37,11 @@ class CheckinCommands(commands.Cog, name="Checkin"):
     async def checkin(self, ctx: commands.Context, pod_name):
         """Checks in on a specific pod"""
         guild: discord.Guild = ctx.guild
-        pod = PodDBService.get_pod_by_name(pod_name)
-        print(pod)
+        pod = PodConverter.get_pod_by_name(pod_name=pod_name, current_channel=ctx.channel)
+        if pod is None:
+            return
 
         channel: discord.TextChannel = guild.get_channel(int(pod.tc_id))
-        print(channel.name, channel.id)
         message = await channel.send("Hello @everyone, can you quickly react to this message to let us know how "
                                      "you're feeling about your project right now:")
         await message.add_reaction("😀")

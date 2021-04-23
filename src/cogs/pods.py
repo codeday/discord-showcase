@@ -82,13 +82,13 @@ class Pods(commands.Cog, name="Pods"):
     @commands.command(name='teams', aliases=['list-teams', 'list_teams', 'listteams'])
     @checks.requires_mentor_role()
     async def teams(self, ctx: commands.Context, pod_name_or_discord_user: Union[str, discord.Member] = None):
-        """Displays TEAMS of a POD in CURRENT CHANNEL"""
+        """Displays TEAMS of a POD or DISCORD MEMBER in CURRENT CHANNEL"""
         current_channel: discord.TextChannel = ctx.channel
         teams = await TeamConverter.get_teams(current_channel, pod_name_or_discord_user)
         if len(teams) == 0 or teams is None:
             return
 
-        is_pod = True if PodDBService.get_pod_by_name(pod_name_or_discord_user, False) is not None else False
+        is_pod = PodConverter.is_pod(pod_name_or_discord_user)
 
         if is_pod:
             await current_channel.send(f"I found a couple of projects for Pod {pod_name_or_discord_user}")

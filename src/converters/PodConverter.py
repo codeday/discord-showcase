@@ -62,3 +62,7 @@ class PodConverter:
             if raise_exception_if_none:
                 raise PodIDNotFound(pod_id)
         return pod
+
+    @staticmethod
+    def is_pod(pod_name) -> bool:
+        return True if PodDBService.get_pod_by_name(pod_name) is not None else False
