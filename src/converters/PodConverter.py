@@ -33,7 +33,7 @@ class PodConverter:
         return pod
 
     @staticmethod
-    def get_pod_by_name(pod_name, current_channel: discord.TextChannel = None, output=True,
+    async def get_pod_by_name(pod_name, current_channel: discord.TextChannel = None, output=True,
                         output_msg=f"A pod was not able to be found by the given name.",
                         raise_exception_if_none=False) -> Union[Pod, None]:
         """
@@ -48,7 +48,7 @@ class PodConverter:
         return pod
 
     @staticmethod
-    def get_pod_by_channel_id(channel_id, current_channel: discord.TextChannel = None,
+    async def get_pod_by_channel_id(channel_id, current_channel: discord.TextChannel = None,
                               output=True,
                               output_msg=f"A pod was not able to be found by the current channel.",
                               raise_exception_if_none=False) -> Union[Pod, None]:
@@ -64,7 +64,7 @@ class PodConverter:
         return pod
 
     @staticmethod
-    def get_pod_by_id(pod_id, current_channel: discord.TextChannel = None,
+    async def get_pod_by_id(pod_id, current_channel: discord.TextChannel = None,
                       output=True,
                       output_msg=f"A pod was not able to be found by the given pod ID.",
                       raise_exception_if_none=False) -> Union[Pod, None]:
