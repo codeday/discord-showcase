@@ -19,12 +19,13 @@ Click the following [link](https://docs.google.com/document/d/1PAS1kiid47MkcNUrk
 
 ### Noteworthy Commands
 The command prefix for any command is s~, for example:
-> s~create_pods 3
+> s~create_pods
 
 | command         | arguments                     | summary                                                                                                                                                                                                         |
 |-----------------|-------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | help            | none                          | Displays a list of commands and their actions. Less descriptive than this documentation.                                                                                                                        |
-| create_pods     | <number_of_pods>              | Creates the pods by adding them to the alembic database and creating the text channels.                                                                                                                         |
+| create_pod     | none                          | Creates the pods by adding them to the alembic database and creating the text channels.                                                                                                                         |
+| create_pods     | none                          | Creates the pods by adding them to the alembic database and creating the text channels.                                                                                                                         |
 | assign_pods     | none                          | Assigns teams from showcase projects that do not have a pod to a pod.                                                                                                                                           |
 | add_mentor      | <mentor_name> <pod_name> OR <mentor_name>   | Gives mentor permissions to a particular discord member for a pod, which could be another mentor. No argument means it will run in the pod channel without the pod name.                                                                                                                                          |
 | checkin         | <pod_name>                    | Asks members in a specific pod how they are doing by listening for reactions and reporting it to grafana.codeday.org                                                                                            |
