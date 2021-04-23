@@ -34,8 +34,8 @@ class PodConverter:
 
     @staticmethod
     async def get_pod_by_name(pod_name, current_channel: discord.TextChannel = None, output=True,
-                        output_msg=f"A pod was not able to be found by the given name.",
-                        raise_exception_if_none=False) -> Union[Pod, None]:
+                              output_msg=f"A pod was not able to be found by the given name.",
+                              raise_exception_if_none=False) -> Union[Pod, None]:
         """
         Takes the pod_name and attempts to find the pod from alembic. If it finds nothing,
         it raises a PodNameNotFound exception message to the current_channel.
@@ -49,9 +49,9 @@ class PodConverter:
 
     @staticmethod
     async def get_pod_by_channel_id(channel_id, current_channel: discord.TextChannel = None,
-                              output=True,
-                              output_msg=f"A pod was not able to be found by the current channel.",
-                              raise_exception_if_none=False) -> Union[Pod, None]:
+                                    output=True,
+                                    output_msg=f"A pod was not able to be found by the current channel.",
+                                    raise_exception_if_none=False) -> Union[Pod, None]:
         """
         Takes the pod_id and attempts to find the pod from alembic. If it finds nothing,
         it returns None and sends a message to the current_channel.
@@ -65,9 +65,9 @@ class PodConverter:
 
     @staticmethod
     async def get_pod_by_id(pod_id, current_channel: discord.TextChannel = None,
-                      output=True,
-                      output_msg=f"A pod was not able to be found by the given pod ID.",
-                      raise_exception_if_none=False) -> Union[Pod, None]:
+                            output=True,
+                            output_msg=f"A pod was not able to be found by the given pod ID.",
+                            raise_exception_if_none=False) -> Union[Pod, None]:
         """
         Takes the pod_id and attempts to find the pod from alembic. If it finds nothing,
         it returns None and sends a message to the current_channel.

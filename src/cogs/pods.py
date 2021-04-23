@@ -118,7 +118,10 @@ class Pods(commands.Cog, name="Pods"):
     async def add_mentor(self, ctx: commands.Context, mentor: discord.Member, pod_name: str = None):
         """Gives additional permissions to a particular discord member"""
         # If the pod name is not given, use the current channels name as the argument
-        pod = await PodConverter.get_pod(ctx.channel, pod_name)
+        pod = await PodConverter.get_pod(pod_name, ctx.channel)
+        if pod is None:
+            return
+
         await Helper.add_mentor_helper(ctx.bot, mentor, None, pod)
 
     @commands.command(name="merge_pods")
@@ -144,14 +147,18 @@ class Pods(commands.Cog, name="Pods"):
     @checks.requires_staff_role()
     async def test(self, ctx: commands.Context, pod_name: str = None):
         current_channel: discord.TextChannel = ctx.channel
-        pod = await PodConverter.get_pod(current_channel, pod_name)
+        pod = await PodConverter.get_pod(pod_name, current_channel)
+        if pod is None:
+            return
         await ctx.send(f'Pod was found. ID is {pod.id}')
 
     @commands.command(name='remove_pod')
     @checks.requires_staff_role()
     async def remove_pod(self, ctx: commands.Context, pod_name: str = None):
         current_channel: discord.TextChannel = ctx.channel
-        pod = await PodConverter.get_pod(current_channel, pod_name)
+        pod = await PodConverter.get_pod(pod_name, current_channel)
+        if pod is None:
+            return
         channel_to_remove = await ctx.bot.fetch_channel(pod.tc_id)
         await PodDispatcher.remove_pod(pod, channel_to_remove)
 
