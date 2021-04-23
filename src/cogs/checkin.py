@@ -53,7 +53,11 @@ class CheckinCommands(commands.Cog, name="Checkin"):
     async def checkin_all(self, ctx: commands.Context):
         """checks in on all teams"""
         guild: discord.Guild = ctx.guild
-        for pod in PodDBService.get_all_pods():
+        pods = await PodConverter.get_all_pods(current_channel=ctx.channel,
+                                               output_msg="There are no pods to check into with.")
+        if pods is None or len(pods) == 0:
+            return
+        for pod in pods:
             channel: discord.DMChannel = guild.get_channel(int(pod.tc_id))
             message = await channel.send("Hello @everyone, can you quickly react to this message to let us know how "
                                          "you're feeling about your project right now:")

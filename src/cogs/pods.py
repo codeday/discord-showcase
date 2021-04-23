@@ -102,10 +102,9 @@ class Pods(commands.Cog, name="Pods"):
     @checks.requires_staff_role()
     async def pods(self, ctx: commands.Context):
         """Displays ALL PODS in CURRENT CHANNEL"""
-        current_channel: discord.DMChannel = ctx.channel
-        all_pods = PodDBService.get_all_pods()
-        if len(all_pods) == 0:
-            await current_channel.send("There are no pods.")
+        current_channel: discord.TextChannel = ctx.channel
+        all_pods = await PodConverter.get_all_pods(current_channel=current_channel)
+        if all_pods is None or len(all_pods) == 0:
             return
 
         message = "The current created pods are: \n"
@@ -170,10 +169,10 @@ class Pods(commands.Cog, name="Pods"):
     @checks.requires_staff_role()
     async def remove_all_pods(self, ctx: commands.Context):
         """Removes all Pods from Alembic and deletes all text channels from category"""
-        all_pods = PodDBService.get_all_pods()
+        all_pods = await PodConverter.get_all_pods(current_channel=ctx.channel,
+                                                   output_msg="There are no pods to remove.")
         category = discord.utils.get(ctx.guild.categories, id=EnvironmentVariables.CATEGORY)
-        if len(all_pods) == 0:
-            await ctx.send("There are no pods to remove.")
+        if all_pods is None or len(all_pods) == 0:
             return
 
         await ctx.send("I am in the process of removing pods, give me a couple of seconds... \n"
@@ -197,7 +196,10 @@ class Pods(commands.Cog, name="Pods"):
     @checks.requires_staff_role()
     async def send_message_all(self, ctx: commands.Context, *message):
         """Sends a message to every pod using the bot account"""
-        all_pods = PodDBService.get_all_pods()
+        all_pods = await PodConverter.get_all_pods(current_channel=ctx.channel,
+                                                   output_msg="There are no pods to send messages to.")
+        if all_pods is None or len(all_pods) == 0:
+            return
         for pod in all_pods:
             pod_channel = await ctx.bot.fetch_channel(pod.tc_id)
             await pod_channel.send(" ".join(message[:]))

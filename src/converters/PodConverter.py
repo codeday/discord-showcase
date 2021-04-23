@@ -4,7 +4,7 @@ import discord
 
 from db.models import Pod
 from services.poddbservice import PodDBService
-from utils.exceptions import PodNotFound, PodNameNotFound, PodIDNotFound, PodTCNotFound
+from utils.exceptions import PodNotFound, PodNameNotFound, PodIDNotFound, PodTCNotFound, NoPods
 
 """
     The purpose of this class will be to sanitize input and return an appropriate pod object from alembic if found.
@@ -78,6 +78,22 @@ class PodConverter:
             if raise_exception_if_none:
                 raise PodIDNotFound(pod_id)
         return pod
+
+    @staticmethod
+    async def get_all_pods(current_channel: discord.TextChannel = None,
+                           output=True,
+                           output_msg=f"There are no pods to do the current action with.",
+                           raise_exception_if_none=False) -> Union[list, None]:
+        """
+        Attempts to find all the pods from alembic. If it finds nothing,
+        it returns None and sends a message to the current_channel.
+        """
+        pods = PodDBService.get_all_pods()
+        if (pods is None or len(pods) == 0) and current_channel is not None and output:
+            await current_channel.send(output_msg)
+            if raise_exception_if_none:
+                raise NoPods(pods)
+        return pods
 
     @staticmethod
     def is_pod(pod_name) -> bool:
