@@ -128,8 +128,12 @@ class Pods(commands.Cog, name="Pods"):
     @checks.requires_staff_role()
     async def merge_pods(self, ctx: commands.Context, pod_from: str, pod_to: str):
         """Merges one PDO into another POD"""
-        pod_to_be_merged = PodConverter.get_pod_by_name(pod_from)
-        pod_being_merged_into = PodConverter.get_pod_by_name(pod_to)
+        pod_to_be_merged = PodConverter.get_pod_by_name(pod_from, ctx.channel)
+        if pod_to_be_merged is None:
+            return
+        pod_being_merged_into = PodConverter.get_pod_by_name(pod_to, ctx.channel)
+        if pod_being_merged_into is None:
+            return
         pod_to_be_merged_channel = await ctx.bot.fetch_channel(pod_to_be_merged.tc_id)
         pod_being_merged_into_channel: discord.DMChannel = await ctx.bot.fetch_channel(pod_being_merged_into.tc_id)
         current_channel: discord.DMChannel = ctx.channel
@@ -183,7 +187,9 @@ class Pods(commands.Cog, name="Pods"):
     @checks.requires_staff_role()
     async def send_message(self, ctx: commands.Context, pod_name: str, *message):
         """Sends a message to a single pod using the bot account"""
-        pod = PodConverter.get_pod_by_name(pod_name)
+        pod = PodConverter.get_pod_by_name(pod_name, ctx.channel)
+        if pod is None:
+            return
         pod_channel = await ctx.bot.fetch_channel(pod.tc_id)
         await pod_channel.send(" ".join(message[:]))
 
