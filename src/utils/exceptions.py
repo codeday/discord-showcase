@@ -5,6 +5,25 @@ Alembic Exceptions
 """
 
 
+class PodNotFound(Exception):
+    """Exception raised for errors when no mentors are left to be used.
+
+    Attributes:
+        name -- name of the pod
+        channel -- given discord.TextChannel to attempt to get pod name from
+        message -- explanation of the error
+    """
+
+    def __init__(self, name, channel_id, message="A pod was not able to be found from the two following arguments."):
+        self.name = name
+        self.channel_id = channel_id
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.name} and {self.channel_id} -> {self.message}'
+
+
 class PodNameNotFound(Exception):
     """Exception raised for errors in the input name.
 
@@ -129,28 +148,9 @@ class NoMentorsAvailable(Exception):
 
 """
 
-Finder Exceptions
+Teams Exceptions
 
 """
-
-
-class PodNotFound(Exception):
-    """Exception raised for errors when no mentors are left to be used.
-
-    Attributes:
-        name -- name of the pod
-        channel -- given discord.TextChannel to attempt to get pod name from
-        message -- explanation of the error
-    """
-
-    def __init__(self, name, channel_id, message="A pod was not able to be found from the two following arguments."):
-        self.name = name
-        self.channel_id = channel_id
-        self.message = message
-        super().__init__(self.message)
-
-    def __str__(self):
-        return f'{self.name} and {self.channel_id} -> {self.message}'
 
 
 class TeamIDNotFound(Exception):
@@ -216,6 +216,7 @@ class TeamNotFound(Exception):
 
     def __str__(self):
         return f'{self.message}'
+
 
 class PodMergeFailed(Exception):
     """Exception raised for errors in TeamConverter.

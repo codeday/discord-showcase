@@ -4,7 +4,7 @@ import discord
 
 from db.models import Pod
 from services.poddbservice import PodDBService
-from utils.exceptions import PodNotFound, PodNameNotFound, PodIDNotFound
+from utils.exceptions import PodNotFound, PodNameNotFound, PodIDNotFound, PodTCNotFound
 
 """
     The purpose of this class will be to sanitize input and return an appropriate pod object from alembic if found.
@@ -23,9 +23,9 @@ class PodConverter:
         one of the arguments. If it finds nothing, it returns None and sends a message to the current_channel.
         """
         if pod_name is None:
-            pod = PodDBService.get_pod_by_channel_id(str(current_channel.id))
+            pod = PodDBService.get_pod_by_channel_id(current_channel.id)
         else:
-            pod = PodDBService.get_pod_by_name(str(pod_name).capitalize())
+            pod = PodDBService.get_pod_by_name(pod_name)
         if pod is None and output:
             await current_channel.send(output_msg)
             if raise_exception_if_none:
@@ -45,6 +45,22 @@ class PodConverter:
             await current_channel.send(output_msg)
             if raise_exception_if_none:
                 raise PodNameNotFound(pod_name)
+        return pod
+
+    @staticmethod
+    def get_pod_by_channel_id(channel_id, current_channel: discord.TextChannel = None,
+                              output=True,
+                              output_msg=f"A pod was not able to be found by the current channel.",
+                              raise_exception_if_none=False) -> Union[Pod, None]:
+        """
+        Takes the pod_id and attempts to find the pod from alembic. If it finds nothing,
+        it returns None and sends a message to the current_channel.
+        """
+        pod = PodDBService.get_pod_by_channel_id(channel_id)
+        if pod is None and output:
+            await current_channel.send(output_msg)
+            if raise_exception_if_none:
+                raise PodTCNotFound(channel_id)
         return pod
 
     @staticmethod
