@@ -45,10 +45,7 @@ class Helper:
         for team in all_teams_without_pods:
             if len(team["members"]) >= 1:
                 smallest_pod = PodDBService.get_smallest_pod()
-                if len(smallest_pod.teams) < EnvironmentVariables.TEAMS_PER_POD:
-                    await Helper.assign_pod_helper(bot, team["id"], smallest_pod.name)
-                else:
-                    await Helper.assign_pod_helper(bot, team["id"], "overflow")
+                await Helper.assign_pod_helper(bot, team["id"], smallest_pod.name)
 
     @staticmethod
     async def add_mentor_helper(bot: discord.ext.commands.Bot, mentor: discord.Member, pod_name=None, pod=None):

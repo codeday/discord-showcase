@@ -1,7 +1,6 @@
 from typing import Union
 
 import discord
-from disputils import BotEmbedPaginator
 
 from converters.PodConverter import PodConverter
 from discord.ext import commands
@@ -12,11 +11,9 @@ from finders.mentorfinder import MentorFinder
 from finders.podnamefinder import PodNameFinder
 from helpers.helper import Helper
 from services.PodDispatcher import PodDispatcher
-from services.poddbservice import PodDBService
 from services.podgqlservice import PodGQLService
 from utils import checks
 from utils.generateembed import GenerateEmbed
-from utils.setpermissions import SetPermissions
 
 """
     The purpose of this class is to execute commands and reach out to other classes for input sanitation and actions
@@ -59,19 +56,16 @@ class Pods(commands.Cog, name="Pods"):
 
     @commands.command(name='create_pods')
     @checks.requires_staff_role()
-    async def create_pods(self, ctx: commands.Context, number_of_mentors: int):
+    async def create_pods(self, ctx: commands.Context):
         """Creates all PODS for all TEAMS"""
         # Then, create the actual pods by calling the singular create_pod function
         # We subtract one so that there is an extra mentor left, who is designated to the pod called overflow
         guild: discord.Guild = ctx.guild
         role: discord.Role = guild.get_role(EnvironmentVariables.MENTOR_ROLE)
-        for x in range(0, number_of_mentors - 1):
+        for x in range(0, len(role.members)):
             await self.create_pod(self, ctx,
                                   PodNameFinder.find_a_suitable_pod_name(),
                                   MentorFinder.find_a_suitable_mentor(role))
-        await self.create_pod(self, ctx,
-                              "Overflow",
-                              MentorFinder.find_a_suitable_mentor(role))
 
     @commands.command(name='assign_pods')
     @checks.requires_staff_role()
@@ -88,7 +82,7 @@ class Pods(commands.Cog, name="Pods"):
         if len(teams) == 0 or teams is None:
             return
 
-        is_pod = PodConverter.is_pod(pod_name_or_discord_user)
+        is_pod: bool = PodConverter.is_pod(pod_name_or_discord_user)
 
         if is_pod:
             await current_channel.send(f"I found a couple of projects for Pod {pod_name_or_discord_user}")

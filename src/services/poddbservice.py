@@ -16,7 +16,9 @@ session = session_creator()
 
 
 class PodDBService:
-    """Pod Getter Methods Below, if none are found, an exception is thrown."""
+    """
+        Pod getter methods below, they simply return a pod if found or None if nothing is found
+    """
 
     @staticmethod
     def get_pod_by_name(name: str) -> Optional[Pod]:
