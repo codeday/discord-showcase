@@ -24,6 +24,23 @@ class PodNotFound(Exception):
         return f'{self.name} and {self.channel_id} -> {self.message}'
 
 
+class NoPods(Exception):
+    """Exception raised for errors when no pods are found in alembic.
+
+    Attributes:
+        pods -- list of pods returned from alembic
+        message -- explanation of the error
+    """
+
+    def __init__(self, pods, message="There are no pods in alembic to be returned."):
+        self.pods = pods
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.pods} -> {self.message}'
+
+
 class PodNameNotFound(Exception):
     """Exception raised for errors in the input name.
 
