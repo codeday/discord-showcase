@@ -2,9 +2,9 @@ from typing import Union
 
 import discord
 
-from services.poddbservice import PodDBService
+from converters.PodConverter import PodConverter
 from services.podgqlservice import PodGQLService
-from utils.exceptions import TeamIDNotFound, NoTeamsWithoutPods, TeamNotFound, PodNotFound, PodNameNotFound
+from utils.exceptions import TeamIDNotFound
 
 """
     The purpose of this class will be to sanitize input and return an appropriate team object from GraphQL if found.
@@ -30,21 +30,7 @@ class TeamConverter:
     async def get_teams(current_channel: discord.TextChannel,
                         pod_name_or_discord_user: str = None):
         print(pod_name_or_discord_user)
-        if pod_name_or_discord_user is None:  # nothing given, get teams from current channel
-            print("is none")
-            teams = []
-            pod = PodDBService.get_pod_by_channel_id(str(current_channel.id), False)
-            await TeamConverter.check_if_pod_exist(pod=pod,
-                                                   output_channel=current_channel,
-                                                   output="A pod was not able to be found by the current channel.")
-            await TeamConverter.check_if_teams_exist(teams=pod.teams,
-                                                     output_channel=current_channel,
-                                                     output="There are no projects in your pod yet. Project(s) are still being created by attendee's.")
-            for team in pod.teams:
-                showcase_team = await TeamConverter.get_showcase_team_by_id(team.showcase_id)
-                teams.append(showcase_team)
-            return teams
-        elif pod_name_or_discord_user[0] == "<":  # discord username given
+        if pod_name_or_discord_user[0] == "<":  # discord username given
             filter_out = "<!@>"
             for char in filter_out:
                 pod_name_or_discord_user = pod_name_or_discord_user.replace(char, '')
@@ -57,27 +43,20 @@ class TeamConverter:
                                                      output_channel=current_channel,
                                                      output=f"<@{pod_name_or_discord_user}> does not belong to any projects.")
             return teams
-        else:  # assume pod name given
+        else:  # assume pod name is given or if not found, use the channel ID
             print("is string")
             teams = []
-            pod = PodDBService.get_pod_by_name(pod_name_or_discord_user, False)
-            await TeamConverter.check_if_pod_exist(pod=pod,
-                                                   output_channel=current_channel,
-                                                   output=f"A pod was not able to be found for Pod "
-                                                          f"{pod_name_or_discord_user}")
+            pod = await PodConverter.get_pod(pod_name=pod_name_or_discord_user,
+                                             current_channel=current_channel)
+
             await TeamConverter.check_if_teams_exist(teams=pod.teams,
                                                      output_channel=current_channel,
-                                                     output=f"There are no projects in Pod {pod.name} yet. Project(s) are "
-                                                            "still being created by attendee's.")
+                                                     output=f"There are no projects in Pod {pod.name} yet. Project(s) "
+                                                            "are still being created by attendee's.")
             for team in pod.teams:
                 showcase_team = await TeamConverter.get_showcase_team_by_id(team.showcase_id)
                 teams.append(showcase_team)
             return teams
-
-    @staticmethod
-    async def check_if_pod_exist(pod, output_channel: discord.TextChannel, output: str):
-        if pod is None:
-            await output_channel.send(output)
 
     @staticmethod
     async def check_if_teams_exist(teams, output_channel: discord.TextChannel, output: str):
