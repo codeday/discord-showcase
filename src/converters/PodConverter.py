@@ -26,7 +26,7 @@ class PodConverter:
             pod = PodDBService.get_pod_by_channel_id(current_channel.id)
         else:
             pod = PodDBService.get_pod_by_name(pod_name)
-        if pod is None and output:
+        if pod is None and current_channel is not None and output:
             await current_channel.send(output_msg)
             if raise_exception_if_none:
                 raise PodNotFound(pod_name, current_channel.id)
@@ -41,7 +41,7 @@ class PodConverter:
         it raises a PodNameNotFound exception message to the current_channel.
         """
         pod = PodDBService.get_pod_by_name(pod_name)
-        if pod is None and output:
+        if pod is None and current_channel is not None and output:
             await current_channel.send(output_msg)
             if raise_exception_if_none:
                 raise PodNameNotFound(pod_name)
@@ -57,7 +57,7 @@ class PodConverter:
         it returns None and sends a message to the current_channel.
         """
         pod = PodDBService.get_pod_by_channel_id(channel_id)
-        if pod is None and output:
+        if pod is None and current_channel is not None and output:
             await current_channel.send(output_msg)
             if raise_exception_if_none:
                 raise PodTCNotFound(channel_id)
@@ -73,7 +73,7 @@ class PodConverter:
         it returns None and sends a message to the current_channel.
         """
         pod = PodDBService.get_pod_by_id(pod_id)
-        if pod is None and output:
+        if pod is None and current_channel is not None and output:
             await current_channel.send(output_msg)
             if raise_exception_if_none:
                 raise PodIDNotFound(pod_id)
