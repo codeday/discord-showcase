@@ -46,7 +46,7 @@ class Pods(commands.Cog, name="Pods"):
         print(mentor)
         if mentor is None:
             mentor = MentorFinder.find_a_suitable_mentor(guild.get_role(EnvironmentVariables.MENTOR_ROLE))
-            
+
         await tc.set_permissions(mentor, overwrite=discord.PermissionOverwrite(**dict(discord.Permissions.text())))
 
         await tc.send(
