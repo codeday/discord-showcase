@@ -42,7 +42,6 @@ There are a couple of environment variables that need to be set when switching t
 
 | variable            | value | description                                                                 |
 |---------------------|-------|-----------------------------------------------------------------------------|
-| TEAMS_PER_POD       | int   | The number of projects/teams that should be in a singular pod               |
 | ROLE_STAFF          | int   | The role in which the bot will give all permissions to all the pod channels |
 | ROLE_MENTOR         | int   | The role in which the bot will pick a mentor from for each pod text channel |
 | CATEGORY            | int   | The category in which the pods will reside                                  |

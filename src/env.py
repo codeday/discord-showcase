@@ -3,13 +3,6 @@ from os import getenv
 
 class EnvironmentVariables:
     """
-    TEAMS_PER_POD Environment Variable
-    Description: Tells the bot how many teams should be in a singular pod
-    Default Value: 5
-    """
-    TEAMS_PER_POD = int(getenv("TEAMS_PER_POD", 5))
-
-    """
     STAFF_ROLE Environment Variable
     Description: Tells the bot to add this role to every pod channel
     Default Value: 689960285926195220, Staff role in the CodeDay Test Server

@@ -57,9 +57,7 @@ class Pods(commands.Cog, name="Pods"):
     @commands.command(name='create_pods')
     @checks.requires_staff_role()
     async def create_pods(self, ctx: commands.Context):
-        """Creates all PODS for all TEAMS"""
-        # Then, create the actual pods by calling the singular create_pod function
-        # We subtract one so that there is an extra mentor left, who is designated to the pod called overflow
+        """Creates all PODS"""
         guild: discord.Guild = ctx.guild
         role: discord.Role = guild.get_role(EnvironmentVariables.MENTOR_ROLE)
         for x in range(0, len(role.members)):
