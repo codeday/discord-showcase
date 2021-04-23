@@ -27,7 +27,7 @@ class Pods(commands.Cog, name="Pods"):
 
     @commands.command(name='create_pod')
     @checks.requires_staff_role()
-    async def create_pod(self, ctx: commands.Context, pod_name: str, mentor: discord.Member):
+    async def create_pod(self, ctx: commands.Context, pod_name: str, mentor: discord.Member = None):
         """Creates a POD for a team"""
 
         """Create a text channel"""
@@ -44,6 +44,9 @@ class Pods(commands.Cog, name="Pods"):
                                                  EnvironmentVariables.CATEGORY),
                                              reason=None)
         print(mentor)
+        if mentor is None:
+            mentor = MentorFinder.find_a_suitable_mentor(guild.get_role(EnvironmentVariables.MENTOR_ROLE))
+            
         await tc.set_permissions(mentor, overwrite=discord.PermissionOverwrite(**dict(discord.Permissions.text())))
 
         await tc.send(
