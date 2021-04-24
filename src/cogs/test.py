@@ -30,7 +30,7 @@ class Test(commands.Cog, name="Test"):
         guild: discord.Guild = ctx.guild
         role: discord.Role = guild.get_role(EnvironmentVariables.MENTOR_ROLE)
         current_channel: discord.TextChannel = ctx.channel
-        test_member: discord.Member = guild.get_member(111572782336208896)  # test member is Jacob Cuomo
+        test_member: discord.Member = guild.get_member(111572782336208896)  # test member is Jacob Cuomo (Bobcat#3820)
 
         if len(role.members) < 5:
             await current_channel.send(f"There are not enough mentors to test pod commands. There needs to be at "
@@ -60,7 +60,7 @@ class Test(commands.Cog, name="Test"):
         await Pods.create_pod(pod_instance, ctx, "DEBUG-2", MentorFinder.find_a_suitable_mentor(role))
 
         # Create three separate pods with the plural create_pods command
-        await Pods.create_pods(pod_instance, ctx, 3)
+        await Pods.create_pods(pod_instance, ctx)
 
         # Assign all created pods up and to this point
         await Pods.assign_pods(pod_instance, ctx)

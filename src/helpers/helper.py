@@ -24,7 +24,7 @@ class Helper:
     # - Mentions in embeds will not trigger a notification
     @staticmethod
     async def assign_pod_helper(bot: discord.ext.commands.Bot, team_id, pod_name):
-        current_pod = PodConverter.get_pod_by_name(pod_name)
+        current_pod = await PodConverter.get_pod_by_name(pod_name)
         showcase_team = await TeamConverter.get_showcase_team_by_id(team_id)
         print(showcase_team)
 
@@ -50,7 +50,7 @@ class Helper:
     @staticmethod
     async def add_mentor_helper(bot: discord.ext.commands.Bot, mentor: discord.Member, pod_name=None, pod=None):
         if pod is None:
-            pod = PodConverter.get_pod_by_name(pod_name)
+            pod = await PodConverter.get_pod_by_name(pod_name)
 
         pod_channel: discord.TextChannel = await bot.fetch_channel(pod.tc_id)
         await pod_channel.set_permissions(mentor,
@@ -68,7 +68,7 @@ class Helper:
         guild: discord.Guild = await bot.fetch_guild(689213562740277361)
         showcase_team = await TeamConverter.get_showcase_team_by_id(member_with_project["project"]["id"])
 
-        pod = PodConverter.get_pod_by_id(showcase_team["pod"])
+        pod = await PodConverter.get_pod_by_id(showcase_team["pod"])
 
         member: discord.Member = await guild.fetch_member(discord_id)
         tc = await bot.fetch_channel(pod.tc_id)

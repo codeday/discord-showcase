@@ -16,7 +16,7 @@ class MentorFinder:
     def find_a_suitable_mentor(role: discord.role) -> discord.Member:
         print(role.members)
         for member in role.members:
-            if PodDBService.get_pod_by_mentor_id(str(member.id), False) is None:
+            if PodDBService.get_pod_by_mentor_id(str(member.id)) is None:
                 # Mentor is Suitable, return that mentor object
                 return member
         raise NoMentorsAvailable()

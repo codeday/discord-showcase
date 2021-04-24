@@ -77,6 +77,7 @@ class PodDBService:
     @staticmethod
     def create_pod(name, tc_id, mentor) -> bool:
         """Create a new pod"""
+        name = str(name).lower().capitalize()
         try:
             session.add(
                 Pod(

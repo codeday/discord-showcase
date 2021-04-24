@@ -20,7 +20,7 @@ class Reactions(commands.Cog, name="Reactions"):
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
         if self.emoji_is_valid(str(payload.emoji)) and payload.member.id != self.bot.user.id:
-            pod = PodConverter.get_pod_by_channel_id(channel_id=payload.channel_id, output=False)
+            pod = await PodConverter.get_pod_by_channel_id(channel_id=payload.channel_id, output=False)
             if pod is not None:
                 guild: discord.Guild = payload.member.guild
                 channel: discord.DMChannel = guild.get_channel(int(payload.channel_id))

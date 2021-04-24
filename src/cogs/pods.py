@@ -28,7 +28,7 @@ class Pods(commands.Cog, name="Pods"):
     @commands.command(name='create_pod')
     @checks.requires_staff_role()
     async def create_pod(self, ctx: commands.Context, pod_name: str, mentor: discord.Member = None):
-        """Creates a POD for a team"""
+        """Creates a POD"""
 
         """Create a text channel"""
         guild: discord.Guild = ctx.guild
@@ -46,6 +46,8 @@ class Pods(commands.Cog, name="Pods"):
         print(mentor)
         if mentor is None:
             mentor = MentorFinder.find_a_suitable_mentor(guild.get_role(EnvironmentVariables.MENTOR_ROLE))
+            if mentor is None:
+                return
 
         await tc.set_permissions(mentor, overwrite=discord.PermissionOverwrite(**dict(discord.Permissions.text())))
 
@@ -63,9 +65,12 @@ class Pods(commands.Cog, name="Pods"):
         """Creates all PODS"""
         guild: discord.Guild = ctx.guild
         role: discord.Role = guild.get_role(EnvironmentVariables.MENTOR_ROLE)
-        for x in range(0, len(role.members)):
-            await self.create_pod(self, ctx,
-                                  PodNameFinder.find_a_suitable_pod_name(),
+        category = discord.utils.get(ctx.guild.categories, id=EnvironmentVariables.CATEGORY)
+        if len(category.channels) >= len(role.members):
+            await ctx.send("There are not enough additional mentors to fill more pods.")
+            return
+        for x in range(len(category.channels), len(role.members)):
+            await Pods.create_pod(self, ctx, PodNameFinder.find_a_suitable_pod_name(),
                                   MentorFinder.find_a_suitable_mentor(role))
 
     @commands.command(name='assign_pods')
@@ -122,10 +127,12 @@ class Pods(commands.Cog, name="Pods"):
     @checks.requires_staff_role()
     async def merge_pods(self, ctx: commands.Context, pod_from: str, pod_to: str):
         """Merges one PDO into another POD"""
-        pod_to_be_merged = PodConverter.get_pod_by_name(pod_from, ctx.channel)
+        pod_to_be_merged = await PodConverter.get_pod_by_name(pod_from, ctx.channel,
+                                                              output=f"Pod {pod_from} could not be found. Try again.")
         if pod_to_be_merged is None:
             return
-        pod_being_merged_into = PodConverter.get_pod_by_name(pod_to, ctx.channel)
+        pod_being_merged_into = await PodConverter.get_pod_by_name(pod_to, ctx.channel,
+                                                                   output=f"Pod {pod_to} could not be found. Try again.")
         if pod_being_merged_into is None:
             return
         pod_to_be_merged_channel = await ctx.bot.fetch_channel(pod_to_be_merged.tc_id)
@@ -181,7 +188,7 @@ class Pods(commands.Cog, name="Pods"):
     @checks.requires_staff_role()
     async def send_message(self, ctx: commands.Context, pod_name: str, *message):
         """Sends a message to a single pod using the bot account"""
-        pod = PodConverter.get_pod_by_name(pod_name, ctx.channel)
+        pod = await PodConverter.get_pod_by_name(pod_name, ctx.channel)
         if pod is None:
             return
         pod_channel = await ctx.bot.fetch_channel(pod.tc_id)

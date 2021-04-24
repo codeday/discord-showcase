@@ -37,7 +37,7 @@ class CheckinCommands(commands.Cog, name="Checkin"):
     async def checkin(self, ctx: commands.Context, pod_name):
         """Checks in on a specific pod"""
         guild: discord.Guild = ctx.guild
-        pod = PodConverter.get_pod_by_name(pod_name=pod_name, current_channel=ctx.channel)
+        pod = await PodConverter.get_pod_by_name(pod_name=pod_name, current_channel=ctx.channel)
         if pod is None:
             return
 
