@@ -30,6 +30,19 @@ class TeamConverter:
     async def get_teams(current_channel: discord.TextChannel,
                         pod_name_or_discord_user: str = None):
         print(pod_name_or_discord_user)
+        if pod_name_or_discord_user is None:
+            teams = []
+            pod = await PodConverter.get_pod_by_channel_id(current_channel.id,
+                                                           current_channel=current_channel)
+
+            await TeamConverter.check_if_teams_exist(teams=pod.teams,
+                                                     output_channel=current_channel,
+                                                     output=f"There are no projects in Pod {pod.name} yet. Project(s) "
+                                                            "are still being created by attendee's.")
+            for team in pod.teams:
+                showcase_team = await TeamConverter.get_showcase_team_by_id(team.showcase_id)
+                teams.append(showcase_team)
+            return teams
         if pod_name_or_discord_user[0] == "<":  # discord username given
             filter_out = "<!@>"
             for char in filter_out:
@@ -43,16 +56,15 @@ class TeamConverter:
                                                      output_channel=current_channel,
                                                      output=f"<@{pod_name_or_discord_user}> does not belong to any projects.")
             return teams
-        else:  # assume pod name is given or if not found, use the channel ID
+        else:  # assume pod name is given
             print("is string")
             teams = []
-            pod = await PodConverter.get_pod(pod_name=pod_name_or_discord_user,
-                                             current_channel=current_channel)
+            pod = await PodConverter.get_pod_by_name(pod_name=pod_name_or_discord_user,
+                                                     current_channel=current_channel)
 
             await TeamConverter.check_if_teams_exist(teams=pod.teams,
                                                      output_channel=current_channel,
-                                                     output=f"There are no projects in Pod {pod.name} yet. Project(s) "
-                                                            "are still being created by attendee's.")
+                                                     output=f"There are no projects in Pod {pod.name} yet.")
             for team in pod.teams:
                 showcase_team = await TeamConverter.get_showcase_team_by_id(team.showcase_id)
                 teams.append(showcase_team)
