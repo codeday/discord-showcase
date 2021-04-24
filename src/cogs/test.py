@@ -105,7 +105,26 @@ class Test(commands.Cog, name="Test"):
         role: discord.Role = guild.get_role(EnvironmentVariables.MENTOR_ROLE)
         current_channel: discord.TextChannel = ctx.channel
 
+        if len(role.members) < 2:
+            await current_channel.send(f"There are not enough mentors to test checkin commands. There needs to be at "
+                                       f"least 2. Add more and try again.")
+            return
+
+        if not await confirm(
+                confirmation="You are about to test all checkin commands, are you sure you want to do this? It removes "
+                             "all pods and takes a couple seconds to complete."
+                ,
+                ctx=ctx,
+                bot=self.bot,
+                abort_msg="You have decided to stop the command.",
+                success_msg="Running the test_checkin command now...",
+                delete_msgs=False
+        ):
+            return
+
         pod_instance = Pods
+
+        await Pods.remove_all_pods(pod_instance, ctx)
 
         await current_channel.send("I am now testing all the checkin commands. Give me a second.")
         await Pods.create_pod(pod_instance, ctx, "DEBUG", MentorFinder.find_a_suitable_mentor(role))
