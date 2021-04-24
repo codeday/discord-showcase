@@ -2,6 +2,7 @@ from os import getenv
 
 import discord
 
+from env import EnvironmentVariables
 from services.poddbservice import PodDBService
 from utils.exceptions import NoMentorsAvailable
 
@@ -20,3 +21,13 @@ class MentorFinder:
                 # Mentor is Suitable, return that mentor object
                 return member
         raise NoMentorsAvailable()
+
+    @staticmethod
+    async def enough_mentors_for_pod(ctx) -> bool:
+        guild: discord.Guild = ctx.guild
+        role: discord.Role = guild.get_role(EnvironmentVariables.MENTOR_ROLE)
+        category = discord.utils.get(ctx.guild.categories, id=EnvironmentVariables.CATEGORY)
+        if len(category.channels) >= len(role.members):
+            await ctx.send("There are not enough additional mentors to fill more pods.")
+            return False
+        return True

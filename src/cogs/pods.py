@@ -32,6 +32,9 @@ class Pods(commands.Cog, name="Pods"):
 
         """Create a text channel"""
         guild: discord.Guild = ctx.guild
+        if not await MentorFinder.enough_mentors_for_pod(ctx):
+            return
+
         overwrites = {
             guild.default_role: discord.PermissionOverwrite(read_messages=False),
             guild.get_role(EnvironmentVariables.STAFF_ROLE): discord.PermissionOverwrite(
@@ -103,7 +106,8 @@ class Pods(commands.Cog, name="Pods"):
     async def pods(self, ctx: commands.Context):
         """Displays ALL PODS in CURRENT CHANNEL"""
         current_channel: discord.TextChannel = ctx.channel
-        all_pods = await PodConverter.get_all_pods(current_channel=current_channel)
+        all_pods = await PodConverter.get_all_pods(current_channel=current_channel,
+                                                   output_msg="There are no pods to list.")
         if all_pods is None or len(all_pods) == 0:
             return
 
@@ -119,6 +123,9 @@ class Pods(commands.Cog, name="Pods"):
         # If the pod name is not given, use the current channels name as the argument
         pod = await PodConverter.get_pod(pod_name, ctx.channel)
         if pod is None:
+            return
+        if mentor is None:
+            await ctx.send("You did not give a valid discord member mention.")
             return
 
         await Helper.add_mentor_helper(ctx.bot, mentor, None, pod)
