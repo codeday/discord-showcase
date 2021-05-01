@@ -1,3 +1,5 @@
+from unittest.mock import Mock, MagicMock
+
 import discord
 from discord.ext import commands
 
@@ -147,7 +149,21 @@ class Test(commands.Cog, name="Test"):
         current_channel: discord.TextChannel = ctx.channel
 
         await current_channel.send("I am now testing all the listener functions. Give me a second.")
-        await Helper.assign_pods_helper(ctx.bot)
+
+        member_with_project = MagicMock()
+        member_with_project["account"]["discordId"] = "111572782336208896"
+        member_with_project["project"]["id"] = ""
+        member_with_project['username'] = "jacobc"
+        member_with_project['name'] = "Jacob Cuomo"
+        member_with_project['id'] = "auth0|3435"
+
+        await Helper.add_or_remove_user_to_pod_tc(self.bot, member_with_project, True)
+
+        print(member_with_project.return_value, member_with_project.mock_calls, member_with_project.called, member_with_project.call_args_list, member_with_project.call_args, member_with_project.call_count)
+
+
+        print(member_with_project.method_calls)
+
         await current_channel.send("I am now done with testing all listener functions.")
 
 
