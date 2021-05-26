@@ -1,58 +1,57 @@
-from idlelib.undo import CommandSequence
+from typing import Union
 
 import discord
-from discord.ext import commands
-from os import getenv
 
-from db.models import session_creator
-from services.podservice import PodService
-from text.podhelpchannel import PodHelpChannel
-from text.podnames import PodNames
-from services.gqlservice import GQLService
+from converters.PodConverter import PodConverter
+from discord.ext import commands
+
+from converters.TeamConverter import TeamConverter
+from env import EnvironmentVariables
+from finders.mentorfinder import MentorFinder
+from finders.podnamefinder import PodNameFinder
+from helpers.helper import Helper
+from services.PodDispatcher import PodDispatcher
+from services.podgqlservice import PodGQLService
 from utils import checks
+from utils.generateembed import GenerateEmbed
+
+"""
+    The purpose of this class is to execute commands and reach out to other classes for input sanitation and actions
+"""
 
 
 class Pods(commands.Cog, name="Pods"):
-    """Contains information pertaining to Pods"""
-
-    # How many teams should be in a singular pod? Change that value here. Default is 5.
-    teams_per_pod = int(getenv("TEAMS_PER_POD", 5))
 
     def __init__(self, bot):
         self.bot: discord.ext.commands.Bot = bot
 
-        # The role in which the bot will give all permissions to the pod channels
-        self.staff_role = int(getenv("ROLE_STAFF", 689960285926195220))
-
-        # The role in which the bot will pick a mentor from for each text channel
-        self.mentor_role = int(getenv("ROLE_MENTOR", 782363834836975646))
-
-        # The category in which the pods will reside
-        self.category = int(getenv("CATEGORY", 783229579732320257))
-
-    # For permissions attributes and other information, use the following links:
-    # https://discordpy.readthedocs.io/en/latest/api.html#discord.Permissions
-    # https://discordpy.readthedocs.io/en/latest/api.html#discord.TextChannel.set_permissions
-
     @commands.command(name='create_pod')
     @checks.requires_staff_role()
-    async def create_pod(self, ctx: commands.Context, pod_name, mentor: discord.Member):
-        """Creates a POD for a team"""
+    async def create_pod(self, ctx: commands.Context, pod_name: str, mentor: discord.Member = None):
+        """Creates a POD"""
 
         """Create a text channel"""
         guild: discord.Guild = ctx.guild
+        if not await MentorFinder.enough_mentors_for_pod(ctx):
+            return
+
         overwrites = {
-            # Default User Access to a Pod
             guild.default_role: discord.PermissionOverwrite(read_messages=False),
-            guild.get_role(self.staff_role): discord.PermissionOverwrite(**dict(discord.Permissions.text())),
+            guild.get_role(EnvironmentVariables.STAFF_ROLE): discord.PermissionOverwrite(
+                **dict(discord.Permissions.text())),
             guild.me: discord.PermissionOverwrite(read_messages=True, read_message_history=True),
         }
 
         tc = await guild.create_text_channel("pod " + pod_name, overwrites=overwrites,
                                              category=guild.get_channel(
-                                                 self.category),
+                                                 EnvironmentVariables.CATEGORY),
                                              reason=None)
         print(mentor)
+        if mentor is None:
+            mentor = MentorFinder.find_a_suitable_mentor(guild.get_role(EnvironmentVariables.MENTOR_ROLE))
+            if mentor is None:
+                return
+
         await tc.set_permissions(mentor, overwrite=discord.PermissionOverwrite(**dict(discord.Permissions.text())))
 
         await tc.send(
@@ -61,362 +60,174 @@ class Pods(commands.Cog, name="Pods"):
             "> you have been selected to be the mentor for this pod! Teams will be "
             "added shortly.")
 
-        PodService.create_pod(pod_name, tc.id, mentor.id)
-
-        pass
+        PodDispatcher.create_pod(pod_name, tc.id, mentor.id)
 
     @commands.command(name='create_pods')
     @checks.requires_staff_role()
-    async def create_pods(self, ctx: commands.Context, number_of_mentors):
-        """Creates all PODS for all TEAMS"""
-        # Then, create the actual pods by calling the singular create_pod function
-        # We subtract one so that there is an extra mentor left, who is designated to the pod called overflow
-        for x in range(0, int(number_of_mentors) - 1):
-            await self.create_pod(ctx, self.find_a_suitable_pod_name(), self.find_a_suitable_mentor(ctx))
-        await self.create_pod(ctx, "Overflow", self.find_a_suitable_mentor(ctx))
-
-    @commands.command(name='assign_pod')
-    @checks.requires_staff_role()
-    async def assign_pod(self, ctx: commands.Context, team_id, pod_name):
-        """Assigns a TEAM to a particular POD"""
-        await self.assign_pod_helper(self.bot, team_id, pod_name)
+    async def create_pods(self, ctx: commands.Context):
+        """Creates all PODS"""
+        guild: discord.Guild = ctx.guild
+        role: discord.Role = guild.get_role(EnvironmentVariables.MENTOR_ROLE)
+        category = discord.utils.get(ctx.guild.categories, id=EnvironmentVariables.CATEGORY)
+        if len(category.channels) >= len(role.members):
+            await ctx.send("There are not enough additional mentors to fill more pods.")
+            return
+        for x in range(len(category.channels), len(role.members)):
+            await Pods.create_pod(self, ctx, PodNameFinder.find_a_suitable_pod_name(),
+                                  MentorFinder.find_a_suitable_mentor(role))
 
     @commands.command(name='assign_pods')
     @checks.requires_staff_role()
     async def assign_pods(self, ctx: commands.Context):
         """Assigns remaining TEAMS to PODS"""
-        await self.assign_pods_helper(self.bot)
+        await Helper.assign_pods_helper(ctx.bot)
 
-    @commands.command(name='secret')
-    @checks.requires_staff_role()
-    async def assign_pods(self, ctx: commands.Context):
-        """Secret Command"""
-        await ctx.send("Jacob Cuomo is my dad.")
-
-    # Some notes about embedded messages:
-    # - To display fields side-by-side, you need at least two consecutive fields set to inline
-    # - The timestamp will automatically adjust the timezone depending on the user's device
-    # - Mentions of any kind will only render correctly in field values and descriptions
-    # - Mentions in embeds will not trigger a notification
-    @staticmethod
-    async def assign_pod_helper(bot: discord.ext.commands.Bot, team_id, pod_name, session):
-        current_pod = PodService.get_pod_by_name(pod_name, session)
-        showcase_team = await GQLService.get_showcase_team_by_id(team_id)
-        print(showcase_team)
-        if current_pod is not None and showcase_team is not None:
-            PodService.add_team_to_pod(current_pod, team_id, session)
-            await GQLService.record_pod_on_team_metadata(showcase_team["id"], str(current_pod.id))
-            await GQLService.record_pod_name_on_team_metadata(showcase_team["id"], str(current_pod.name))
-
-            tc = await bot.fetch_channel(int(current_pod.tc_id))
-            member_mentions = []
-            for showcase_member in showcase_team["members"]:
-                member_mentions.append(f"<@{str(showcase_member['account']['discordId'])}>")
-            embed = discord.Embed(title=f"Project {showcase_team['name']} has joined the pod!",
-                                  url=f"https://showcase.codeday.org/project/{team_id}", color=0xff6766)
-            embed.add_field(name=f"Project member(s): ", value=f"{', '.join(member_mentions)}", inline=False)
-            await tc.send(embed=embed)
-
-            # store initial message in gql
-            # Add all members to text channel
-            print(showcase_team["members"])
-            guild: discord.Guild = await bot.fetch_guild(689213562740277361)
-            for showcase_member in showcase_team["members"]:
-                discordID = showcase_member["account"]["discordId"]
-                print(discordID)
-                try:
-                    member = await guild.fetch_member(discordID)
-                    await tc.set_permissions(member, read_messages=True, read_message_history=True,
-                                             send_messages=True, embed_links=True, attach_files=True,
-                                             external_emojis=True, add_reactions=True)
-                except discord.errors.NotFound:
-                    print("A user was not found within the server")
-                except:
-                    print("Some other sort of error has occurred.")
-        else:
-            print("Did nto make it ")
-
-    @staticmethod
-    async def assign_pods_helper(bot: discord.ext.commands.Bot):
-        session = session_creator()
-        all_teams_without_pods = await GQLService.get_all_showcase_teams_without_pods()
-
-        for team in all_teams_without_pods:
-            if len(team["members"]) >= 1:
-                print(team)
-                smallest_pod = PodService.get_smallest_pod(session, Pods.teams_per_pod)
-                print(smallest_pod)
-                if smallest_pod:
-                    await Pods.assign_pod_helper(bot, team["id"], smallest_pod.name, session)
-                else:
-                    await Pods.assign_pod_helper(bot, team["id"], "overflow", session)
-
-        session.commit()
-        session.close()
-
-    @staticmethod
-    async def add_or_remove_user_to_pod_tc(bot: discord.ext.commands.Bot, member_with_project, should_be_removed):
-        # Get User Member Object AND Get text channel object
-        session = session_creator()
-        print(member_with_project)
-        discord_id = member_with_project["account"]["discordId"]
-        guild: discord.Guild = await bot.fetch_guild(689213562740277361)
-        showcase_team = await GQLService.get_showcase_team_by_id(member_with_project["project"]["id"])
-
-        pod = PodService.get_pod_by_id(showcase_team["pod"], session)
-        try:
-            member: discord.Member = await guild.fetch_member(discord_id)
-
-            tc = await bot.fetch_channel(pod.tc_id)
-
-            # User is being removed from the pod tc
-            if should_be_removed:
-                await tc.set_permissions(member, read_messages=False, read_message_history=False,
-                                         send_messages=False, embed_links=False, attach_files=False,
-                                         external_emojis=False, add_reactions=False)
-                embed = discord.Embed(
-                    title=f"{member_with_project['username']} left project {showcase_team['name']}",
-                    url=f"https://showcase.codeday.org/project/{showcase_team['id']}",
-                    color=0xff6766)
-                embed.add_field(name="Member: ", value=f"<@{member_with_project['account']['discordId']}>",
-                                inline=False)
-                await tc.send(embed=embed)
-
-            # User is being added to the pod tc
-            else:
-                await tc.set_permissions(member, read_messages=True, read_message_history=True,
-                                         send_messages=True, embed_links=True, attach_files=True,
-                                         external_emojis=True, add_reactions=True)
-                embed = discord.Embed(
-                    title=f"{member_with_project['username']} joined project {showcase_team['name']}",
-                    url=f"https://showcase.codeday.org/project/{showcase_team['id']}",
-                    color=0xff6766)
-                embed.add_field(name="Member: ", value=f"<@{member_with_project['account']['discordId']}>",
-                                inline=False)
-                await tc.send(embed=embed)
-        except discord.errors.NotFound:
-            print("A user was not found within the server")
-        except:
-            print("Some other sort of error has occurred.")
-        session.commit()
-        session.close()
-
-    @commands.command(name='list_teams')
+    @commands.command(name='teams', aliases=['list-teams', 'list_teams', 'listteams'])
     @checks.requires_mentor_role()
-    async def list_teams(self, ctx: commands.Context, pod_name=None):
-        """Displays TEAMS of a POD in CURRENT CHANNEL"""
-        session = session_creator()
+    async def teams(self, ctx: commands.Context, pod_name_or_discord_user: Union[str, discord.Member] = None):
+        """Displays TEAMS of a POD or DISCORD MEMBER in CURRENT CHANNEL"""
         current_channel: discord.TextChannel = ctx.channel
-        pod = None
+        teams = await TeamConverter.get_teams(current_channel, pod_name_or_discord_user)
+        if len(teams) == 0 or teams is None:
+            return
 
-        # If the pod name is not given, use the current channels name as the argument
-        if pod_name is None:
-            current_channel_name = str(current_channel.name)
-            if '-' in current_channel_name:
-                pod = PodService.get_pod_by_name(current_channel_name.split('-')[1].capitalize(), session)
+        is_pod: bool = PodConverter.is_pod(pod_name_or_discord_user)
+
+        if is_pod:
+            await current_channel.send(f"I found a couple of projects for Pod {pod_name_or_discord_user}")
         else:
-            pod = PodService.get_pod_by_name(pod_name, session)
+            await current_channel.send(f"I found a couple of projects for {pod_name_or_discord_user}")
 
-        await current_channel.send("The current project(s) inside of Pod " + pod.name + " are:")
-        for team in pod.teams:
-            showcase_team = await GQLService.get_showcase_team_by_id(team.showcase_id)
-            member_mentions = []
-            for showcase_member in showcase_team["members"]:
-                member_mentions.append(f"<@{str(showcase_member['account']['discordId'])}>")
-            embed = discord.Embed(title=f"Project {showcase_team['name']}",
-                                  url=f"https://showcase.codeday.org/project/{team.showcase_id}", color=0xff6766)
-            embed.add_field(name=f"Project member(s): ", value=f"{', '.join(member_mentions)}", inline=False)
-            await current_channel.send(embed=embed)
-        session.commit()
-        session.close()
+        for team in teams:
+            await current_channel.send(embed=GenerateEmbed.for_single_showcase_team(team, False))
 
-    @commands.command(name='list_pods')
+    @commands.command(name='pods', aliases=['list_pods', 'list-pods, list_all_pods', 'listpods'])
     @checks.requires_staff_role()
-    async def list_pods(self, ctx: commands.Context):
+    async def pods(self, ctx: commands.Context):
         """Displays ALL PODS in CURRENT CHANNEL"""
-        session = session_creator()
-        all_pods = PodService.get_all_pods(session)
-        current_channel: discord.DMChannel = ctx.channel
-        if len(all_pods) >= 1:
-            await current_channel.send("The current created pods are:")
-            for pod in all_pods:
-                await current_channel.send("Pod " + pod.name)
-        else:
-            await current_channel.send("There are no pods.")
-        session.commit()
-        session.close()
+        current_channel: discord.TextChannel = ctx.channel
+        all_pods = await PodConverter.get_all_pods(current_channel=current_channel,
+                                                   output_msg="There are no pods to list.")
+        if all_pods is None or len(all_pods) == 0:
+            return
+
+        message = "The current created pods are: \n"
+        for pod in all_pods:
+            message += f"Pod {pod.name}\n"
+        await current_channel.send(message)
 
     @commands.command("add_mentor")
-    @checks.requires_mentor_role()
-    async def add_mentor(self, ctx: commands.Context, mentor: discord.Member, pod_name=None):
+    @checks.requires_staff_role()
+    async def add_mentor(self, ctx: commands.Context, mentor: discord.Member, pod_name: str = None):
         """Gives additional permissions to a particular discord member"""
         # If the pod name is not given, use the current channels name as the argument
-        if pod_name is None:
-            current_channel: discord.TextChannel = ctx.channel
-            current_channel_name = str(current_channel.name)
-            if '-' in current_channel_name:
-                await self.add_mentor_helper(ctx.bot, mentor, current_channel_name.split('-')[1].capitalize())
-        else:
-            await self.add_mentor_helper(ctx.bot, mentor, pod_name)
+        pod = await PodConverter.get_pod(pod_name, ctx.channel)
+        if pod is None:
+            return
+        if mentor is None:
+            await ctx.send("You did not give a valid discord member mention.")
+            return
 
-    @staticmethod
-    async def add_mentor_helper(bot: discord.ext.commands.Bot, mentor: discord.Member, pod_name=None):
-        session = session_creator()
-        pod = PodService.get_pod_by_name(str(pod_name).capitalize(), session)
-        pod_channel: discord.TextChannel = await bot.fetch_channel(pod.tc_id)
-        await pod_channel.set_permissions(mentor,
-                                          overwrite=discord.PermissionOverwrite(**dict(discord.Permissions.text())))
-        await pod_channel.send(
-            "Hello <@" +
-            str(mentor.id) +
-            "> you have been added as a mentor to this pod! To see a list of teams, type s~list_teams")
-        session.commit()
-        session.close()
+        await Helper.add_mentor_helper(ctx.bot, mentor, None, pod)
 
     @commands.command(name="merge_pods")
     @checks.requires_staff_role()
-    async def merge_pods(self, ctx: commands.Context, pod_from, pod_to):
+    async def merge_pods(self, ctx: commands.Context, pod_from: str, pod_to: str):
         """Merges one PDO into another POD"""
-        session = session_creator()
-        pod_to_be_merged = PodService.get_pod_by_name(str(pod_from).capitalize(), session)
-        pod_being_merged_into = PodService.get_pod_by_name(str(pod_to).capitalize(), session)
+        pod_to_be_merged = await PodConverter.get_pod_by_name(pod_from, ctx.channel,
+                                                              output=f"Pod {pod_from} could not be found. Try again.")
+        if pod_to_be_merged is None:
+            return
+        pod_being_merged_into = await PodConverter.get_pod_by_name(pod_to, ctx.channel,
+                                                                   output=f"Pod {pod_to} could not be found. Try again.")
+        if pod_being_merged_into is None:
+            return
+        pod_to_be_merged_channel = await ctx.bot.fetch_channel(pod_to_be_merged.tc_id)
+        pod_being_merged_into_channel: discord.DMChannel = await ctx.bot.fetch_channel(pod_being_merged_into.tc_id)
         current_channel: discord.DMChannel = ctx.channel
-        if pod_to_be_merged is not None and pod_being_merged_into is not None:
-            await current_channel.send("Pods are currently being merged... give me one second...")
-            pod_being_merged_into_channel: discord.DMChannel = await self.bot.fetch_channel(pod_being_merged_into.tc_id)
-            pod_to_be_merged_channel = await self.bot.fetch_channel(pod_to_be_merged.tc_id)
-            await pod_to_be_merged_channel.delete()
-            if len(pod_to_be_merged.teams) > 0:
-                await pod_being_merged_into_channel.send("A pod is being merged into this channel...")
-                await pod_being_merged_into_channel.send("The projects joining this pod are: ")
-                while len(pod_to_be_merged.teams) > 0:
-                    team = pod_to_be_merged.teams[0]
-                    await self.assign_pod_helper(self.bot, team.showcase_id, pod_being_merged_into.name, session)
-                    await GQLService.unset_team_metadata(team.showcase_id)
-                    await GQLService.record_pod_on_team_metadata(team.showcase_id, str(pod_being_merged_into.id))
-                    await GQLService.record_pod_name_on_team_metadata(team.showcase_id, str(pod_being_merged_into.name))
-                await current_channel.send("Done! All teams have also been merged into the new pod.")
-            else:
-                await current_channel.send("Done! There were no teams to merge into the new pod.")
-            mentor = await self.bot.fetch_user(int(pod_to_be_merged.mentor))
-            await self.add_mentor_helper(ctx.bot, mentor, pod_being_merged_into.name)
-        else:
-            await current_channel.send("One of the pod names were not correct. Please specify only the name after pod-")
-        session.commit()
-        session.close()
 
-        PodService.remove_pod(str(pod_from).capitalize())
+        await current_channel.send("Pods are currently being merged... give me one second...")
+
+        await PodDispatcher.merge_pods(ctx.bot, pod_to_be_merged, pod_being_merged_into,
+                                       pod_to_be_merged_channel, pod_being_merged_into_channel)
+
+        await current_channel.send(f"Done! Pod {pod_from.capitalize()} has been successfully merged into Pod "
+                                   f"{pod_to.capitalize()}. \n"
+                                   f"If there were any teams, they have been merged as well.")
+
+    @commands.command(name="test")
+    @checks.requires_staff_role()
+    async def test(self, ctx: commands.Context, pod_name: str = None):
+        current_channel: discord.TextChannel = ctx.channel
+        pod = await PodConverter.get_pod(pod_name, current_channel)
+        if pod is None:
+            return
+        await ctx.send(f'Pod was found. ID is {pod.id}')
 
     @commands.command(name='remove_pod')
     @checks.requires_staff_role()
-    async def remove_pod(self, ctx: commands.Context, pod_name=None):
-        session = session_creator()
-
-        pod_to_remove = None
-
-        # If the pod name is not given, use the current channels name as the argument
-        if pod_name is None:
-            current_channel: discord.TextChannel = ctx.channel
-            current_channel_name = str(current_channel.name)
-            if '-' in current_channel_name:
-                pod_to_remove = PodService.get_pod_by_name(current_channel_name.split('-')[1].capitalize(), session)
-        else:
-            pod_to_remove = PodService.get_pod_by_name(pod_name, session)
-
-        pod_to_remove_channel = await self.bot.fetch_channel(pod_to_remove.tc_id)
-        for team in pod_to_remove.teams:
-            await GQLService.unset_team_metadata(team.showcase_id)
-        # await ctx.send("Pod " + pod_to_remove.name + " has been removed.")
-        await pod_to_remove_channel.delete()
-        PodService.remove_pod(str(pod_to_remove.name).capitalize())
-
-        session.commit()
-        session.close()
-
-        print(PodService.get_all_pods)
-
+    async def remove_pod(self, ctx: commands.Context, pod_name: str = None):
+        current_channel: discord.TextChannel = ctx.channel
+        pod = await PodConverter.get_pod(pod_name, current_channel)
+        if pod is None:
+            return
+        channel_to_remove = await ctx.bot.fetch_channel(pod.tc_id)
+        await PodDispatcher.remove_pod(pod, channel_to_remove)
 
     @commands.command(name='remove_all_pods')
     @checks.requires_staff_role()
     async def remove_all_pods(self, ctx: commands.Context):
         """Removes all Pods from Alembic and deletes all text channels from category"""
-        session = session_creator()
-        all_pods = PodService.get_all_pods(session)
-        if len(all_pods) >= 1:
-            await ctx.send("Removing all pods... give me one second...")
-            category = discord.utils.get(ctx.guild.categories, id=self.category)
-            for channel in category.channels:
-                await channel.delete()
-            PodService.remove_all_pods()
-            allTeams = await GQLService.get_all_showcase_teams()
-            for team in allTeams:
-                await GQLService.unset_team_metadata(team["id"])
-            await ctx.send("All Pods have been removed.")
-        else:
-            await ctx.send("There are no pods to remove.")
-        session.commit()
-        session.close()
+        all_pods = await PodConverter.get_all_pods(current_channel=ctx.channel,
+                                                   output_msg="There are no pods to remove.")
+        category = discord.utils.get(ctx.guild.categories, id=EnvironmentVariables.CATEGORY)
+        if all_pods is None or len(all_pods) == 0:
+            return
+
+        await ctx.send("I am in the process of removing pods, give me a couple of seconds... \n"
+                       "I will let you know when I am done.")
+
+        await PodDispatcher.remove_all_pods(all_pods, category)
+
+        await ctx.send("All pods have been removed.")
 
     @commands.command(name='send_message')
     @checks.requires_staff_role()
-    async def send_message(self, ctx: commands.Context, pod_name, *message):
+    async def send_message(self, ctx: commands.Context, pod_name: str, *message):
         """Sends a message to a single pod using the bot account"""
-        session = session_creator()
-        pod = PodService.get_pod_by_name(str(pod_name).capitalize(), session)
-        pod_channel = await self.bot.fetch_channel(pod.tc_id)
+        pod = await PodConverter.get_pod_by_name(pod_name, ctx.channel)
+        if pod is None:
+            return
+        pod_channel = await ctx.bot.fetch_channel(pod.tc_id)
         await pod_channel.send(" ".join(message[:]))
-        session.commit()
-        session.close()
 
     @commands.command(name='send_message_all')
     @checks.requires_staff_role()
     async def send_message_all(self, ctx: commands.Context, *message):
         """Sends a message to every pod using the bot account"""
-        session = session_creator()
-        all_pods = PodService.get_all_pods(session)
+        all_pods = await PodConverter.get_all_pods(current_channel=ctx.channel,
+                                                   output_msg="There are no pods to send messages to.")
+        if all_pods is None or len(all_pods) == 0:
+            return
         for pod in all_pods:
-            pod_channel = await self.bot.fetch_channel(pod.tc_id)
+            pod_channel = await ctx.bot.fetch_channel(pod.tc_id)
             await pod_channel.send(" ".join(message[:]))
-        session.commit()
-        session.close()
 
-    @commands.command(name='get_teams_from_gql')
+    @commands.command(name='get_all_teams')
     @checks.requires_staff_role()
-    async def get_teams_from_gql(self, ctx: commands.Context):
+    async def get_all_teams(self, ctx: commands.Context):
         """Displays PODS in CHANNEL"""
-        all_teams = await GQLService.get_all_showcase_teams()
+        all_teams = await PodGQLService.get_all_showcase_teams()
         current_channel: discord.DMChannel = ctx.channel
-        await current_channel.send("The current created teams in showcase are:")
-        for team in all_teams:
-            await current_channel.send("Team " + team['name'])
+        await current_channel.send("The current created team(s) in showcase are: \n")
+        for embed in GenerateEmbed.for_all_showcase_teams(all_teams):
+            await current_channel.send(embed=embed)
 
-    @commands.command(name='get_teams_by_user')
+    @commands.command(name='secret')
     @checks.requires_staff_role()
-    async def get_teams_by_user_gql(self, ctx: commands.Context, user: discord.User):
-        """Displays PODS in CHANNEL"""
-        usergql = str(await GQLService.get_showcase_username_from_discord_id(str(user.id)))
-        team = await GQLService.get_showcase_team_by_showcase_user(usergql)
-        print(team)
-        current_channel: discord.DMChannel = ctx.channel
-        await current_channel.send("The team that " + user + " is in is " + team)
-
-    def find_a_suitable_pod_name(self):
-        for pod_name in PodNames.available_names:
-            if PodService.get_pod_by_name(pod_name) is None:
-                # Pod Name is suitable, return that pod name
-                return pod_name
-        return None  # No Valid Name was available
-
-    def find_a_suitable_mentor(self, ctx):
-        # Get List of Mentors from Discord Role and see if they're already in the taken mentors list
-        guild: discord.Guild = ctx.guild
-        role: discord.Role = guild.get_role(self.mentor_role)
-        print(role.members)
-        for member in role.members:
-            if PodService.get_pod_by_mentor_id(str(member.id)) is None:
-                # Mentor is Suitable, return that mentor object
-                return member
-        return None  # No Mentor was available
+    async def secret(self, ctx: commands.Context):
+        """Secret Command"""
+        await ctx.send("Jacob Cuomo is my dad.")
 
 
 def setup(bot):

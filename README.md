@@ -19,20 +19,22 @@ Click the following [link](https://docs.google.com/document/d/1PAS1kiid47MkcNUrk
 
 ### Noteworthy Commands
 The command prefix for any command is s~, for example:
-> s~create_pods 3
+> s~create_pods
 
 | command         | arguments                     | summary                                                                                                                                                                                                         |
 |-----------------|-------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | help            | none                          | Displays a list of commands and their actions. Less descriptive than this documentation.                                                                                                                        |
-| create_pods     | <number_of_pods>              | Creates the pods by adding them to the alembic database and creating the text channels.                                                                                                                         |
+| create_pod      | <pod_name> AND (<mentor_name> or none)                           | Creates the pods by adding them to the alembic database and creating the text channels.                                                                                                                         |
+| create_pods     | none                          | Creates the pods by adding them to the alembic database and creating the text channels.                                                                                                                         |
 | assign_pods     | none                          | Assigns teams from showcase projects that do not have a pod to a pod.                                                                                                                                           |
-| add_mentor      | <mentor> <pod_name> OR <mentor_name>   | Gives mentor permissions to a particular discord member for a pod, which could be another mentor. No argument means it will run in the pod channel without the pod name.                                                                                                                                          |
+| add_mentor      | <mentor_name> <pod_name> OR <mentor_name>   | Gives mentor permissions to a particular discord member for a pod, which could be another mentor. No argument means it will run in the pod channel without the pod name.                                                                                                                                          |
 | checkin         | <pod_name>                    | Asks members in a specific pod how they are doing by listening for reactions and reporting it to grafana.codeday.org                                                                                            |
 | checkin_all     | none                          | Asks members in ALL pods how they are doing by listening for reactions and reporting it to grafana.codeday.org                                                                                                  |
 | send_message    | <pod_name> <message_string>   | Sends a message to a single pod using the bot account.                                                                                                  |
 | send_message_all| <message_string>              | Sends a message to every pod using the bot account.                                                                                                  |
-| list_pods       | none                          | Displays all the current pods in the channel the command is given.                                                                                                                                              |
-| list_teams      | <pod_name> OR none            | Displays all the teams of a particular pod in the channel the command is given or for the given pod name                                                                                                        |
+| teams           | <pod_name_or_discord_user> OR none | Displays all the current pods for a discord user, pod name, or the current channel depending on input.                                                                                                                                             |
+| get_all_teams   | none                          | Displays all the current teams created for the current showcase season.                                                                                                                                             |
+| pods            | none                          | Displays all pods that were created in the channel the command was executed.                                                                                                        |
 | merge_pods      | <pod_from_name> <pod_to_name> | Will remove the pod_from_name pod and merge it into pod_to_names. This will delete the text-channel for pod_from_name and move all members within that text channel to the new channel in pod_to_names channel. |
 | remove_pod      | <pod_name> OR none            | Removes a singular pod specified by its name, removes the text channel and any traces in alembic. No argument means it will run in the pod channel without the name.                                                                                      |
 | remove_all_pods | none                          | Removes all pods from alembic and deletes all the text channels under the pods category given in the environment variable.                                                                                      |
@@ -42,11 +44,11 @@ There are a couple of environment variables that need to be set when switching t
 
 | variable            | value | description                                                                 |
 |---------------------|-------|-----------------------------------------------------------------------------|
-| TEAMS_PER_POD       | int   | The number of projects/teams that should be in a singular pod               |
 | ROLE_STAFF          | int   | The role in which the bot will give all permissions to all the pod channels |
 | ROLE_MENTOR         | int   | The role in which the bot will pick a mentor from for each pod text channel |
 | CATEGORY            | int   | The category in which the pods will reside                                  |
 | EVENT_ID            | str   | The eventGroup from GQL for which CodeDay it is                             |
+| DEBUG_CHANNEL       | int   | The channel where potential error and testing output is displayed           |
 | DB_DB               | str   | available upon request                                                      |
 | DB_PASSWORD         | str   | available upon request                                                      |
 | DB_USERNAME         | str   | available upon request                                                      |

@@ -5,17 +5,22 @@ import time
 from jwt import encode
 from os import getenv
 
-event_id = str(getenv("EVENT_ID", "virtual-codeday-winter-2021"))
+from env import EnvironmentVariables
+
+"""
+    The purpose of this class is to query data from GQL, for more information see below information.
+    If you would like to learn how to write custom queries go to https://graph.codeday.org/
+"""
 
 
-class GQLService:
+class PodGQLService:
 
     @staticmethod
     def make_token():
         secret = getenv("GQL_SHOWCASE_SECRET")
         message = {
             "a": True,
-            "exp": int(time.time()) + (60*60*24*5),
+            "exp": int(time.time()) + (60 * 60 * 24 * 5),
             "aud": "showcase",
         }
         return encode(message, secret, algorithm='HS256').decode("utf-8")
@@ -43,41 +48,45 @@ class GQLService:
         return gql(query + "\n" + fragments)
 
     @staticmethod
-    async def query_http(query, variable_values=None, with_fragments=True):
+    async def query_http(query, variable_values=None, with_fragments=True, execute_timeout=10):
         transport = AIOHTTPTransport(
             url="https://graph.codeday.org/",
-            headers={"X-Showcase-Authorization": f"Bearer {GQLService.make_token()}"})
-        client = Client(transport=transport, fetch_schema_from_transport=True)
-        return await client.execute_async(GQLService.make_query(query, with_fragments=with_fragments), variable_values=variable_values)
+            headers={"X-Showcase-Authorization": f"Bearer {PodGQLService.make_token()}"})
+        client = Client(transport=transport, fetch_schema_from_transport=True, execute_timeout=execute_timeout)
+        return await client.execute_async(PodGQLService.make_query(query,
+                                                                   with_fragments=with_fragments),
+                                          variable_values=variable_values)
 
     @staticmethod
     async def subscribe_ws(query, variable_values=None, with_fragments=True):
         transport = WebsocketsTransport(
             url='ws://graph.codeday.org/subscriptions')
-        session = Client(transport=transport, fetch_schema_from_transport=True)
-        async for result in session.subscribe_async(GQLService.make_query(query, with_fragments=with_fragments), variable_values=variable_values):
+        session = Client(transport=transport)
+        # sometimes, may need to add fetch_schema_from_transport=True to above line
+        async for result in session.subscribe_async(PodGQLService.make_query(query, with_fragments=with_fragments),
+                                                    variable_values=variable_values):
             yield result
 
     @staticmethod
     async def get_all_showcase_teams():
         query = """
-            query getAllShowcaseTeamsWithoutPods($eventGroup: String!) {
+            query getAllShowcaseTeamsPods($eventGroup: String!) {
               showcase {
-                projects(where: {eventGroup: $eventGroup}) {
+                projects(where: {eventGroup: $eventGroup} take: 1000) {
                     ...ProjectInformation
                 }
               }
             }
         """
 
-        params = {"eventGroup": event_id}
+        params = {"eventGroup": EnvironmentVariables.EVENT_ID}
 
-        result = await GQLService.query_http(query, variable_values=params)
+        result = await PodGQLService.query_http(query, variable_values=params, execute_timeout=20)
         return result['showcase']['projects']
 
     @staticmethod
     async def get_all_showcase_teams_without_pods():
-        print(event_id)
+        print(EnvironmentVariables.EVENT_ID)
         query = """
             query getAllShowcaseTeamsWithoutPods($eventGroup: String!) {
               showcase {
@@ -88,10 +97,10 @@ class GQLService:
             }
         """
 
-        params = {"eventGroup": event_id}
+        params = {"eventGroup": EnvironmentVariables.EVENT_ID}
 
-        result = await GQLService.query_http(query, variable_values=params)
-        return [p for p in result["showcase"]["projects"] if (not ("pod" in p) or p["pod"] == None)]
+        result = await PodGQLService.query_http(query, variable_values=params)
+        return [p for p in result["showcase"]["projects"] if (not ("pod" in p) or p["pod"] is None)]
 
     @staticmethod
     async def get_showcase_team_by_id(team_id):
@@ -108,7 +117,7 @@ class GQLService:
         params = {"id": team_id}
 
         # Execute the query on the transport
-        result = await GQLService.query_http(query, variable_values=params)
+        result = await PodGQLService.query_http(query, variable_values=params)
         return result["showcase"]["project"]
 
     @staticmethod
@@ -123,10 +132,10 @@ class GQLService:
             }
         """
 
-        params = {"eventGroup": event_id, "username": username}
+        params = {"eventGroup": EnvironmentVariables.EVENT_ID, "username": username}
 
         # Execute the query on the transport
-        result = await GQLService.query_http(query, variable_values=params)
+        result = await PodGQLService.query_http(query, variable_values=params)
         return result["showcase"]["projects"]
 
     @staticmethod
@@ -145,7 +154,7 @@ class GQLService:
         params = {"discordId": discord_id}
 
         # Execute the query on the transport
-        result = await GQLService.query_http(query, variable_values=params, with_fragments=False)
+        result = await PodGQLService.query_http(query, variable_values=params, with_fragments=False)
         return result["account"]["getUser"]
 
     @staticmethod
@@ -159,7 +168,7 @@ class GQLService:
             """
 
         params = {"project_id": project_id, "value": value}
-        await GQLService.query_http(query, variable_values=params, with_fragments=False)
+        await PodGQLService.query_http(query, variable_values=params, with_fragments=False)
 
     @staticmethod
     async def record_pod_name_on_team_metadata(project_id, value):
@@ -172,7 +181,7 @@ class GQLService:
             """
 
         params = {"project_id": project_id, "value": value}
-        await GQLService.query_http(query, variable_values=params, with_fragments=False)
+        await PodGQLService.query_http(query, variable_values=params, with_fragments=False)
 
     @staticmethod
     async def unset_team_metadata(project_id):
@@ -186,7 +195,7 @@ class GQLService:
             """
 
         params = {"project_id": project_id}
-        await GQLService.query_http(query, variable_values=params, with_fragments=False)
+        await PodGQLService.query_http(query, variable_values=params, with_fragments=False)
 
     @staticmethod
     async def send_team_reacted(project_id, member, value):
@@ -200,7 +209,7 @@ class GQLService:
 
         params = {"project_id": project_id, "member": member, "value": value}
         print(params)
-        await GQLService.query_http(query, variable_values=params, with_fragments=False)
+        await PodGQLService.query_http(query, variable_values=params, with_fragments=False)
 
     """Everything beyond this point is related to GQL Subscriptions and Bot Listener Stuff"""
 
@@ -220,7 +229,7 @@ class GQLService:
             }
         """
 
-        async for result in GQLService.subscribe_ws(query):
+        async for result in PodGQLService.subscribe_ws(query):
             yield result["memberRemoved"]
 
     @staticmethod
@@ -239,7 +248,7 @@ class GQLService:
             }
         """
 
-        async for result in GQLService.subscribe_ws(query):
+        async for result in PodGQLService.subscribe_ws(query):
             yield result["memberAdded"]
 
     @staticmethod
@@ -252,7 +261,7 @@ class GQLService:
             }
         """
 
-        async for result in GQLService.subscribe_ws(query):
+        async for result in PodGQLService.subscribe_ws(query):
             yield result["projectCreated"]
 
     @staticmethod
@@ -265,5 +274,5 @@ class GQLService:
             }
         """
 
-        async for result in GQLService.subscribe_ws(query):
+        async for result in PodGQLService.subscribe_ws(query):
             yield result["projectEdited"]
