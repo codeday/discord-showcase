@@ -94,9 +94,11 @@ class Pods(commands.Cog, name="Pods"):
         is_pod: bool = PodConverter.is_pod(pod_name_or_discord_user)
 
         if is_pod:
-            await current_channel.send(f"I found a couple of projects for Pod {pod_name_or_discord_user}")
+            await current_channel.send(f"I found a couple of projects for Pod {pod_name_or_discord_user}, "
+                                       f"give me a few seconds to show them to you...")
         else:
-            await current_channel.send(f"I found a couple of projects for {pod_name_or_discord_user}")
+            await current_channel.send(f"I found a couple of projects for {pod_name_or_discord_user}, "
+                                       f"give me a few seconds to show them to you...")
 
         for team in teams:
             await current_channel.send(embed=GenerateEmbed.for_single_showcase_team(team, False))
