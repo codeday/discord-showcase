@@ -133,12 +133,14 @@ class Pods(commands.Cog, name="Pods"):
             else:
                 await current_channel.send(f"I found a couple of projects for {pod_name_or_discord_user}, "
                                            f"give me a few seconds to show them to you...")
+        message = ""
         for team in teams:
             member_mentions = []
             for showcase_member in team["members"]:
                 member_mentions.append(f"<@{str(showcase_member['account']['discordId'])}>")
-            await current_channel.send(f"Team Name: {team['name']}\n"
-                                       f"Members: {', '.join(member_mentions)}")
+            message += f"Team Name: {team['name']}\n " \
+                       f"Members: {', '.join(member_mentions)}\n\n"
+        await current_channel.send(message)
 
     @commands.command(name='pods', aliases=['list_pods', 'list-pods, list_all_pods', 'listpods'])
     @checks.requires_staff_role()
