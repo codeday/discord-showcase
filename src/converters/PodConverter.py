@@ -97,4 +97,6 @@ class PodConverter:
 
     @staticmethod
     def is_pod(pod_name) -> bool:
+        if pod_name is None:
+            return False
         return True if PodDBService.get_pod_by_name(pod_name) is not None else False
