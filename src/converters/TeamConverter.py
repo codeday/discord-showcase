@@ -29,12 +29,10 @@ class TeamConverter:
     @staticmethod
     async def get_teams(current_channel: discord.TextChannel,
                         pod_name_or_discord_user: str = None):
-        print(pod_name_or_discord_user)
         if pod_name_or_discord_user is None:
             teams = []
             pod = await PodConverter.get_pod_by_channel_id(current_channel.id,
                                                            current_channel=current_channel)
-
             await TeamConverter.check_if_teams_exist(teams=pod.teams,
                                                      output_channel=current_channel,
                                                      output=f"There are no projects in Pod {pod.name} yet. Project(s) "
@@ -43,21 +41,17 @@ class TeamConverter:
                 showcase_team = await TeamConverter.get_showcase_team_by_id(team.showcase_id)
                 teams.append(showcase_team)
             return teams
-        if pod_name_or_discord_user[0] == "<":  # discord username given
+        elif pod_name_or_discord_user[0] == "<":  # discord username given
             filter_out = "<!@>"
             for char in filter_out:
                 pod_name_or_discord_user = pod_name_or_discord_user.replace(char, '')
-            print(pod_name_or_discord_user)
             user = await PodGQLService.get_showcase_user_from_discord_id(str(pod_name_or_discord_user))
-            print(user['username'])
             teams = await PodGQLService.get_showcase_team_by_showcase_user(user['username'])
-            print(teams)
             await TeamConverter.check_if_teams_exist(teams=teams,
                                                      output_channel=current_channel,
                                                      output=f"<@{pod_name_or_discord_user}> does not belong to any projects.")
             return teams
         else:  # assume pod name is given
-            print("is string")
             teams = []
             pod = await PodConverter.get_pod_by_name(pod_name=pod_name_or_discord_user,
                                                      current_channel=current_channel)

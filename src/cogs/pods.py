@@ -87,19 +87,60 @@ class Pods(commands.Cog, name="Pods"):
     async def teams(self, ctx: commands.Context, pod_name_or_discord_user: Union[str, discord.Member] = None):
         """Displays TEAMS of a POD or DISCORD MEMBER in CURRENT CHANNEL"""
         current_channel: discord.TextChannel = ctx.channel
+        await current_channel.send("I'm working my gears, let me find the teams, give me a couple seconds...")
         teams = await TeamConverter.get_teams(current_channel, pod_name_or_discord_user)
         if len(teams) == 0 or teams is None:
             return
 
+        print("here")
         is_pod: bool = PodConverter.is_pod(pod_name_or_discord_user)
 
         if is_pod:
-            await current_channel.send(f"I found a couple of projects for Pod {pod_name_or_discord_user}")
+            await current_channel.send(f"I found a couple of projects for Pod {pod_name_or_discord_user}, "
+                                       f"give me a few seconds to show them to you...")
         else:
-            await current_channel.send(f"I found a couple of projects for {pod_name_or_discord_user}")
-
+            is_mentor_pod = True if pod_name_or_discord_user is None else False
+            if is_mentor_pod:
+                await current_channel.send(f"I found a couple of projects for your pod, "
+                                           f"give me a few seconds to show them to you...")
+            else:
+                await current_channel.send(f"I found a couple of projects for {pod_name_or_discord_user}, "
+                                           f"give me a few seconds to show them to you...")
         for team in teams:
             await current_channel.send(embed=GenerateEmbed.for_single_showcase_team(team, False))
+
+    @commands.command(name='teams_short', aliases=['list-teams_short', 'list_teams_short', 'listteams_short'])
+    @checks.requires_mentor_role()
+    async def teams_short(self, ctx: commands.Context, pod_name_or_discord_user: Union[str, discord.Member] = None):
+        """Displays TEAMS of a POD or DISCORD MEMBER in CURRENT CHANNEL WITHOUT EMBEDS"""
+        current_channel: discord.TextChannel = ctx.channel
+        await current_channel.send("I'm working my gears, let me find the teams, give me a couple seconds...")
+        teams = await TeamConverter.get_teams(current_channel, pod_name_or_discord_user)
+        if len(teams) == 0 or teams is None:
+            return
+
+        print("here")
+        is_pod: bool = PodConverter.is_pod(pod_name_or_discord_user)
+
+        if is_pod:
+            await current_channel.send(f"I found a couple of projects for Pod {pod_name_or_discord_user}, "
+                                       f"give me a few seconds to show them to you...")
+        else:
+            is_mentor_pod = True if pod_name_or_discord_user is None else False
+            if is_mentor_pod:
+                await current_channel.send(f"I found a couple of projects for your pod, "
+                                           f"give me a few seconds to show them to you...")
+            else:
+                await current_channel.send(f"I found a couple of projects for {pod_name_or_discord_user}, "
+                                           f"give me a few seconds to show them to you...")
+        message = ""
+        for team in teams:
+            member_mentions = []
+            for showcase_member in team["members"]:
+                member_mentions.append(f"<@{str(showcase_member['account']['discordId'])}>")
+            message += f"Team Name: {team['name']}\n " \
+                       f"Members: {', '.join(member_mentions)}\n\n"
+        await current_channel.send(message)
 
     @commands.command(name='pods', aliases=['list_pods', 'list-pods, list_all_pods', 'listpods'])
     @checks.requires_staff_role()
