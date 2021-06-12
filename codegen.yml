@@ -1,0 +1,22 @@
+overwrite: true
+schema:
+  "https://graph.codeday.org/":
+generates:
+  # Download the schema for GraphQL IDE plugins
+  schema.graphql:
+    plugins:
+      - schema-ast
+
+  # Colocate Typescript types/interfaces with components
+  ./:
+    documents:
+      - src/*.gql
+      - src/**/*.gql
+    preset: near-operation-file
+    presetConfig:
+      extension: .query.ts
+      baseTypesPath: src/graphql/types.ts
+    plugins:
+      - typescript
+      - typescript-operations
+      - typed-document-node

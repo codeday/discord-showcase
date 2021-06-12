@@ -1,0 +1,18 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Post {
+  id          String    @id
+  userId      String
+  text        String?
+  imageUrl    String
+  videoUrl    String?
+  createdAt   DateTime
+  approved    Boolean   @default(false)
+}

@@ -1,8 +1,13 @@
-FROM python:3.9-slim-buster
+FROM node:14-alpine
 
-COPY requirements.txt /
-RUN pip install -r /requirements.txt
-
-COPY src /app/src/
+ENV NODE_ENV=production
+RUN mkdir /app
+COPY yarn.lock /app
+COPY package.json /app
 WORKDIR /app
-CMD ["python3", "src/main.py"]
+
+RUN NODE_ENV=development yarn install
+COPY . /app
+RUN yarn run build
+COPY ./docker-entrypoint.sh /docker-entrypoint.sh
+CMD /docker-entrypoint.sh

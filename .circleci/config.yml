@@ -5,12 +5,12 @@ workflows:
       - build:
           filters:
             branches:
-              only: main
+              only: master
           context: Docker Hub
       - build_test:
           filters:
             branches:
-              ignore: main
+              ignore: master
 jobs:
   build:
     docker:

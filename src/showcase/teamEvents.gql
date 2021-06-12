@@ -1,0 +1,19 @@
+#import "./index.gql"
+
+subscription OnProjectCreated {
+  projectCreated {
+      ...ProjectInformationWithMembers
+  }
+}
+
+subscription OnProjectEdited {
+  projectEdited {
+    ...ProjectInformationWithMembers
+  }
+}
+
+subscription OnProjectDeleted {
+  projectDeleted {
+    ...ProjectInformationWithMembers
+  }
+}
