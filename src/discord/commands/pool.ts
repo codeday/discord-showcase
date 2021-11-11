@@ -90,6 +90,8 @@ export const list = [
       include: { inclusionCriteria: true, channels: true },
     });
 
+    if (pools.length === 0) return await interaction.reply('No pools.');
+
     await interaction.reply(
       pools
         .flatMap((pool) => [

@@ -21,7 +21,7 @@ export async function getBestPodChannel(project: ProjectInformationFragment): Pr
         ...(project.programId ? [{ programId: project.programId }] : []),
         ...(project.regionId ? [{ eventGroupId: project.regionId }] : []),
       ],
-      pool: { channels: { some: {} } },
+      pool: { channels: { some: {} }, enabled: true },
     },
     include: { pool: { include: { channels: { orderBy: { teamCount: 'asc' } } } } },
   });

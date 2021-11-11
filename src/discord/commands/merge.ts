@@ -3,17 +3,18 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable sonarjs/no-identical-functions */
 import { SlashCommandSubcommandBuilder } from '@discordjs/builders';
-import { CacheType, CommandInteraction } from 'discord.js';
+import { CacheType, CommandInteraction, TextChannel } from 'discord.js';
 import debugFactory from 'debug';
 import { membersInChannel, projectCreated } from '../../gql';
 import prisma from '../../prisma';
 import { requireTeamSupport, assignProject } from '../../utils';
+import discord from '..';
 
 const DEBUG = debugFactory('showcase.discord.commands.merge');
 
 export const channels = [
   (new SlashCommandSubcommandBuilder())
-    .setDescription('Checks in with all teams')
+    .setDescription('Merges two teams')
     .addChannelOption((option) => option
       .setName('from')
       .setDescription('Channel to merge teams from')
@@ -32,6 +33,9 @@ export const channels = [
     }
 
     interaction.reply('Beginning merge...');
+
+    const discordFromChannel = await discord.channels.fetch(fromId);
+    await (discordFromChannel as TextChannel).send(`This pod is being merged with <#${toId}>.`);
 
     await prisma.welcomeMessage.deleteMany({ where: { channelId: fromId } });
     await prisma.channel.delete({ where: { id: fromId } });
