@@ -1,4 +1,4 @@
-#import "./index.gql"
+#import "./common.gql"
 subscription OnMemberRemoved {
   memberRemoved {
     ...MemberInformation

@@ -1,0 +1,22 @@
+#import "./common.gql"
+query MembersInChannel($channel: String!) {
+  showcase {
+    projects (where: { metadata: [{ key: "pod.channel", value: $channel }] }) {
+      ...ProjectInformationWithMembers
+    }
+  }
+}
+
+query ProjectsWhere($where: ShowcaseProjectsWhere!) {
+  showcase {
+    projects(where: $where) {
+      ...ProjectInformationWithMembers
+    }
+  }
+}
+
+mutation SetProjectChannel($project: String!, $channel: String!) {
+  showcase {
+    setMetadata(project: $project, key: "pod.channel", value: $channel, visibility: PUBLIC)
+  }
+}

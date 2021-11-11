@@ -10,9 +10,17 @@ fragment ProjectInformation on ShowcaseProject {
   name
   type
   description
+  eventId
+  eventGroupId
+  programId
+  regionId
+  program {
+    webname
+  }
+  region {
+    webname
+  }
   podChannel: metadataValue(key: "pod.channel")
-  podName: metadataValue(key: "pod.name")
-  podMessage: metadataValue(key: "pod.message")
 }
 
 fragment ProjectInformationWithMembers on ShowcaseProject {

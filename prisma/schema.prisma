@@ -7,12 +7,41 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model Post {
-  id          String    @id
-  userId      String
-  text        String?
-  imageUrl    String
-  videoUrl    String?
-  createdAt   DateTime
-  approved    Boolean   @default(false)
+model Pool {
+  id        String @id
+  enabled   Boolean @default(false)
+  channels Channel[]
+  inclusionCriteria PoolInclusionCriteria[]
+}
+
+model PoolInclusionCriteria {
+  id String @id @default(cuid())
+
+  programId String?
+  eventGroupId String?
+  eventId String?
+  regionId String?
+
+  pool Pool @relation(fields: [poolId], references: [id])
+  poolId String
+}
+
+model Channel {
+  id String @id
+
+  latestCheckinMessageId String?
+
+  teamCount Int @default(0)
+
+  pool Pool @relation(fields: [poolId], references: [id])
+  poolId String
+
+  welcomeMessages WelcomeMessage[]
+}
+
+model WelcomeMessage {
+  id String @id
+
+  channel Channel @relation(fields: [channelId], references: [id])
+  channelId String
 }
