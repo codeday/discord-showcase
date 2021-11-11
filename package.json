@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node dist",
     "clean": "rm -rf dist",
-    "build": "yarn run clean && yarn run gql && npx tsc",
+    "build": "yarn run clean && yarn run gql && npx prisma generate && npx tsc",
     "gql": "graphql-codegen --config codegen.yml -r dotenv/config",
     "dev": "concurrently \"yarn run devserver\" \"graphql-codegen --config codegen.yml -r dotenv/config --watch\"",
     "devserver": "DEBUG=showcase* ts-node-dev --no-notify --respawn --transpile-only src",
