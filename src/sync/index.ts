@@ -19,8 +19,8 @@ export async function syncPool(pool: DeepPool): Promise<void> {
   for (const poolCriteria of pool.inclusionCriteria) {
     const existingIds = projects.map((p) => p.id);
     const where = buildShowcaseInclusionFilter(poolCriteria);
-    const addProjects: ProjectInformationWithMembersFragment[] = (await projectsWhere(where))
-      .showcase.projects;
+    const addProjects = (await projectsWhere(where))
+      .showcase?.projects || [];
     projects.push(...addProjects.filter((p) => !existingIds.includes(p.id)));
   }
   DEBUG(`...Found ${projects.length} projects in this criteria.`);
@@ -38,10 +38,9 @@ export async function syncPool(pool: DeepPool): Promise<void> {
 
       // Check each member for permissions
       for (const member of project.members as MemberInformationFragment[]) {
-        if (!member.account.discordId) {
+        if (!member.account?.discordId) {
           DEBUG(`......... ${member.username} has no linked Discord account.`);
-        }
-        if (!permissions.has(member.account.discordId)) {
+        } else if (!permissions.has(member.account.discordId)) {
           DEBUG(`......... Adding permissions for ${member.username} in ${project.podChannel}.`);
           const user = await discord.users.fetch(member.account.discordId);
           try {

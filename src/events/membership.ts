@@ -11,14 +11,14 @@ export function memberAddedHandler() {
   memberAdded(async (data) => {
     const { username, account, project } = data.memberAdded;
     const { name, podChannel } = project;
-    if (!isPodChannelCurrent(podChannel)) return;
+    if (!podChannel || !isPodChannelCurrent(podChannel)) return;
 
     const discordChannel = await discord.channels.fetch(podChannel);
-    if (!discordChannel?.isText() || !account.discordId) return;
+    if (!discordChannel?.isText()) return;
 
     DEBUG(`Member ${username} (discord ${account?.discordId}) joined project ${name} (pod ${podChannel})`);
 
-    if (!account.discordId) {
+    if (!account?.discordId) {
       DEBUG(`... No Discord ID.`);
       return;
     }

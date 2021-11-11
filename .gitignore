@@ -4,3 +4,5 @@ node_modules/
 .env.*
 dist/
 src/**/*.query.ts
+src/gql/types.ts
+schema.graphql

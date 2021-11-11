@@ -22,7 +22,7 @@ export function projectCreatedHandler() {
 export function projectDeletedHandler() {
   projectDeleted(async (data) => {
     const { name, podChannel } = data.projectDeleted;
-    if (!isPodChannelCurrent(podChannel)) return;
+    if (!podChannel || !isPodChannelCurrent(podChannel)) return;
 
     DEBUG(`Project ${name} was deleted (pod ${podChannel})`);
     await updateWelcomeMessage(podChannel);

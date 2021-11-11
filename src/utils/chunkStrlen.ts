@@ -12,7 +12,7 @@ function chunkSubstr(str: string, size: number): string[] {
 }
 
 export function chunkStrlen(messages: string[], join: string, maxLength: number): string[] {
-  const chunks = [];
+  const chunks: string[] = [];
   for (const message of messages) {
     const i = chunks.length - 1;
     if (chunks.length === 0 || chunks[i].length + join.length + message.length > maxLength) {

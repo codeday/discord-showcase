@@ -7,6 +7,10 @@ generates:
     plugins:
       - schema-ast
 
+  src/gql/types.ts:
+    plugins:
+      - typescript
+
   # Colocate Typescript types/interfaces with components
   ./:
     documents:
@@ -15,7 +19,7 @@ generates:
     preset: near-operation-file
     presetConfig:
       extension: .query.ts
-      baseTypesPath: src/graphql/types.ts
+      baseTypesPath: src/gql/types.ts
     plugins:
       - typescript
       - typescript-operations

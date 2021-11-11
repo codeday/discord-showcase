@@ -6,3 +6,6 @@ generated/
 .eslint*
 README.md
 node_modules/
+schema.graphql
+src/gql/*.query.ts
+src/gql/types.ts

@@ -27,11 +27,12 @@ export async function assignProject(
 
   for (const member of project.members as MemberInformationFragment[]) {
     try {
+      if (!member.account?.discordId) throw new Error('No discord ID');
       const user = (await discord.users.fetch(member.account.discordId));
       await (discordChannel as TextChannel).permissionOverwrites.create(user, config.discord.defaultMemberPermissions);
       DEBUG(`... Added permissions for ${member.username} (${member.account.discordId}).`);
     } catch (ex) {
-      DEBUG(`... Could not add permissions for ${member.username} (${member.account.discordId}).`);
+      DEBUG(`... Could not add permissions for ${member.username} (${member?.account?.discordId}).`);
     }
   }
 
