@@ -64,7 +64,7 @@ export async function registerCommands(): Promise<void> {
 }
 
 export async function handle(interaction: Interaction<CacheType>): Promise<void> {
-  if (!interaction.isCommand()) return;
+  if (!interaction.isCommand() || interaction.guildId !== config.discord.guildId) return;
   const groupId = interaction.options.getSubcommandGroup();
   const commandId = interaction.options.getSubcommand();
   const data = JSON.stringify(interaction.options.data);
