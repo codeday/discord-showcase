@@ -1,0 +1,64 @@
+Arguments: 
+  /home/tylermenezes/.nvm/versions/node/v15.8.0/bin/node /home/tylermenezes/.nvm/versions/node/v15.8.0/bin/yarn install
+
+PATH: 
+  /home/tylermenezes/.nvm/versions/node/v15.8.0/bin:/home/tylermenezes/.serverless/bin:/home/tylermenezes/.bin:/home/tylermenezes/.local/bin:/usr/local/bin:/home/tylermenezes/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/lib/jvm/default/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:/var/lib/snapd/snap/bin:/home/tylermenezes/.gem/ruby/2.3.0/bin:/usr/local/n/versions/node/12.0.0/bin:/home/tylermenezes/Seafile/Dotfiles/.bin
+
+Yarn version: 
+  1.22.10
+
+Node version: 
+  15.8.0
+
+Platform: 
+  linux x64
+
+Trace: 
+  SyntaxError: /home/tylermenezes/Code/github.com/codeday/discord-showcase/package.json: Unexpected token } in JSON at position 691
+      at JSON.parse (<anonymous>)
+      at /home/tylermenezes/.nvm/versions/node/v15.8.0/lib/node_modules/yarn/lib/cli.js:1625:59
+      at Generator.next (<anonymous>)
+      at step (/home/tylermenezes/.nvm/versions/node/v15.8.0/lib/node_modules/yarn/lib/cli.js:310:30)
+      at /home/tylermenezes/.nvm/versions/node/v15.8.0/lib/node_modules/yarn/lib/cli.js:321:13
+
+npm manifest: 
+  {
+    "name": "@codeday/discord-posts",
+    "version": "1.0.0",
+    "main": "dist/index.js",
+    "author": "Tyler Menezes <tylermenezes@srnd.org>",
+    "license": "Artistic-2.0",
+    "scripts": {
+      "start": "node dist",
+      "clean": "rm -rf dist",
+      "build": "npm -s run clean && npm -s run generate && npx tsc",
+      "generate": "prisma generate",
+      "dev": "ts-node-dev --no-notify --respawn --transpile-only src",
+      "debug": "ts-node-dev --no-notify --respawn src"
+    },
+    "dependencies": {
+      "class-validator": "^0.12.2",
+      "discord.js": "^12.3.0",
+      "dotenv": "^8.2.0",
+      "express": "^4.17.1",
+      "graphql": "^15.3.0",
+      "node-fetch": "^2.6.0",
+      "reflect-metadata": "^0.1.13",
+    },
+    "devDependencies": {
+      "@codeday/eslint-typescript-config": "^2.0.1",
+      "@prisma/cli": "^2.3.0",
+      "@types/node": "^14.0.27",
+      "@types/node-fetch": "^2.5.7",
+      "eslint": "^7.6.0",
+      "ts-node": "^8.10.2",
+      "ts-node-dev": "^1.0.0-pre.56",
+      "typescript": "^3.9.7"
+    }
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

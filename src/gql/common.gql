@@ -1,0 +1,31 @@
+fragment MemberInformation on ShowcaseMember {
+  username
+  account {
+    discordId
+  }
+}
+
+fragment ProjectInformation on ShowcaseProject {
+  id
+  name
+  type
+  description
+  eventId
+  eventGroupId
+  programId
+  regionId
+  program {
+    webname
+  }
+  region {
+    webname
+  }
+  podChannel: metadataValue(key: "pod.channel")
+}
+
+fragment ProjectInformationWithMembers on ShowcaseProject {
+  ...ProjectInformation
+  members {
+    ...MemberInformation
+  }
+}

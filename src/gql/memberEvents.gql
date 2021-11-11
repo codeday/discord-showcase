@@ -1,0 +1,18 @@
+#import "./common.gql"
+subscription OnMemberRemoved {
+  memberRemoved {
+    ...MemberInformation
+    project {
+        ...ProjectInformation
+    }
+  }
+}
+
+subscription OnMemberAdded {
+  memberAdded {
+    ...MemberInformation
+      project {
+          ...ProjectInformation
+      }
+  }
+}
