@@ -9,10 +9,13 @@ import { updateWelcomeMessage } from './updateWelcomeMessage';
 
 const DEBUG = debugFactory('showcase.utils.assignProject');
 
-export async function assignProject(project: ProjectInformationWithMembersFragment): Promise<string | null> {
+export async function assignProject(
+  project: ProjectInformationWithMembersFragment,
+  forcePodChannel?: string,
+): Promise<string | null> {
   DEBUG(`Assigning project ${project.name} to a pool and pod channel.`);
 
-  const podChannel = await getBestPodChannel(project);
+  const podChannel = forcePodChannel ? forcePodChannel : await getBestPodChannel(project);
   DEBUG(`... Pod channel assignment: ${podChannel}`);
   if (!podChannel) return null;
 

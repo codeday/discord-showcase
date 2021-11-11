@@ -82,6 +82,7 @@ export async function handle(interaction: Interaction<CacheType>): Promise<void>
       } catch (ex) {}
     }
   } catch (err) {
+    DEBUG(`Command caused error!`);
     DEBUG(err);
     const message = 'Sorry, something went wrong. Please ask someone to check the logs.';
     if (interaction.replied) await interaction.followUp(message);
