@@ -24,7 +24,7 @@ type SubCommandGroups = Record<string, SubCommandGroupDetails>;
 const DEBUG = debugFactory('showcase.discord.commands');
 
 export const allFiles: SubCommandGroups = fs.readdirSync(__dirname)
-  .filter((name: string): boolean => name !== 'index.ts')
+  .filter((name: string): boolean => name !== 'index.ts' && name !== 'index.js')
   .map((name: string) => {
     const [basename] = name.split('.');
     const file = <SubCommandFile>require(`./${name}`);

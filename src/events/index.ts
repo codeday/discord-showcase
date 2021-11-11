@@ -8,7 +8,7 @@ import debugFactory from 'debug';
 const DEBUG = debugFactory('showcase.events');
 
 const handlers = fs.readdirSync(__dirname)
-  .filter((name: string): boolean => name !== 'index.ts')
+  .filter((name: string): boolean => name !== 'index.ts' && name !== 'index.js')
   .flatMap((name) => {
     const [basename] = name.split('.');
     DEBUG(`Found handlers group ${basename}.`);
