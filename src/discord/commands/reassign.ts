@@ -44,6 +44,7 @@ export const team = [
       await (discordFromChannel as TextChannel).send(`${team.name} is being moved to another pod.`);
       const discordMembers = (team.members || []).filter((member) => member.account?.discordId);
       for (const member of discordMembers) {
+        if (!member.account?.discordId) continue;
         try {
           const user = (await discord.users.fetch(member.account.discordId));
           await (discordFromChannel as TextChannel).permissionOverwrites.delete(user);
