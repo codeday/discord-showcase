@@ -15,6 +15,14 @@ query ProjectsWhere($where: ShowcaseProjectsWhere!) {
   }
 }
 
+query ProjectById($id: String!) {
+  showcase {
+    project(id: $id) {
+      ...ProjectInformationWithMembers
+    }
+  }
+}
+
 mutation SetProjectChannel($project: String!, $channel: String!) {
   showcase {
     setMetadata(project: $project, key: "pod.channel", value: $channel, visibility: PUBLIC)

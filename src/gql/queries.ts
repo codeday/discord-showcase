@@ -6,6 +6,9 @@ import {
   ProjectsWhereQuery,
   ProjectsWhereDocument,
   ProjectsWhereQueryVariables,
+  ProjectByIdQuery,
+  ProjectByIdDocument,
+  ProjectByIdQueryVariables,
   ShowcaseProjectsWhere,
   SetProjectChannelMutation,
   SetProjectChannelDocument,
@@ -30,4 +33,10 @@ export const projectsWhere = (where: ShowcaseProjectsWhere) =>
     variables: { where },
   });
 
-export { MembersInChannelQuery, SetProjectChannelMutation, ProjectsWhereDocument };
+export const projectById = (id: string) =>
+  request<ProjectByIdQuery, ProjectByIdQueryVariables>({
+    query: ProjectByIdDocument,
+    variables: { id },
+  });
+
+export { MembersInChannelQuery, SetProjectChannelMutation, ProjectsWhereDocument, ProjectByIdDocument };
