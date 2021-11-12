@@ -39,6 +39,8 @@ export const team = [
       throw new Error(`Team does not exist.`);
     }
 
+    await prisma.channel.update({ where: { id: toId }, data: { teamCount: { decrement: 1 } }});
+
     if (team?.podChannel) {
       const discordFromChannel = await discord.channels.fetch(team.podChannel);
       await (discordFromChannel as TextChannel).send(`${team.name} is being moved to another pod.`);
